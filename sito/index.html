@@ -1,17 +1,56 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>STAR HOUR Luxembourg</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap&subset=cyrillic" rel="stylesheet">
 <style>
-  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
-  video { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: #000; font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif; color: #fff; }
+
+  /* Pagina 1: video a schermo intero */
+  .hero { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: #000; }
+  .hero video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .scroll-hint { position: absolute; left: 50%; bottom: 28px; width: 28px; height: 28px; margin-left: -14px;
+    border-right: 2px solid rgba(255,255,255,.85); border-bottom: 2px solid rgba(255,255,255,.85);
+    transform: rotate(45deg); animation: bounce 1.8s infinite; }
+  @keyframes bounce { 0%,100% { transform: translateY(0) rotate(45deg); opacity: .6; } 50% { transform: translateY(10px) rotate(45deg); opacity: 1; } }
+
+  /* Pagina 2: sfondo purple */
+  .about { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 80px 24px; background: linear-gradient(180deg, #5b1a8f 0%, #7b2cbf 55%, #6a1fa8 100%); }
+  .about-inner { max-width: 880px; }
+  .about h1 { margin: 0 0 24px; font-size: clamp(1.6rem, 4vw, 2.8rem); font-weight: 700; line-height: 1.25; letter-spacing: .02em; text-transform: uppercase; }
+  .about .tagline { margin: 0 0 36px; font-size: clamp(1.1rem, 2.4vw, 1.6rem); font-weight: 600; letter-spacing: .08em; color: #f1d9ff; }
+  .about p { margin: 0 0 22px; font-size: clamp(1rem, 1.8vw, 1.3rem); font-weight: 300; line-height: 1.7; }
+  .btn { display: inline-block; margin-top: 24px; padding: 18px 40px; border: 2px solid #fff; border-radius: 999px;
+    background: #fff; color: #5b1a8f; font: 700 1rem/1.2 "Montserrat", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; text-decoration: none;
+    transition: background .2s, color .2s, transform .2s; }
+  .btn:hover, .btn:focus-visible { background: transparent; color: #fff; transform: translateY(-2px); }
 </style>
 </head>
 <body>
-<video autoplay muted loop playsinline preload="auto" poster="poster.jpg">
-  <source src="STAR_HOUR_Luxembourg_Hero.mp4" type="video/mp4">
-</video>
+
+<section class="hero">
+  <video autoplay muted loop playsinline preload="auto" poster="poster.jpg">
+    <source src="STAR_HOUR_Luxembourg_Hero.mp4" type="video/mp4">
+  </video>
+  <a class="scroll-hint" href="#festival" aria-label="Scroll"></a>
+</section>
+
+<section class="about" id="festival">
+  <div class="about-inner">
+    <h1>Международный трансформационный фестиваль личностного и духовного роста.</h1>
+    <p class="tagline">Люди. Свет. Проявленность. Возможности.</p>
+    <p>Твой момент выйти из тени, услышать себя, раскрыть свой потенциал и позволить миру увидеть, кто ты на самом деле.</p>
+    <p>Люксембург — место встречи культур, идей и людей, готовых к новому этапу своей жизни.</p>
+    <a class="btn" href="#">Хочу стать частью фестиваля</a>
+  </div>
+</section>
+
 </body>
 </html>
