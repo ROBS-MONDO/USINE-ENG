@@ -33,6 +33,22 @@
     background: #d2a864; color: #2b0d1d; font: 700 1rem/1.2 "Montserrat", Arial, sans-serif; letter-spacing: .04em; text-transform: uppercase; text-decoration: none;
     transition: background .2s, color .2s; }
   .btn:hover, .btn:focus-visible { background: transparent; color: #d2a864; }
+
+  /* Pagina 3: galleria foto */
+  .gallery { background: #2b0d1d; padding: 24px; }
+  .gallery-row { display: flex; gap: 14px; height: min(62vh, 520px); max-width: 1900px; margin: 0 auto; }
+  .gallery-row figure { margin: 0; min-width: 0; overflow: hidden; border-radius: 4px; }
+  .gallery-row img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .gallery-row figure:nth-child(1) { flex: 1.78 1 0; }
+  .gallery-row figure:nth-child(2) { flex: 1.5 1 0; }
+  .gallery-row figure:nth-child(3) { flex: 0.66 1 0; }
+  .gallery-row figure:nth-child(4) { flex: 0.8 1 0; }
+  @media (max-width: 800px) {
+    .gallery { padding: 14px; }
+    .gallery-row { flex-direction: column; height: auto; gap: 10px; }
+    .gallery-row figure { flex: none !important; }
+    .gallery-row img { height: auto; }
+  }
 </style>
 </head>
 <body>
@@ -51,6 +67,16 @@
     <p>Твой момент выйти из тени, услышать себя, раскрыть свой потенциал и позволить миру увидеть, кто ты на самом деле.</p>
     <p>Люксембург — место встречи культур, идей и людей, готовых к новому этапу своей жизни.</p>
     <a class="btn" href="#">Хочу стать частью фестиваля</a>
+  </div>
+</section>
+
+
+<section class="gallery" aria-label="Foto">
+  <div class="gallery-row">
+    <figure><img src="foto/foto1.jpg" alt="" loading="lazy"></figure>
+    <figure><img src="foto/foto2.jpg" alt="" loading="lazy"></figure>
+    <figure><img src="foto/foto3.jpg" alt="" loading="lazy"></figure>
+    <figure><img src="foto/foto4.jpg" alt="" loading="lazy"></figure>
   </div>
 </section>
 
