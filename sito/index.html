@@ -108,6 +108,17 @@
     .zones-list { position: static; width: auto; height: auto; padding: 18px 20px; gap: 8px; font-size: 1rem; line-height: 1.4; }
     .zones-cta { padding: 24px 16px 40px; }
   }
+
+  /* Pagina 10: formati di partecipazione per trainer */
+  .formats { background: #fff; color: #1c1020; padding: 56px 24px 72px; }
+  .formats-inner { max-width: 1160px; margin: 0 auto; }
+  .formats h2 { margin: 0 0 44px; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 2.4rem); line-height: 1.15; text-transform: uppercase; color: #a98be0; }
+  .formats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 52px 40px; }
+  .formats figure { margin: 0; }
+  .formats img { display: block; width: 100%; height: auto; aspect-ratio: 6 / 5; object-fit: cover; }
+  .formats figcaption { margin-top: 22px; font-size: clamp(1rem, 1.3vw, 1.25rem); line-height: 1.5; }
+  @media (max-width: 900px) { .formats { padding: 40px 16px 56px; } .formats-grid { grid-template-columns: repeat(2, 1fr); gap: 32px 20px; } .formats h2 { margin-bottom: 28px; } .formats figcaption { margin-top: 12px; } }
+  @media (max-width: 520px) { .formats-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -233,6 +244,20 @@
   </div>
   <div class="zones-cta">
     <a class="btn" href="#">Стать тренером<span class="arrow" aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<section class="formats" id="formaty">
+  <div class="formats-inner">
+    <h2>Форматы участия для тренеров</h2>
+    <div class="formats-grid">
+      <figure><img src="foto/format1.webp" alt="" loading="lazy"><figcaption>Трансформационные игры</figcaption></figure>
+      <figure><img src="foto/format2.webp" alt="" loading="lazy"><figcaption>Мастер-классы и практики</figcaption></figure>
+      <figure><img src="foto/format3.webp" alt="" loading="lazy"><figcaption>Работа с телом, психикой и состоянием, энергией</figcaption></figure>
+      <figure><img src="foto/format4.webp" alt="" loading="lazy"><figcaption>Бизнес-направление</figcaption></figure>
+      <figure><img src="foto/format5.webp" alt="" loading="lazy"><figcaption>Деньги, масштаб, личный бренд, продукты</figcaption></figure>
+      <figure><img src="foto/format6.webp" alt="" loading="lazy"><figcaption>Экспресс-консультации</figcaption></figure>
+    </div>
   </div>
 </section>
 
