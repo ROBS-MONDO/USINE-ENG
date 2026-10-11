@@ -91,11 +91,9 @@
     background: linear-gradient(rgba(20, 8, 28, .62), rgba(20, 8, 28, .62)), url("foto/sfondo.jpg") center / cover no-repeat; }
   .invite-photo > .invite-inner { position: relative; z-index: 1; }
 
-  /* Pagina 7: video */
-  .film { padding: 80px 24px; background: linear-gradient(135deg, #2b0d1d 0%, #341023 100%); }
-  .film-inner { width: 100%; max-width: 1100px; margin: 0 auto; }
-  .film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; border-radius: 6px; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
-  @media (max-width: 900px) { .film { padding: 40px 16px; } }
+  /* Pagina 7: video a tutto schermo */
+  .film { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: #000; }
+  .film video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 </style>
 </head>
 <body>
@@ -184,11 +182,9 @@
 
 
 <section class="film" id="video">
-  <div class="film-inner">
-    <video id="film-video" controls muted loop playsinline preload="none" poster="video-festival-poster.jpg">
-      <source src="video-festival.mp4" type="video/mp4">
-    </video>
-  </div>
+  <video id="film-video" muted loop playsinline preload="none" poster="video-festival-poster.jpg">
+    <source src="video-festival.mp4" type="video/mp4">
+  </video>
 </section>
 
 <script>
