@@ -120,7 +120,10 @@
   .formats img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
   .formats figcaption { margin-top: 20px; font-size: clamp(.95rem, 1.15vw, 1.1rem); line-height: 1.55; }
   .formats figcaption strong { display: block; margin-bottom: 6px; font-weight: 700; }
-  @media (max-width: 900px) { .formats { padding: 40px 16px 56px; } .formats-grid { gap: 32px 20px; } .formats figure { flex-basis: calc((100% - 20px) / 2); } .formats h2 { margin-bottom: 20px; } .formats-intro { margin-bottom: 32px; } .formats figcaption { margin-top: 12px; } }
+  .formats-extra { display: grid; grid-template-columns: 0.667fr 1.778fr; gap: 40px; margin-top: 52px; }
+  .formats-extra figure { margin: 0; min-width: 0; }
+  .formats .formats-extra img { display: block; width: 100%; height: auto; aspect-ratio: auto; }
+  @media (max-width: 900px) { .formats { padding: 40px 16px 56px; } .formats-grid { gap: 32px 20px; } .formats figure { flex-basis: calc((100% - 20px) / 2); } .formats h2 { margin-bottom: 20px; } .formats-extra { grid-template-columns: 1fr; gap: 20px; margin-top: 32px; } .formats-intro { margin-bottom: 32px; } .formats figcaption { margin-top: 12px; } }
   @media (max-width: 520px) { .formats figure { flex-basis: 100%; } }
 </style>
 </head>
@@ -139,7 +142,7 @@
     <p class="tagline">Люди. Свет. Проявленность. Возможности.</p>
     <p>Твой момент выйти из тени, услышать себя, раскрыть свой потенциал и позволить миру увидеть, кто ты на самом деле.</p>
     <p>Люксембург — место встречи культур, идей и людей, готовых к новому этапу своей жизни.</p>
-    <a class="btn" href="#">Хочу стать частью фестиваля</a>
+    <a class="btn" href="#kak-prohodit">Хочу стать частью фестиваля</a>
   </div>
 </section>
 
@@ -182,7 +185,7 @@
         <p>Твоя уникальность не должна оставаться в тени. Поделись тем, что несёт ценность для других, — и позволь своему профессиональному пути выйти на новый уровень видимости.</p>
       </div>
     </div>
-    <a class="btn" href="#">Стать тренером<span class="arrow" aria-hidden="true">→</span></a>
+    <a class="btn" href="#formaty">Стать тренером<span class="arrow" aria-hidden="true">→</span></a>
   </div>
 </section>
 
@@ -246,7 +249,7 @@
     </ul>
   </div>
   <div class="zones-cta">
-    <a class="btn" href="#">Стать тренером<span class="arrow" aria-hidden="true">→</span></a>
+    <a class="btn" href="#formaty">Стать тренером<span class="arrow" aria-hidden="true">→</span></a>
   </div>
 </section>
 
@@ -261,6 +264,10 @@
       <figure><img src="foto/expert3.webp" alt="" loading="lazy"><figcaption><strong>Работа с телом и состоянием / Body &amp; Mind Practices</strong>Подходы, помогающие развивать контакт с собой, осознанность и внутреннюю устойчивость.</figcaption></figure>
       <figure><img src="foto/expert4.webp" alt="" loading="lazy"><figcaption><strong>Бизнес и реализация / Business &amp; Personal Realisation</strong>Темы личного бренда, самореализации, предпринимательского мышления и развития авторских продуктов.</figcaption></figure>
       <figure><img src="foto/expert5.webp" alt="" loading="lazy"><figcaption><strong>Экспресс-консультации / Express Consultations</strong>Короткие индивидуальные встречи, позволяющие участникам познакомиться с подходом специалиста.</figcaption></figure>
+    </div>
+    <div class="formats-extra">
+      <figure><img src="foto/expert6.webp" alt="" loading="lazy"></figure>
+      <figure><img src="foto/expert7.webp" alt="" loading="lazy"></figure>
     </div>
   </div>
 </section>
