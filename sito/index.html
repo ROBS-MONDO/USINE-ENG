@@ -74,6 +74,15 @@
   .invite .btn { margin-top: 56px; }
   .btn .arrow { margin-left: 14px; font-size: 1.3em; line-height: 1; vertical-align: -.05em; }
   @media (max-width: 900px) { .invite-grid { grid-template-columns: 1fr; gap: 28px; } .invite-inner { padding: 0; } .invite h2 { font-size: clamp(1.6rem, 8vw, 2.2rem); } .invite .btn { margin-top: 40px; } }
+
+  /* Pagina 6: creatori del festival */
+  .creators .invite-grid { align-items: center; }
+  .collage { position: relative; width: 100%; max-width: 440px; aspect-ratio: 1 / 2.14; }
+  .collage img { position: absolute; display: block; height: auto; border-radius: 6px; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
+  .collage img:nth-child(1) { left: 46%; top: 0; width: 54%; }
+  .collage img:nth-child(2) { left: 0; top: 35.1%; width: 54%; }
+  .collage img:nth-child(3) { left: 24%; top: 63.2%; width: 52%; }
+  @media (max-width: 900px) { .collage { margin: 0 auto; } }
 </style>
 </head>
 <body>
@@ -135,6 +144,28 @@
       </div>
     </div>
     <a class="btn" href="#">Стать тренером<span class="arrow" aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+
+<section class="invite creators" id="sozdateli">
+  <div class="invite-inner">
+    <div class="invite-grid">
+      <div class="collage">
+        <img src="foto/creatrice1.jpg" alt="" loading="lazy">
+        <img src="foto/creatrice2.jpg" alt="" loading="lazy">
+        <img src="foto/creatrice3.jpg" alt="" loading="lazy">
+      </div>
+      <div class="invite-text">
+        <p><strong>Создатели фестиваля</strong></p>
+        <p>Мы – Юлия, Жюли и Юлия, организаторы фестиваля «Звездный час»</p>
+        <p><strong>МЫ СОЗДАЁМ ПРОСТРАНСТВО, В КОТОРОМ СВЕТ КАЖДОГО ИМЕЕТ ЗНАЧЕНИЕ.</strong></p>
+        <p>«Звёздный час» рождается из идеи, что человек раскрывается глубже, когда рядом есть пространство для самовыражения, принятия, вдохновения и настоящего человеческого контакта.</p>
+        <p>Наша цель — объединить людей, которые не просто ищут новые знания, а готовы применять их в жизни, открывать новые стороны себя, делиться опытом и поддерживать развитие друг друга.</p>
+        <p><strong>Мы создаём фестиваль, в котором личностное развитие встречается с культурой, внутренний мир — с реальной жизнью, а индивидуальные таланты — с возможностями сотрудничества.</strong></p>
+        <p>Мы объединяем. Ты раскрываешься!</p>
+      </div>
+    </div>
   </div>
 </section>
 
