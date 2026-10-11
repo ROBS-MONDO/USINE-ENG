@@ -83,6 +83,12 @@
   .collage img:nth-child(2) { left: 0; top: 35.1%; width: 54%; }
   .collage img:nth-child(3) { left: 24%; top: 63.2%; width: 52%; }
   @media (max-width: 900px) { .collage { margin: 0 auto; } }
+
+  /* Pagina 5: sfondo fisso (le scritte scorrono, l'immagine resta ferma) */
+  .invite-photo { position: relative; clip-path: inset(0); background: #1a0a24; }
+  .invite-photo::before { content: ""; position: fixed; inset: 0; z-index: 0;
+    background: linear-gradient(rgba(20, 8, 28, .62), rgba(20, 8, 28, .62)), url("foto/sfondo.jpg") center / cover no-repeat; }
+  .invite-photo > .invite-inner { position: relative; z-index: 1; }
 </style>
 </head>
 <body>
@@ -131,7 +137,7 @@
 </section>
 
 
-<section class="invite" id="trener">
+<section class="invite invite-photo" id="trener">
   <div class="invite-inner">
     <div class="invite-grid">
       <h2>Приглашаем тебя стать тренером</h2>
