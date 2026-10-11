@@ -109,16 +109,19 @@
     .zones-cta { padding: 24px 16px 40px; }
   }
 
-  /* Pagina 10: formati di partecipazione per trainer */
-  .formats { background: #fff; color: #1c1020; padding: 56px 24px 72px; }
+  /* Pagina 10: formati di partecipazione per esperti */
+  .formats { background: #fff; color: #2b0d1d; padding: 56px 24px 72px; }
   .formats-inner { max-width: 1160px; margin: 0 auto; }
-  .formats h2 { margin: 0 0 44px; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 2.4rem); line-height: 1.15; text-transform: uppercase; color: #a98be0; }
-  .formats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 52px 40px; }
-  .formats figure { margin: 0; }
-  .formats img { display: block; width: 100%; height: auto; aspect-ratio: 6 / 5; object-fit: cover; }
-  .formats figcaption { margin-top: 22px; font-size: clamp(1rem, 1.3vw, 1.25rem); line-height: 1.5; }
-  @media (max-width: 900px) { .formats { padding: 40px 16px 56px; } .formats-grid { grid-template-columns: repeat(2, 1fr); gap: 32px 20px; } .formats h2 { margin-bottom: 28px; } .formats figcaption { margin-top: 12px; } }
-  @media (max-width: 520px) { .formats-grid { grid-template-columns: 1fr; } }
+  .formats h2 { margin: 0 0 28px; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 2.4rem); line-height: 1.15; text-transform: uppercase; color: #2b0d1d; }
+  .formats-lead { margin: 0 0 14px; font-size: clamp(1.05rem, 1.5vw, 1.35rem); line-height: 1.5; }
+  .formats-intro { max-width: 860px; margin: 0 0 44px; font-size: clamp(1rem, 1.3vw, 1.2rem); line-height: 1.7; }
+  .formats-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 52px 40px; }
+  .formats figure { margin: 0; flex: 0 0 calc((100% - 80px) / 3); min-width: 0; }
+  .formats img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
+  .formats figcaption { margin-top: 20px; font-size: clamp(.95rem, 1.15vw, 1.1rem); line-height: 1.55; }
+  .formats figcaption strong { display: block; margin-bottom: 6px; font-weight: 700; }
+  @media (max-width: 900px) { .formats { padding: 40px 16px 56px; } .formats-grid { gap: 32px 20px; } .formats figure { flex-basis: calc((100% - 20px) / 2); } .formats h2 { margin-bottom: 20px; } .formats-intro { margin-bottom: 32px; } .formats figcaption { margin-top: 12px; } }
+  @media (max-width: 520px) { .formats figure { flex-basis: 100%; } }
 </style>
 </head>
 <body>
@@ -249,14 +252,15 @@
 
 <section class="formats" id="formaty">
   <div class="formats-inner">
-    <h2>Форматы участия для тренеров</h2>
+    <h2>Форматы участия для экспертов</h2>
+    <p class="formats-lead"><strong>У ТВОЕГО ОПЫТА ЕСТЬ МЕСТО НА НАШЕЙ СЦЕНЕ.</strong></p>
+    <p class="formats-intro">Мы открываем пространство для разных форматов профессионального и творческого вклада. Ты можешь поделиться знаниями, провести авторскую практику, представить трансформационную игру или организовать индивидуальные встречи с участниками.</p>
     <div class="formats-grid">
-      <figure><img src="foto/format1.webp" alt="" loading="lazy"><figcaption>Трансформационные игры</figcaption></figure>
-      <figure><img src="foto/format2.webp" alt="" loading="lazy"><figcaption>Мастер-классы и практики</figcaption></figure>
-      <figure><img src="foto/format3.webp" alt="" loading="lazy"><figcaption>Работа с телом, психикой и состоянием, энергией</figcaption></figure>
-      <figure><img src="foto/format4.webp" alt="" loading="lazy"><figcaption>Бизнес-направление</figcaption></figure>
-      <figure><img src="foto/format5.webp" alt="" loading="lazy"><figcaption>Деньги, масштаб, личный бренд, продукты</figcaption></figure>
-      <figure><img src="foto/format6.webp" alt="" loading="lazy"><figcaption>Экспресс-консультации</figcaption></figure>
+      <figure><img src="foto/expert1.webp" alt="" loading="lazy"><figcaption><strong>Трансформационные игры / Transformational Games</strong>Авторские игры для исследования личных запросов, ценностей и возможных решений.</figcaption></figure>
+      <figure><img src="foto/expert2.webp" alt="" loading="lazy"><figcaption><strong>Мастер-классы и практики / Workshops &amp; Practices</strong>Практический опыт в психологии, осознанности, духовном развитии и самопознании.</figcaption></figure>
+      <figure><img src="foto/expert3.webp" alt="" loading="lazy"><figcaption><strong>Работа с телом и состоянием / Body &amp; Mind Practices</strong>Подходы, помогающие развивать контакт с собой, осознанность и внутреннюю устойчивость.</figcaption></figure>
+      <figure><img src="foto/expert4.webp" alt="" loading="lazy"><figcaption><strong>Бизнес и реализация / Business &amp; Personal Realisation</strong>Темы личного бренда, самореализации, предпринимательского мышления и развития авторских продуктов.</figcaption></figure>
+      <figure><img src="foto/expert5.webp" alt="" loading="lazy"><figcaption><strong>Экспресс-консультации / Express Consultations</strong>Короткие индивидуальные встречи, позволяющие участникам познакомиться с подходом специалиста.</figcaption></figure>
     </div>
   </div>
 </section>
