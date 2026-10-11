@@ -185,11 +185,24 @@
 
 <section class="film" id="video">
   <div class="film-inner">
-    <video controls playsinline preload="none" poster="video-festival-poster.jpg">
+    <video id="film-video" controls muted loop playsinline preload="none" poster="video-festival-poster.jpg">
       <source src="video-festival.mp4" type="video/mp4">
     </video>
   </div>
 </section>
+
+<script>
+  // Il video dell'ultima pagina parte da solo (senza audio) appena la sezione diventa visibile
+  (function () {
+    var v = document.getElementById("film-video");
+    if (!v) return;
+    function play() { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+    if (!("IntersectionObserver" in window)) { play(); return; }
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) play(); else v.pause(); });
+    }, { threshold: 0.25 }).observe(v);
+  })();
+</script>
 
 </body>
 </html>
