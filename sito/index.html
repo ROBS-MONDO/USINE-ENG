@@ -53,13 +53,13 @@
   /* Pagina 4: О фестивале */
   .info { min-height: 100vh; display: flex; align-items: center; padding: 80px 24px;
     background: linear-gradient(100deg, #e9deff 0%, #f2e7f0 50%, #fef2db 100%); color: #2b0d1d; }
-  .info-grid { width: 100%; max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; padding: 0 4%; }
+  .info-grid { width: 100%; max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr); gap: 48px; padding: 0 3%; }
   .info h2 { margin: 0; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.8rem, 3vw, 2.8rem); line-height: 1.1; text-transform: uppercase; color: #2b0d1d; }
   .info-text { font-size: clamp(1rem, 1.35vw, 1.3rem); line-height: 1.7; color: #2b0d1d; }
   .info-text p { margin: 0 0 1.6em; }
   .info-text p:last-child { margin-bottom: 0; }
   .info-text strong { font-weight: 700; }
-  @media (max-width: 800px) { .info-grid { grid-template-columns: 1fr; gap: 28px; padding: 0; } .info h2 { font-size: clamp(1.6rem, 8vw, 2.2rem); } }
+  @media (max-width: 900px) { .info-grid { grid-template-columns: 1fr; gap: 28px; padding: 0; } .info h2 { font-size: clamp(1.6rem, 8vw, 2.2rem); } }
 </style>
 </head>
 <body>
