@@ -237,15 +237,29 @@
 </section>
 
 <script>
-  // Il video dell'ultima pagina parte da solo (senza audio) appena la sezione diventa visibile
+  // Il video a tutto schermo parte da solo (senza audio) quando la sezione sta per diventare visibile
   (function () {
     var v = document.getElementById("film-video");
     if (!v) return;
-    function play() { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
-    if (!("IntersectionObserver" in window)) { play(); return; }
+    var visible = false;
+    function play() {
+      v.muted = true;
+      var p = v.play();
+      if (p && p.catch) p.catch(function () {});
+    }
+    function onVisible(on) {
+      visible = on;
+      if (on) { v.preload = "auto"; play(); } else { v.pause(); }
+    }
+    // se il browser rimanda l'avvio, riprova appena il video e' pronto o al primo gesto dell'utente
+    v.addEventListener("canplay", function () { if (visible) play(); });
+    ["touchstart", "click", "scroll", "keydown"].forEach(function (ev) {
+      window.addEventListener(ev, function () { if (visible && v.paused) play(); }, { once: true, passive: true });
+    });
+    if (!("IntersectionObserver" in window)) { onVisible(true); return; }
     new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { if (e.isIntersecting) play(); else v.pause(); });
-    }, { threshold: 0.25 }).observe(v);
+      entries.forEach(function (e) { onVisible(e.isIntersecting); });
+    }, { rootMargin: "200px 0px", threshold: 0 }).observe(v);
   })();
 </script>
 
