@@ -11,6 +11,7 @@
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body { margin: 0; background: #000; font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif; color: #fff; }
+  .about { color: #4a1d3d; }
 
   /* Pagina 1: video a schermo intero */
   .hero { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: #000; }
@@ -22,15 +23,17 @@
 
   /* Pagina 2: sfondo purple */
   .about { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;
-    padding: 80px 24px; background: #b6769f; }
-  .about-inner { max-width: 880px; }
-  .about h1 { margin: 0 0 24px; font-size: clamp(1.6rem, 4vw, 2.8rem); font-weight: 700; line-height: 1.25; letter-spacing: .02em; text-transform: uppercase; }
-  .about .tagline { margin: 0 0 36px; font-size: clamp(1.1rem, 2.4vw, 1.6rem); font-weight: 600; letter-spacing: .08em; color: #fff; }
-  .about p { margin: 0 0 22px; font-size: clamp(1rem, 1.8vw, 1.3rem); font-weight: 300; line-height: 1.7; }
-  .btn { display: inline-block; margin-top: 24px; padding: 18px 40px; border: 2px solid #fff; border-radius: 999px;
-    background: #fff; color: #8a3f6f; font: 700 1rem/1.2 "Montserrat", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; text-decoration: none;
+    padding: 80px 24px; background: #d5a3c2; }
+  .about-inner { width: 100%; }
+  .about p, .about .tagline { max-width: 880px; }
+  .about h1 { margin: 0 0 24px; font-size: 1.65vw; white-space: nowrap; font-weight: 700; line-height: 1.25; letter-spacing: .02em; text-transform: uppercase; }
+  @media (max-width: 900px) { .about h1 { font-size: clamp(1.4rem, 5vw, 2rem); white-space: normal; } }
+  .about .tagline { margin: 0 auto 36px; font-size: clamp(1.1rem, 2.4vw, 1.6rem); font-weight: 600; letter-spacing: .08em; color: #4a1d3d; }
+  .about p { margin: 0 auto 22px; font-size: clamp(1rem, 1.8vw, 1.3rem); font-weight: 300; line-height: 1.7; }
+  .btn { display: inline-block; margin-top: 24px; padding: 18px 40px; border: 2px solid #4a1d3d; border-radius: 999px;
+    background: #4a1d3d; color: #fff; font: 700 1rem/1.2 "Montserrat", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; text-decoration: none;
     transition: background .2s, color .2s, transform .2s; }
-  .btn:hover, .btn:focus-visible { background: transparent; color: #fff; transform: translateY(-2px); }
+  .btn:hover, .btn:focus-visible { background: transparent; color: #4a1d3d; transform: translateY(-2px); }
 </style>
 </head>
 <body>
