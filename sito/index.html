@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Luxembourg Festival</title>
+<link rel="preload" as="image" href="poster.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Lora:wght@400;700&family=Unbounded:wght@800&display=swap&subset=cyrillic" rel="stylesheet">
@@ -89,6 +90,12 @@
   .invite-photo::before { content: ""; position: fixed; inset: 0; z-index: 0;
     background: linear-gradient(rgba(20, 8, 28, .62), rgba(20, 8, 28, .62)), url("foto/sfondo.jpg") center / cover no-repeat; }
   .invite-photo > .invite-inner { position: relative; z-index: 1; }
+
+  /* Pagina 7: video */
+  .film { padding: 80px 24px; background: linear-gradient(135deg, #2b0d1d 0%, #341023 100%); }
+  .film-inner { width: 100%; max-width: 1100px; margin: 0 auto; }
+  .film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; border-radius: 6px; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
+  @media (max-width: 900px) { .film { padding: 40px 16px; } }
 </style>
 </head>
 <body>
@@ -172,6 +179,15 @@
         <p>Мы объединяем. Ты раскрываешься!</p>
       </div>
     </div>
+  </div>
+</section>
+
+
+<section class="film" id="video">
+  <div class="film-inner">
+    <video controls playsinline preload="none" poster="video-festival-poster.jpg">
+      <source src="video-festival.mp4" type="video/mp4">
+    </video>
   </div>
 </section>
 
