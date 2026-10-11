@@ -60,6 +60,20 @@
   .info-text p:last-child { margin-bottom: 0; }
   .info-text strong { font-weight: 700; }
   @media (max-width: 900px) { .info-grid { grid-template-columns: 1fr; gap: 28px; padding: 0; } .info h2 { font-size: clamp(1.6rem, 8vw, 2.2rem); } }
+
+  /* Pagina 5: invito trainer */
+  .invite { min-height: 80vh; display: flex; align-items: center; padding: 80px 24px;
+    background: linear-gradient(135deg, #2b0d1d 0%, #341023 100%); color: #efe3e6; }
+  .invite-inner { width: 100%; max-width: 1500px; margin: 0 auto; padding: 0 3%; }
+  .invite-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  .invite h2 { margin: 0; max-width: 10.8em; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.8rem, 3.2vw, 3rem); line-height: 1.1; text-transform: uppercase; color: #fff; }
+  .invite-text { font-size: clamp(1rem, 1.35vw, 1.3rem); line-height: 1.7; }
+  .invite-text p { margin: 0 0 1.6em; }
+  .invite-text p:last-child { margin-bottom: 0; }
+  .invite-text strong { font-weight: 700; color: #fff; }
+  .invite .btn { margin-top: 56px; }
+  .btn .arrow { margin-left: 14px; font-size: 1.3em; line-height: 1; vertical-align: -.05em; }
+  @media (max-width: 900px) { .invite-grid { grid-template-columns: 1fr; gap: 28px; } .invite-inner { padding: 0; } .invite h2 { font-size: clamp(1.6rem, 8vw, 2.2rem); } .invite .btn { margin-top: 40px; } }
 </style>
 </head>
 <body>
@@ -104,6 +118,20 @@
       <p>Мы верим, что настоящая трансформация начинается внутри, но раскрывается в контакте с миром. Иногда одна встреча, один разговор или один смелый шаг становятся началом совершенно новой главы.</p>
       <p><strong>Практики и мастер-классы · Трансформационные игры · Экспертные встречи · Новые знакомства · Пространство возможностей.</strong></p>
     </div>
+  </div>
+</section>
+
+
+<section class="invite" id="trener">
+  <div class="invite-inner">
+    <div class="invite-grid">
+      <h2>Приглашаем тебя стать тренером</h2>
+      <div class="invite-text">
+        <p><strong>Ты чувствуешь, что переросла свой формат, что ты готова к видимости, к масштабу, повышению цен и переходу на новый уровень?</strong></p>
+        <p>СИЯЙ 3.0 может стать твоей следующей точкой роста. Мы приглашаем тебя стать тренером фестиваля и выступить с темой, которая зажигает твое сердце.</p>
+      </div>
+    </div>
+    <a class="btn" href="#">Стать тренером<span class="arrow" aria-hidden="true">→</span></a>
   </div>
 </section>
 
