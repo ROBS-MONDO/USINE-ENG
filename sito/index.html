@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Luxembourg Festival</title>
-<link rel="preload" as="image" href="poster.jpg">
+<link rel="preload" as="image" href="poster.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Lora:wght@400;700&family=Unbounded:wght@800&display=swap&subset=cyrillic" rel="stylesheet">
@@ -88,7 +88,7 @@
   /* Pagina 5: sfondo fisso (le scritte scorrono, l'immagine resta ferma) */
   .invite-photo { position: relative; clip-path: inset(0); background: #1a0a24; }
   .invite-photo::before { content: ""; position: fixed; inset: 0; z-index: 0;
-    background: linear-gradient(rgba(20, 8, 28, .62), rgba(20, 8, 28, .62)), url("foto/sfondo.jpg") center / cover no-repeat; }
+    background: linear-gradient(rgba(20, 8, 28, .62), rgba(20, 8, 28, .62)), url("foto/sfondo.webp") center / cover no-repeat; }
   .invite-photo > .invite-inner { position: relative; z-index: 1; }
 
   /* Pagina 7: video a tutto schermo */
@@ -113,7 +113,7 @@
 <body>
 
 <section class="hero">
-  <video autoplay muted loop playsinline preload="auto" poster="poster.jpg">
+  <video autoplay muted loop playsinline preload="auto" poster="poster.webp">
     <source src="STAR_HOUR_Luxembourg_Hero.mp4" type="video/mp4">
   </video>
   <a class="scroll-hint" href="#festival" aria-label="Scroll"></a>
@@ -132,10 +132,10 @@
 
 <section class="gallery" aria-label="Foto">
   <div class="gallery-row">
-    <figure><img src="foto/foto1.jpg" alt="" loading="lazy"></figure>
-    <figure><img src="foto/foto3.jpg" alt="" loading="lazy"></figure>
-    <figure><img src="foto/foto2.jpg" alt="" loading="lazy"></figure>
-    <figure><img src="foto/foto4.jpg" alt="" loading="lazy"></figure>
+    <figure><img src="foto/foto1.webp" alt="" loading="lazy"></figure>
+    <figure><img src="foto/foto3.webp" alt="" loading="lazy"></figure>
+    <figure><img src="foto/foto2.webp" alt="" loading="lazy"></figure>
+    <figure><img src="foto/foto4.webp" alt="" loading="lazy"></figure>
   </div>
 </section>
 
@@ -177,9 +177,9 @@
   <div class="invite-inner">
     <div class="invite-grid">
       <div class="collage">
-        <img src="foto/creatrice1.jpg" alt="" loading="lazy">
-        <img src="foto/creatrice2.jpg" alt="" loading="lazy">
-        <img src="foto/creatrice3.jpg" alt="" loading="lazy">
+        <img src="foto/creatrice1.webp" alt="" loading="lazy">
+        <img src="foto/creatrice2.webp" alt="" loading="lazy">
+        <img src="foto/creatrice3.webp" alt="" loading="lazy">
       </div>
       <div class="invite-text">
         <p><strong>Создатели фестиваля</strong></p>
@@ -196,7 +196,7 @@
 
 
 <section class="film" id="video">
-  <video id="film-video" muted loop playsinline preload="none" poster="video-festival-poster.jpg">
+  <video id="film-video" muted loop playsinline preload="none" poster="video-festival-poster.webp">
     <source src="video-festival.mp4" type="video/mp4">
   </video>
 </section>
@@ -214,7 +214,7 @@
 
 <section class="zones" id="zony">
   <div class="zones-photo">
-    <img src="foto/sala.jpg" alt="" loading="lazy">
+    <img src="foto/sala.webp" alt="" loading="lazy">
     <ul class="zones-list">
       <li>-Главная сцена</li>
       <li>-Игровые зоны</li>
