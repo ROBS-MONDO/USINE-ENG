@@ -6,7 +6,7 @@
 <title>STAR HOUR Luxembourg</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap&subset=cyrillic" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Lora:wght@400;700&display=swap&subset=cyrillic" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -21,19 +21,18 @@
     transform: rotate(45deg); animation: bounce 1.8s infinite; }
   @keyframes bounce { 0%,100% { transform: translateY(0) rotate(45deg); opacity: .6; } 50% { transform: translateY(10px) rotate(45deg); opacity: 1; } }
 
-  /* Pagina 2: sfondo purple */
-  .about { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;
-    padding: 80px 24px; background: #d5a3c2; }
-  .about-inner { width: 100%; }
-  .about p, .about .tagline { max-width: 880px; }
-  .about h1 { margin: 0 0 24px; font-size: 1.65vw; white-space: nowrap; font-weight: 700; line-height: 1.25; letter-spacing: .02em; text-transform: uppercase; }
-  @media (max-width: 900px) { .about h1 { font-size: clamp(1.4rem, 5vw, 2rem); white-space: normal; } }
-  .about .tagline { margin: 0 auto 36px; font-size: clamp(1.1rem, 2.4vw, 1.6rem); font-weight: 600; letter-spacing: .08em; color: #4a1d3d; }
-  .about p { margin: 0 auto 22px; font-size: clamp(1rem, 1.8vw, 1.3rem); font-weight: 300; line-height: 1.7; }
-  .btn { display: inline-block; margin-top: 24px; padding: 18px 40px; border: 2px solid #4a1d3d; border-radius: 999px;
-    background: #4a1d3d; color: #fff; font: 700 1rem/1.2 "Montserrat", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; text-decoration: none;
-    transition: background .2s, color .2s, transform .2s; }
-  .btn:hover, .btn:focus-visible { background: transparent; color: #4a1d3d; transform: translateY(-2px); }
+  /* Pagina 2: sfondo bordeaux con dettagli oro */
+  .about { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 80px 24px;
+    background: linear-gradient(135deg, #2b0d1d 0%, #341023 100%); color: #efe3e6; }
+  .about-inner { width: 100%; max-width: 880px; }
+  .about h1 { margin: 0 0 24px; padding-bottom: 22px; border-bottom: 1px solid #d2a864; font-family: "Lora", Georgia, "Times New Roman", serif;
+    font-size: clamp(1.5rem, 3.4vw, 2.4rem); font-weight: 400; line-height: 1.25; color: #fff; }
+  .about .tagline { margin: 0 0 22px; font-family: "Lora", Georgia, "Times New Roman", serif; font-size: clamp(1.15rem, 2.4vw, 1.6rem); font-weight: 700; color: #d2a864; }
+  .about p { margin: 0 0 14px; font-size: clamp(1rem, 1.6vw, 1.15rem); font-weight: 400; line-height: 1.6; }
+  .btn { display: block; margin-top: 44px; padding: 18px 24px; border: 2px solid #d2a864; border-radius: 6px; text-align: center;
+    background: #d2a864; color: #2b0d1d; font: 700 1rem/1.2 "Montserrat", Arial, sans-serif; letter-spacing: .04em; text-transform: uppercase; text-decoration: none;
+    transition: background .2s, color .2s; }
+  .btn:hover, .btn:focus-visible { background: transparent; color: #d2a864; }
 </style>
 </head>
 <body>
