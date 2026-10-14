@@ -153,6 +153,17 @@
     .btn { padding: 16px 14px; font-size: .9rem; letter-spacing: .02em; }
     .info, .invite, .tema, .formats { padding-left: 20px; padding-right: 20px; }
   }
+
+  /* Pagina 12: vantaggi per gli esperti (stile pagina creatori) */
+  .benefits .benefits-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 48px; }
+  .benefits .benefits-photos figure { margin: 0; }
+  .benefits .benefits-photos img { display: block; width: 100%; height: auto; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 6px; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
+  .benefits .invite-text { max-width: 900px; }
+  .benefits .invite-text ul { margin: 0 0 1.6em; padding: 0; list-style: none; }
+  .benefits .invite-text li { position: relative; margin: 0 0 1em; padding-left: 1.3em; }
+  .benefits .invite-text li::before { content: "\2022"; position: absolute; left: 0; color: #d2a864; }
+  .benefits .invite-text li strong { display: block; }
+  @media (max-width: 900px) { .benefits .benefits-photos { grid-template-columns: 1fr; gap: 14px; margin-bottom: 32px; } }
 </style>
 </head>
 <body>
@@ -310,6 +321,31 @@
       <figure><img src="foto/tema1.webp" alt="" loading="lazy"></figure>
       <figure><img src="foto/tema2.webp" alt="" loading="lazy"></figure>
       <figure><img src="foto/tema3.webp" alt="" loading="lazy"></figure>
+    </div>
+    <a class="btn" href="#formaty">Стать тренером<span class="arrow" aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<section class="invite benefits" id="vantaggi">
+  <div class="invite-inner">
+    <div class="benefits-photos">
+      <figure><img src="foto/vantaggi1.webp" alt="" loading="lazy"></figure>
+      <figure><img src="foto/vantaggi2.webp" alt="" loading="lazy"></figure>
+      <figure><img src="foto/vantaggi3.webp" alt="" loading="lazy"></figure>
+    </div>
+    <div class="invite-text">
+        <p><strong>Что получает эксперт</strong></p>
+        <p><strong>НЕ ПРОСТО ВЫСТУПЛЕНИЕ. ВОЗМОЖНОСТЬ БЫТЬ УСЛЫШАННЫМ.</strong></p>
+        <p>Участие в «Звёздном часе» — это возможность представить свою работу новой аудитории, поделиться опытом и стать частью сообщества людей, заинтересованных в личностном росте, осознанности и сотрудничестве.</p>
+        <p><strong>Преимущества / Benefits</strong></p>
+        <ul>
+          <li><strong>Профессиональная видимость / Professional Visibility</strong>Возможность выступить, рассказать о своём подходе и представить авторский проект.</li>
+          <li><strong>Новые знакомства / New Connections</strong>Общение с участниками, коллегами и потенциальными партнёрами.</li>
+          <li><strong>Личный бренд / Personal Brand</strong>Возможность яснее представить свою экспертизу и ценность своей работы.</li>
+          <li><strong>Контент / Content Opportunities</strong>Фото- и видеоматериалы с фестиваля — в зависимости от выбранного формата участия и условий съёмки.</li>
+          <li><strong>Профессиональное окружение / Professional Community</strong>Возможность обмениваться идеями, обсуждать сотрудничество и продолжать общение после события.</li>
+        </ul>
+        <p>Конкретный набор преимуществ зависит от формата участия. Мы заранее согласуем условия, время выступления, возможности продвижения и доступные ресурсы.</p>
     </div>
     <a class="btn" href="#formaty">Стать тренером<span class="arrow" aria-hidden="true">→</span></a>
   </div>
