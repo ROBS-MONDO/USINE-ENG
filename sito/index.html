@@ -218,6 +218,7 @@
   .tier-inner { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
   .tier h2 { margin: 0 0 18px; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.4rem, 2.5vw, 2.3rem); line-height: 1.1; text-transform: uppercase; color: var(--title); }
   .tier h2.mixed { text-transform: none; }
+  .tier h2 .en { display: block; margin-top: 8px; font-family: "Montserrat", Arial, sans-serif; font-weight: 600; font-size: .5em; letter-spacing: .02em; text-transform: none; }
   .tier .price { margin: 0 0 36px; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1rem, 1.4vw, 1.3rem); text-transform: uppercase; color: var(--title); }
   .tier .tier-btn { display: inline-block; padding: 14px 34px; border: 2px solid #d2a864; border-radius: 6px; background: #d2a864; color: #2b0d1d; font: 700 .9rem/1.2 "Montserrat", Arial, sans-serif; letter-spacing: .04em; text-transform: uppercase; text-decoration: none; transition: background .2s, color .2s; }
   .tier .tier-btn:hover, .tier .tier-btn:focus-visible { background: transparent; color: #2b0d1d; }
@@ -245,7 +246,7 @@
   .team h2 { color: #d2a864; }
   .team-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 225px)); gap: 48px 25px; justify-content: start; }
   .member { margin: 0; }
-  .member .ph { display: block; width: 100%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; background: radial-gradient(circle at 50% 38%, #e9deff 0 22%, transparent 23%), radial-gradient(ellipse at 50% 105%, #e9deff 0 42%, transparent 43%), #f1e8fe; }
+  .member .ph { display: block; width: 100%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; background: radial-gradient(circle at 50% 38%, #f6efff 0 22%, transparent 23%), radial-gradient(ellipse at 50% 105%, #f6efff 0 42%, transparent 43%), #fff; }
   .member .nm { margin: 18px 0 4px; font-weight: 700; font-size: .95rem; }
   .member .role { margin: 0; font-size: .8rem; color: #7a6a75; }
   @media (max-width: 900px) { .intro { padding: 40px 20px; } .intro-head { grid-template-columns: 1fr; gap: 20px; } .intro .btn { margin-top: 28px; } .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 16px; } }
@@ -503,17 +504,17 @@
 <section class="tier on-lilac" id="spiker">
   <div class="tier-inner">
     <div>
-      <h2>СПИКЕР ГЛАВНОЙ СЦЕНЫ</h2>
-      <p class="price">€4000</p>
+      <h2>Спикер главной сцены<span class="en">Main Stage Speaker</span></h2>
+      <p class="price">Стоимость: 1500 евро</p>
       <a class="tier-btn" href="#otbor">Подать заявку</a>
     </div>
     <div class="tier-cards">
-        <div class="tier-card"><p>Стратегический уровень участия. Формат для экспертов, которые готовы занять позицию лидера и заявить о себе на всю аудиторию фестиваля. Всего 4 места</p></div>
-        <div class="tier-card"><p>Вы получаете:<br>-Выступление на главной сцене<br>-Представление ведущим как ключевого эксперта</p></div>
-        <div class="tier-card"><p>-Возможность презентации своего продукта / оффера со сцены<br>-Приоритетное размещение в программе</p></div>
-        <div class="tier-card"><p>-Медийное сопровождение:</p><ul><li>5 профессиональных рилсов</li><li>Видео-фрагменты выступления</li><li>Интервью с вами</li><li>Прогревочный эфир до конференции</li><li>Пост до и после мероприятия</li><li>Отдельный акцент в сторис</li><li>Персональная съемка с дрона</li></ul></div>
-        <div class="tier-card"><p>-Позиционирование:</p><ul><li>Статус «Спикер главной сцены»</li><li>Доступ к партнёрским интеграциям</li><li>Коллаборационные эфиры</li></ul></div>
-        <div class="tier-card"><p>-2 билета для вашей команды / ассистентов<br>-Мы готовим с вами ваше выступление и воронку для продаж ваших услуг</p></div>
+        <div class="tier-card"><p>Для экспертов, которые хотят поделиться своей ключевой идеей с широкой аудиторией фестиваля, представить авторский подход и занять заметное место в программе.</p></div>
+        <div class="tier-card"><p>Вы получаете:  выступление на главной сцене, представление эксперта ведущим, размещение в программе, согласованный пакет фото- и видеоматериалов и участие в продвижении фестиваля.</p></div>
+        <div class="tier-card"><p>Возможность презентации своего продукта / оффера со сцены<br>Приоритетное размещение в программе</p></div>
+        <div class="tier-card"><p>-Медийное сопровождение:</p><ul><li>5 профессиональных рилсов</li><li>Видео-фрагменты выступления</li><li>Интервью с вами</li><li>Прогревочный эфир до конференции</li><li>Пост до и после мероприятия</li><li>Отдельный акцент в сторис</li></ul></div>
+        <div class="tier-card"><p>Позиционирование:<br>Статус «Спикер главной сцены»<br>Доступ к партнёрским интеграциям<br>Коллаборационные эфиры</p></div>
+        <div class="tier-card"><p>2 билета для вашей команды / ассистентов<br>Мы готовим с вами ваше выступление и воронку для продаж ваших услуг</p></div>
     </div>
   </div>
 </section>
@@ -521,17 +522,16 @@
 <section class="tier on-white" id="vip">
   <div class="tier-inner">
     <div>
-      <h2 class="mixed">VIP (первая линейка)</h2>
-      <p class="price">€600 - ОСТАЛОСЬ 2 МЕСТА!</p>
+      <h2>VIP-участие<span class="en">VIP Participation</span></h2>
+      <p class="price">Стоимость: 450 евро</p>
       <a class="tier-btn" href="#otbor">Подать заявку</a>
     </div>
     <div class="tier-cards">
-        <div class="tier-card"><p>Для экспертов, которые хотят максимальную видимость, статус и продажи</p></div>
-        <div class="tier-card"><p>Вы получаете:<br>-Проведение своего мастер-класса, трансформационной игры или практики в первой линейке фестиваля 1 час</p></div>
-        <div class="tier-card"><p>-Выступление в первой линейке тренеров 1 час<br>-Возможность продажи своих услуг и материалов</p></div>
-        <div class="tier-card"><p>-Активное продвижение эксперта на площадках фестиваля:</p><ul><li>пост до фестиваля</li><li>серия сторис</li><li>рилс после фестиваля</li></ul></div>
-        <div class="tier-card"><p>-Нетворкинг и участие в Telegram-канале<br>-Один билет для ассистента</p></div>
-        <div class="tier-card"><p>-Чат тренеров и поддержка команды.<br>-Подготовка к участию, материалы, закрытые созвоны, доступ к ИИ — ассистентам, коллаборациям и эфирам</p></div>
+        <div class="tier-card"><p>Для специалистов, которые хотят провести собственную трансформационную игру, мастер-класс или практику, получить максимальную  видимость и активнее взаимодействовать с участниками.</p></div>
+        <div class="tier-card"><p>Вы получаете:<br>Проведение своего мастер-класса, трансформационной игры или практики в первой линейке фестиваля 1 час</p></div>
+        <div class="tier-card"><p>Выступление в первой линейке тренеров 1 час<br>Возможность продажи своих услуг и материалов</p></div>
+        <div class="tier-card"><p>Активное продвижение эксперта на площадках фестиваля:</p><ul><li>пост до фестиваля</li><li>серия сторис</li><li>рилс после фестиваля</li></ul></div>
+        <div class="tier-card"><p>Нетворкинг и участие в Telegram-канале<br>-Один билет для ассистента</p></div>
     </div>
   </div>
 </section>
@@ -539,97 +539,80 @@
 <section class="tier on-lilac" id="standard2">
   <div class="tier-inner">
     <div>
-      <h2 class="mixed">STANDARD (вторая линейка)</h2>
-      <p class="price">€400</p>
+      <h2>Стандартное участие<span class="en">Standard Participation</span></h2>
+      <p class="price">Стоимость: 300 евро</p>
       <a class="tier-btn" href="#otbor">Подать заявку</a>
     </div>
     <div class="tier-cards">
-        <div class="tier-card"><p>Вы получаете:<br>-Проведение мастер-класса, игры или практики во второй линейке (1 час)<br>-Промо в соцсетях фестиваля: пост, рилс и сторис</p></div>
-        <div class="tier-card"><p>-Нетворкинг и участие в Telegram-канале<br>-Один билет для ассистента</p></div>
-        <div class="tier-card"><p>-Подготовка с организаторами<br>-Чат тренеров и поддержка команды</p></div>
-        <div class="tier-card"><p>-вспомогательные материалы, закрытые созвоны, доступ к ИИ — ассистентам, коллаборациям и эфирам</p></div>
+        <div class="tier-card"><p>Формат для экспертов, которые хотят представить свою практику или авторскую методику в рамках тематической программы фестиваля и познакомиться с новой аудиторией.</p></div>
+        <div class="tier-card"><p>Вы получаете:<br>-Проведение мастер-класса, игры или практики во второй линейке  (1 час)<br>-Промо в соцсетях фестиваля: пост, рилс и сторис</p></div>
+        <div class="tier-card"><p>-Нетворкинг и участие в Telegram-канале<br>-Один билет для ассистента</p></div>
+        <div class="tier-card"><p>-Подготовка с организаторами<br>-Чат тренеров и поддержка команды</p></div>
+        <div class="tier-card"><p>-вспомогательные материалы, закрытые созвоны, доступ к ИИ — ассистентам, коллаборациям и эфирам</p></div>
     </div>
   </div>
 </section>
 
-<section class="tier on-white" id="standard3">
+<section class="tier on-white" id="express">
   <div class="tier-inner">
     <div>
-      <h2 class="mixed">STANDARD (третья линейка)</h2>
-      <p class="price">€350</p>
+      <h2>Экспресс-консультант<span class="en">Express Consultant</span></h2>
+      <p class="price">Стоимость: 300 евро</p>
       <a class="tier-btn" href="#otbor">Подать заявку</a>
     </div>
     <div class="tier-cards">
-        <div class="tier-card"><p>Вы получаете:<br>-Проведение мастер-класса, игры или практики в третьей линейке тренеров (1 час)<br>-Промо в соцсетях фестиваля: пост, рилс и сторис</p></div>
-        <div class="tier-card"><p>-Нетворкинг и участие в Telegram-канале<br>-Один билет для ассистента</p></div>
-        <div class="tier-card"><p>-Подготовка с организаторами<br>-Чат тренеров и поддержка команды</p></div>
-        <div class="tier-card"><p>-вспомогательные материалы, закрытые созвоны, доступ к ИИ — ассистентам, коллаборациям и эфирам.</p></div>
+        <div class="tier-card"><p>Формат для специалистов, которые хотят познакомить гостей со своим подходом через короткие индивидуальные встречи. Продолжительность работы, расписание и условия участия согласовываются заранее.</p></div>
+        <div class="tier-card"><p>Формат для экспертов, которые хотят быстро заявить о себе и получить клиентов в живом контакте.</p></div>
+        <div class="tier-card"><p>Вы получаете:<br>-Экспертная зона: от 3 часов работы<br>-Дополнительная работа с гостями в течение фестиваля</p></div>
+        <div class="tier-card"><p>-Представление в соцсетях: пост + сторис + рилс<br>-Нетворкинг с участниками и экспертами</p></div>
+        <div class="tier-card"><p>-Один билет для ассистента<br>-Доступ в закрытый Telegram-канал для тренеров</p></div>
+        <div class="tier-card"><p>-вспомогательные материалы, закрытые созвоны, доступ к ИИ — ассистентам, коллаборациям и эфирам</p></div>
     </div>
   </div>
 </section>
 
-<section class="tier on-lilac" id="express">
+<section class="tier on-lilac" id="hochu-vse">
   <div class="tier-inner">
     <div>
-      <h2>ЭКСПРЕСС-КОНСУЛЬТАНТ</h2>
-      <p class="price">€350</p>
-      <a class="tier-btn" href="#otbor">Подать заявку</a>
+      <h2>Комплексный пакет<span class="en">All-Inclusive Participation</span></h2>
+      <a class="tier-btn" href="#otbor">Обсудить формат участия</a>
     </div>
     <div class="tier-cards">
-        <div class="tier-card"><p>Формат для экспертов, которые хотят быстро заявить о себе и получить клиентов в живом контакте.</p></div>
-        <div class="tier-card"><p>Вы получаете:<br>-Экспертная зона: от 3 часов работы<br>-Дополнительная работа с гостями в течение фестиваля</p></div>
-        <div class="tier-card"><p>-Представление в соцсетях: пост + сторис + рилс<br>-Нетворкинг с участниками и экспертами</p></div>
-        <div class="tier-card"><p>-Один билет для ассистента<br>-Доступ в закрытый Telegram-канал для тренеров</p></div>
-        <div class="tier-card"><p>-вспомогательные материалы, закрытые созвоны, доступ к ИИ — ассистентам, коллаборациям и эфирам</p></div>
+        <div class="tier-card"><p>Расширенный формат для экспертов, которые хотят объединить выступление, проведение практики и дополнительные возможности представления своего проекта. Индивидуальный состав пакета формируется с учётом задач участника и возможностей фестиваля.</p></div>
     </div>
   </div>
 </section>
 
-<section class="tier on-white" id="hochu-vse">
-  <div class="tier-inner">
-    <div>
-      <h2>ХОЧУ ВСЕ</h2>
-      <p class="price">€4500</p>
-      <a class="tier-btn" href="#otbor">Подать заявку</a>
-    </div>
-    <div class="tier-cards">
-        <div class="tier-card"><p>Максимальный пакет участия для тех, кто хочет выйти в масштаб и занять позицию лидера пространства.</p></div>
-        <div class="tier-card"><p>Вы получаете:<br>-Спикерский блок<br>-Первая линейка для проведения мастер-класса/практики</p></div>
-        <div class="tier-card"><p>-Формат экспресс-консультанта<br>-Индивидуальная сборка вашего формата</p></div>
-        <div class="tier-card"><p>-Усиленное продвижение<br>-Персональная стратегия позиционирования на фестивале</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="intro on-lilac" id="partner">
+<section class="intro on-white" id="partner">
   <div class="intro-inner">
     <div class="intro-head">
-      <h2>ИНФОРМАЦИОННОЕ ПАРТНЕРСТВО</h2>
+      <h2>Информационные и организационные партнёры</h2>
       <div class="intro-text">
-        <p><strong>Хочешь стать частью масштабного международного фестиваля и зарабатывать на привлечении участников и тренеров?</strong></p>
-        <p>Хочешь почувствовать себя в роли организатора такого масштабного фестиваля? Присоединяйся к команде.</p>
+        <p>СТАНЬ ЧАСТЬЮ СОБЫТИЯ, КОТОРОЕ ОБЪЕДИНЯЕТ ЛЮДЕЙ.</p>
+        <p>Мы открыты к сотрудничеству с культурными площадками, сообществами, медиа, брендами и организациями, которым близки ценности личностного роста, человеческого потенциала, культуры и международного взаимодействия.</p>
+        <p>Партнёрство может включать информационную поддержку, представление бренда на фестивале, участие в тематических зонах или совместные инициативы. Формат сотрудничества обсуждается индивидуально.</p>
       </div>
     </div>
-    <a class="btn" href="#otbor">Присоединится к команде<span class="arrow" aria-hidden="true">→</span></a>
+    <a class="btn" href="#otbor">Стать партнёром<span class="arrow" aria-hidden="true">→</span></a>
   </div>
 </section>
 
-<section class="intro on-white" id="market">
+<section class="intro on-lilac" id="market">
   <div class="intro-inner">
     <div class="intro-head">
-      <h2>МАРКЕТ-ЗОНА ФЕСТИВАЛЯ «ЗВЁЗДНЫЙ ЧАС»</h2>
+      <h2>Маркет-зона</h2>
       <div class="intro-text">
-        <p><strong>Это не просто маркет.<br>Это пространство, где бренды находят своих людей.</strong></p>
-        <p>Здесь покупают не “товары” —<br>здесь чувствуют, выбирают, влюбляются.</p>
-        <p>Маркет-зона «Звёздный час» — это место, где:<br>— рождаются коллаборации<br>— происходят знакомства, которые перерастают в клиентов<br>— ваш бренд становится частью живого комьюнити</p>
-        <p>Если вы создаёте продукт, который несёт ценность, эстетику или трансформацию — вам сюда.</p>
+        <p>МЕСТО, ГДЕ ИДЕИ ПРИОБРЕТАЮТ ФОРМУ.</p>
+        <p>Маркет-зона «Звёздного часа» — это пространство для авторских продуктов, творческих решений, wellness-брендов, предметов искусства и проектов, в которых отражаются индивидуальность и осознанный подход к жизни.</p>
+        <p>Мы хотим объединить создателей и аудиторию в живом общении, где можно познакомиться с историей продукта, узнать, кто стоит за брендом, и найти то, что действительно откликается.</p>
+        <p>Если ты создаёшь продукт или развиваешь бренд, который соответствует философии фестиваля, свяжись с командой, чтобы узнать о возможностях участия.</p>
       </div>
     </div>
-    <a class="btn" href="#spiker">Посмотреть тарифы<span class="arrow" aria-hidden="true">→</span></a>
+    <a class="btn" href="#otbor">Узнать условия участия<span class="arrow" aria-hidden="true">→</span></a>
   </div>
 </section>
 
-<section class="intro on-lilac solo" id="prizyv">
+<section class="intro on-white solo" id="prizyv">
   <div class="intro-inner">
     <div class="intro-head">
       <h2>ЕСЛИ ТЫ ЧУВСТВУЕШЬ, ЧТО ГОТОВА К СЛЕДУЮЩЕМУ УРОВНЮ — НЕ ОТКЛАДЫВАЙ</h2>
@@ -639,7 +622,7 @@
   </div>
 </section>
 
-<section class="intro on-white team" id="komanda">
+<section class="intro on-lilac team" id="komanda">
   <div class="intro-inner">
     <div class="intro-head">
       <h2>КОМАНДА «ЗВЁЗДНЫЙ ЧАС»</h2>
