@@ -264,6 +264,20 @@
   /* Ultima pagina: barra con il nome del sito */
   .site-footer { display: flex; align-items: center; justify-content: center; min-height: 70px; padding: 20px 24px; background: linear-gradient(135deg, #2b0d1d 0%, #341023 100%); color: #efe3e6; font-family: "Montserrat", Arial, sans-serif; font-size: .95rem; letter-spacing: .12em; text-align: center; }
   .site-footer a { color: inherit; text-decoration: none; }
+
+  /* Pagina: geografia degli eventi + mappa */
+  .geo { background: linear-gradient(135deg, #2b0d1d 0%, #341023 100%); color: #efe3e6; padding: 80px 24px; }
+  .geo-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.3fr; gap: 56px; align-items: center; }
+  .geo h2 { margin: 0 0 36px; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 2.4rem); line-height: 1.15; text-transform: uppercase; color: #d2a864; }
+  .geo-list { margin: 0; padding: 0; list-style: none; font-size: clamp(1.05rem, 1.5vw, 1.35rem); }
+  .geo-list li { padding: 12px 0 12px 28px; position: relative; border-bottom: 1px solid rgba(210, 168, 100, .25); }
+  .geo-list li::before { content: ""; position: absolute; left: 4px; top: 50%; width: 9px; height: 9px; margin-top: -4.5px; border-radius: 50%; background: rgba(239, 227, 230, .55); }
+  .geo-list li.next { margin-top: 26px; padding-top: 18px; border-bottom: 0; color: #d2a864; font-weight: 700; font-size: 1.15em; }
+  .geo-list li.next::before { background: #d2a864; box-shadow: 0 0 0 5px rgba(210, 168, 100, .25); }
+  .geo-map { position: relative; border-radius: 6px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); background: #1f0a15; aspect-ratio: 4 / 3; }
+  .geo-map iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .geo-link { display: inline-block; margin-top: 14px; color: #d2a864; font-size: .85rem; letter-spacing: .04em; }
+  @media (max-width: 900px) { .geo { padding: 48px 20px; } .geo-inner { grid-template-columns: 1fr; gap: 32px; } .geo h2 { margin-bottom: 24px; } .geo-map { aspect-ratio: 1 / 1; } }
 </style>
 </head>
 <body>
@@ -644,6 +658,28 @@
       <figure><span class="ph" role="img" aria-label=""></span></figure>
       <figure><span class="ph" role="img" aria-label=""></span></figure>
       <figure><span class="ph" role="img" aria-label=""></span></figure>
+  </div>
+</section>
+
+<section class="geo" id="geografiya">
+  <div class="geo-inner">
+    <div>
+      <h2>Локация наших ивентов — география</h2>
+      <ul class="geo-list">
+        <li>Париж</li>
+        <li>Аликанте</li>
+        <li>Марбелья</li>
+        <li>Бенидорм</li>
+        <li>Валенсия</li>
+        <li class="next">И теперь Люксембург</li>
+      </ul>
+    </div>
+    <div>
+      <div class="geo-map">
+        <iframe title="Карта" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.openstreetmap.org/export/embed.html?bbox=-6.5%2C35.8%2C9.5%2C51.2&amp;layer=mapnik&amp;marker=49.6117%2C6.1319"></iframe>
+      </div>
+      <a class="geo-link" href="https://www.openstreetmap.org/?mlat=49.6117&amp;mlon=6.1319#map=6/44.5/1.5" target="_blank" rel="noopener">Открыть карту</a>
+    </div>
   </div>
 </section>
 
