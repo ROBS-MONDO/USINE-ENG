@@ -203,6 +203,13 @@
   .faq summary:focus-visible { outline: 2px solid #d2a864; outline-offset: 2px; }
   .faq details p { margin: 0 0 26px; padding-right: 44px; font-size: clamp(.95rem, 1.15vw, 1.05rem); line-height: 1.65; }
   @media (max-width: 900px) { .faq { padding: 48px 20px; } .faq-inner { grid-template-columns: 1fr; gap: 28px; } }
+
+  /* Pagina 16: striscia di foto (landscape / portrait alternate) */
+  .strip { background: #fff; padding: 10px; }
+  .strip-row { display: flex; gap: 10px; max-width: 1900px; margin: 0 auto; }
+  .strip-row figure { margin: 0; min-width: 0; flex: var(--ar) 1 0; }
+  .strip-row img { display: block; width: 100%; height: auto; }
+  @media (max-width: 900px) { .strip { padding: 8px; } .strip-row { flex-wrap: wrap; gap: 8px; } .strip-row figure { flex: 0 0 100%; } }
 </style>
 </head>
 <body>
@@ -442,6 +449,15 @@
       <details><summary>Можно ли представить свой продукт или бренд?</summary><p>Для авторских продуктов, творческих проектов и брендов будет предусмотрен отдельный формат участия, если он подтверждён организаторами. Условия размещения, продвижения и продажи продукции будут указаны в соответствующем предложении для партнёров.</p></details>
       <details><summary>Как зарегистрироваться?</summary><p>Выбери подходящий билет или формат участия и заполни регистрационную форму. После отправки заявки ты получишь информацию о дальнейших шагах и организационных деталях.</p></details>
     </div>
+  </div>
+</section>
+
+<section class="strip" aria-label="Foto">
+  <div class="strip-row">
+    <figure style="--ar:1.329"><img src="foto/galleria1.webp" alt="" loading="lazy"></figure>
+    <figure class="p" style="--ar:0.752"><img src="foto/galleria2.webp" alt="" loading="lazy"></figure>
+    <figure style="--ar:1.329"><img src="foto/galleria3.webp" alt="" loading="lazy"></figure>
+    <figure class="p" style="--ar:0.752"><img src="foto/galleria4.webp" alt="" loading="lazy"></figure>
   </div>
 </section>
 
