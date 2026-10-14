@@ -98,7 +98,7 @@
   /* Pagina 9: spazi del festival (foto + elenco + bottone) */
   .zones { background: linear-gradient(100deg, #e9deff 0%, #f2e7f0 50%, #fef2db 100%); }
   .zones-photo { position: relative; }
-  .zones-photo > img { display: block; width: 100%; height: auto; }
+  .zones-photo img { display: block; width: 100%; height: auto; }
   .zones-list { position: absolute; left: 50.4%; top: 30.8%; width: 24%; height: 54.6%; box-sizing: border-box; padding: 1.1% 1.2%; background: #fff; color: #2b0d1d;
     display: flex; flex-direction: column; justify-content: space-between; margin: 0; list-style: none; font-size: clamp(.6rem, 1.15vw, 1.15rem); line-height: 1.25; }
   .zones-list li { margin: 0; }
@@ -259,7 +259,7 @@
 
 <section class="zones" id="zony">
   <div class="zones-photo">
-    <img src="foto/sala.webp" alt="" loading="lazy">
+    <picture><source media="(max-width: 900px)" srcset="foto/sala-mobile.webp"><img src="foto/sala.webp" alt="" loading="lazy"></picture>
     <ul class="zones-list">
       <li>-Главная сцена</li>
       <li>-Игровые зоны</li>
