@@ -55,7 +55,7 @@
   .info { min-height: 100vh; display: flex; align-items: center; padding: 80px 24px;
     background: linear-gradient(100deg, #e9deff 0%, #f2e7f0 50%, #fef2db 100%); color: #2b0d1d; }
   .info-grid { width: 100%; max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr); gap: 48px; padding: 0 3%; }
-  .info h2 { margin: 0; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.8rem, 3vw, 2.8rem); line-height: 1.1; text-transform: uppercase; color: #2b0d1d; }
+  .info h2 { margin: 0; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.8rem, 3vw, 2.8rem); line-height: 1.1; text-transform: uppercase; color: #d2a864; }
   .info-text { font-size: clamp(1rem, 1.35vw, 1.3rem); line-height: 1.7; color: #2b0d1d; }
   .info-text p { margin: 0 0 1.6em; }
   .info-text p:last-child { margin-bottom: 0; }
@@ -67,7 +67,7 @@
     background: linear-gradient(135deg, #2b0d1d 0%, #341023 100%); color: #efe3e6; }
   .invite-inner { width: 100%; max-width: 1500px; margin: 0 auto; padding: 0 3%; }
   .invite-grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr); gap: 48px; }
-  .invite h2 { margin: 0; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.8rem, 2.6vw, 2.6rem); line-height: 1.1; text-transform: uppercase; color: #fff; }
+  .invite h2 { margin: 0; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.8rem, 2.6vw, 2.6rem); line-height: 1.1; text-transform: uppercase; color: #d2a864; }
   .invite-text { font-size: clamp(1rem, 1.35vw, 1.3rem); line-height: 1.7; }
   .invite-text p { margin: 0 0 1.6em; }
   .invite-text p:last-child { margin-bottom: 0; }
@@ -112,7 +112,7 @@
   /* Pagina 10: formati di partecipazione per esperti */
   .formats { background: #fff; color: #2b0d1d; padding: 56px 24px 72px; }
   .formats-inner { max-width: 1160px; margin: 0 auto; }
-  .formats h2 { margin: 0 0 28px; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 2.4rem); line-height: 1.15; text-transform: uppercase; color: #2b0d1d; }
+  .formats h2 { margin: 0 0 28px; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 2.4rem); line-height: 1.15; text-transform: uppercase; color: #d2a864; }
   .formats-lead { margin: 0 0 14px; font-size: clamp(1.05rem, 1.5vw, 1.35rem); line-height: 1.5; }
   .formats-intro { max-width: 860px; margin: 0 0 44px; font-size: clamp(1rem, 1.3vw, 1.2rem); line-height: 1.7; }
   .formats-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 52px 40px; }
@@ -130,7 +130,7 @@
   .tema { background: #f1e8fe; color: #0a0000; padding: 56px 24px 64px; }
   .tema-inner { max-width: 1160px; margin: 0 auto; }
   .tema-head { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-bottom: 48px; }
-  .tema h2 { margin: 0; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.5rem, 2.8vw, 2.6rem); line-height: 1.1; text-transform: uppercase; color: #0a0000; }
+  .tema h2 { margin: 0; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.5rem, 2.8vw, 2.6rem); line-height: 1.1; text-transform: uppercase; color: #d2a864; }
   .tema-text { margin: 0; font-size: clamp(1rem, 1.3vw, 1.2rem); line-height: 1.6; }
   .tema-text strong { font-weight: 700; }
   .tema-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: center; }
@@ -250,6 +250,16 @@
   .member .nm { margin: 18px 0 4px; font-weight: 700; font-size: .95rem; }
   .member .role { margin: 0; font-size: .8rem; color: #7a6a75; }
   @media (max-width: 900px) { .intro { padding: 40px 20px; } .intro-head { grid-template-columns: 1fr; gap: 20px; } .intro .btn { margin-top: 28px; } .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 16px; } }
+
+  /* Pagina: отзывы (titolo + fila di 5 foto verticali) */
+  .reviews { background: #fff; }
+  .reviews-head { background: #f1e8fe; padding: 44px 24px 36px; }
+  .reviews-head h2 { max-width: 1160px; margin: 0 auto; padding: 0 3%; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 2.4rem); line-height: 1.1; text-transform: uppercase; color: #d2a864; }
+  .reviews-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; padding: 0; margin: 0; }
+  .reviews-row figure { margin: 0; min-width: 0; }
+  .reviews-row img, .reviews-row .ph { display: block; width: 100%; aspect-ratio: 2 / 3; object-fit: cover; }
+  .reviews-row .ph { background: radial-gradient(circle at 50% 36%, #f6efff 0 14%, transparent 15%), radial-gradient(ellipse at 50% 102%, #f6efff 0 34%, transparent 35%), #e9deff; }
+  @media (max-width: 900px) { .reviews-head { padding: 32px 20px 24px; } .reviews-head h2 { padding: 0; } .reviews-row { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
 </style>
 </head>
 <body>
@@ -619,6 +629,17 @@
     </div>
     <p class="sub">«Звёздный час» — это фестиваль, на котором тебя видят</p>
     <a class="btn" href="#otbor">Подать заявку и занять свое место<span class="arrow" aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<section class="reviews" id="otzyvy">
+  <div class="reviews-head"><h2>Отзывы</h2></div>
+  <div class="reviews-row">
+      <figure><span class="ph" role="img" aria-label=""></span></figure>
+      <figure><span class="ph" role="img" aria-label=""></span></figure>
+      <figure><span class="ph" role="img" aria-label=""></span></figure>
+      <figure><span class="ph" role="img" aria-label=""></span></figure>
+      <figure><span class="ph" role="img" aria-label=""></span></figure>
   </div>
 </section>
 
