@@ -165,11 +165,21 @@
   .benefits .invite-text li strong { display: block; }
   @media (max-width: 900px) { .benefits .benefits-photos { grid-template-columns: 1fr; gap: 14px; margin-bottom: 32px; } }
 
-  /* Pagina 13: selezione esperti (copia della pagina vantaggi con 8 foto) */
-  .benefits .benefits-photos.photos8 { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
-  .benefits .benefits-photos.photos8 figure { flex: 0 0 calc((100% - 60px) / 4); min-width: 0; }
-  .benefits .benefits-photos.photos8 img { aspect-ratio: 3 / 4; }
-  @media (max-width: 900px) { .benefits .benefits-photos.photos8 { gap: 10px; } .benefits .benefits-photos.photos8 figure { flex-basis: calc((100% - 10px) / 2); } }
+  /* Pagina 13: selezione esperti (testo centrato sopra, 8 foto nei formati originali, bottone in fondo) */
+  #otbor .invite-text { max-width: 900px; margin: 0 auto 48px; text-align: center; }
+  #otbor .benefits-photos.photos8 { display: flex; flex-wrap: wrap; gap: 20px; margin: 0 0 48px; }
+  #otbor .photos8 figure { margin: 0; min-width: 0; }
+  #otbor .photos8 img { display: block; width: 100%; height: auto; aspect-ratio: auto; object-fit: cover; border-radius: 6px; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
+  #otbor .photos8 .r1 { flex: 0 0 100%; display: flex; gap: 20px; }
+  #otbor .photos8 .r1 figure { flex: var(--ar) 1 0; }
+  @media (max-width: 900px) {
+    #otbor .benefits-photos.photos8 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 32px; }
+    #otbor .photos8 .r1 { display: contents; }
+    #otbor .photos8 figure { order: var(--o); }
+    #otbor .photos8 figure.l, #otbor .photos8 figure.w { grid-column: 1 / -1; }
+    #otbor .photos8 figure:not(.l):not(.w) img { height: 260px; }
+    #otbor .invite-text { margin-bottom: 32px; }
+  }
 </style>
 </head>
 <body>
@@ -358,22 +368,26 @@
 
 <section class="invite benefits" id="otbor">
   <div class="invite-inner">
-    <div class="benefits-photos photos8">
-      <figure><img src="foto/selezione1.webp" alt="" loading="lazy"></figure>
-      <figure><img src="foto/selezione2.webp" alt="" loading="lazy"></figure>
-      <figure><img src="foto/selezione3.webp" alt="" loading="lazy"></figure>
-      <figure><img src="foto/selezione4.webp" alt="" loading="lazy"></figure>
-      <figure><img src="foto/selezione5.webp" alt="" loading="lazy"></figure>
-      <figure><img src="foto/selezione8.webp" alt="" loading="lazy"></figure>
-      <figure><img src="foto/selezione6.webp" alt="" loading="lazy"></figure>
-      <figure><img src="foto/selezione7.webp" alt="" loading="lazy"></figure>
-    </div>
     <div class="invite-text">
         <p><strong>Отбор экспертов</strong></p>
         <p>МЫ СОБИРАЕМ ПРОГРАММУ, В КОТОРОЙ КАЖДЫЙ ГОЛОС ИМЕЕТ ЗНАЧЕНИЕ.</p>
         <p>Мы стремимся создать разнообразную и содержательную программу, объединяющую разные подходы к личностному и духовному росту. Нам важно, чтобы темы участников соответствовали философии фестиваля и дополняли друг друга.</p>
         <p>После подачи заявки команда свяжется с тобой, обсудит тему, предложит подходящий формат и расскажет о следующих этапах подготовки.</p>
         <p>Количество мест и выступлений ограничено возможностями площадки и программой фестиваля. Отправь заявку, чтобы обсудить участие.</p>
+    </div>
+    <div class="benefits-photos photos8">
+      <div class="r1">
+        <figure class="l" style="--ar:1.778;--o:1"><img src="foto/selezione1.webp" alt="" loading="lazy"></figure>
+        <figure style="--ar:0.562;--o:2"><img src="foto/selezione2.webp" alt="" loading="lazy"></figure>
+        <figure class="l" style="--ar:1.778;--o:4"><img src="foto/selezione3.webp" alt="" loading="lazy"></figure>
+        <figure style="--ar:0.5625;--o:3"><img src="foto/selezione4.webp" alt="" loading="lazy"></figure>
+      </div>
+      <div class="r1">
+        <figure class="l" style="--ar:1.778;--o:7"><img src="foto/selezione5.webp" alt="" loading="lazy"></figure>
+        <figure style="--ar:0.666;--o:5"><img src="foto/selezione6.webp" alt="" loading="lazy"></figure>
+        <figure style="--ar:0.8;--o:6"><img src="foto/selezione7.webp" alt="" loading="lazy"></figure>
+        <figure class="w" style="--ar:0.8;--o:8"><img src="foto/selezione8.webp" alt="" loading="lazy"></figure>
+      </div>
     </div>
     <a class="btn" href="#formaty">Подать заявку<span class="arrow" aria-hidden="true">→</span></a>
   </div>
