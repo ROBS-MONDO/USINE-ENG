@@ -189,6 +189,20 @@
   .stats-grid li { padding: 22px 8px; border-bottom: 1px solid rgba(43, 13, 29, .25); text-align: center; font-size: clamp(1rem, 1.3vw, 1.25rem); }
   @media (max-width: 900px) { .stats { padding: 40px 20px 48px; } .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 20px; } .stats h2 { margin-bottom: 28px; } }
   @media (max-width: 520px) { .stats-grid { grid-template-columns: 1fr; gap: 6px; } }
+
+  /* Pagina 15: domande frequenti (fisarmonica) */
+  .faq { background: #fff; color: #2b0d1d; padding: 90px 24px; }
+  .faq-inner { max-width: 1090px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
+  .faq h2 { margin: 0; padding-top: 4px; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.4rem, 2.8vw, 2.6rem); line-height: 1.1; text-transform: uppercase; color: #d2a864; }
+  .faq-list { border-top: 1px solid #ddd; }
+  .faq details { border-bottom: 1px solid #ddd; }
+  .faq summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 26px 0; cursor: pointer; list-style: none; font-weight: 700; font-size: clamp(.95rem, 1.2vw, 1.1rem); line-height: 1.35; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; flex: 0 0 auto; font-size: 2rem; font-weight: 300; line-height: 1; transition: transform .2s; }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq summary:focus-visible { outline: 2px solid #d2a864; outline-offset: 2px; }
+  .faq details p { margin: 0 0 26px; padding-right: 44px; font-size: clamp(.95rem, 1.15vw, 1.05rem); line-height: 1.65; }
+  @media (max-width: 900px) { .faq { padding: 48px 20px; } .faq-inner { grid-template-columns: 1fr; gap: 28px; } }
 </style>
 </head>
 <body>
@@ -414,6 +428,20 @@
       <li>15+ стран</li>
       <li>12000+ касаний в соцсетях</li>
     </ul>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <div class="faq-inner">
+    <h2>Часто задаваемые вопросы</h2>
+    <div class="faq-list">
+      <details><summary>Кому подойдёт фестиваль?</summary><p>Фестиваль подойдёт людям, которые интересуются самопознанием, личностным и духовным ростом, психологией, осознанностью, творчеством и новыми формами взаимодействия. Программа объединяет практики и встречи для участников с разным жизненным и профессиональным опытом.</p></details>
+      <details><summary>Нужно ли иметь опыт в практиках личностного роста?</summary><p>Нет, если конкретная сессия не предусматривает специальных требований. Ты можешь прийти с интересом к теме, личным вопросом или желанием познакомиться с новыми подходами. Описание каждой практики поможет выбрать подходящий формат.</p></details>
+      <details><summary>Что я получу от участия?</summary><p>Ты сможешь познакомиться с разными практиками, услышать экспертов, пообщаться с участниками и уделить время собственному развитию. Опыт каждого будет индивидуальным: многое зависит от выбранных сессий, твоих интересов и того, с чем ты приходишь на фестиваль.</p></details>
+      <details><summary>Можно ли стать экспертом фестиваля?</summary><p>Да. Мы рассматриваем заявки от специалистов, чьи темы соответствуют философии «Звёздного часа». Расскажи о своей экспертизе, предложи тему и укажи предпочтительный формат участия.</p></details>
+      <details><summary>Можно ли представить свой продукт или бренд?</summary><p>Для авторских продуктов, творческих проектов и брендов будет предусмотрен отдельный формат участия, если он подтверждён организаторами. Условия размещения, продвижения и продажи продукции будут указаны в соответствующем предложении для партнёров.</p></details>
+      <details><summary>Как зарегистрироваться?</summary><p>Выбери подходящий билет или формат участия и заполни регистрационную форму. После отправки заявки ты получишь информацию о дальнейших шагах и организационных деталях.</p></details>
+    </div>
   </div>
 </section>
 
