@@ -263,11 +263,11 @@
   .reviews { background: #fff; }
   .reviews-head { background: #f1e8fe; padding: 44px 24px 36px; }
   .reviews-head h2 { max-width: 1160px; margin: 0 auto; padding: 0 3%; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 2.4rem); line-height: 1.1; text-transform: uppercase; color: #d2a864; }
-  .reviews-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; padding: 0; margin: 0; }
-  .reviews-row figure { margin: 0; min-width: 0; }
-  .reviews-row img, .reviews-row .ph { display: block; width: 100%; aspect-ratio: 2 / 3; object-fit: cover; }
+  .reviews-row { column-count: 4; column-gap: 14px; padding: 14px; }
+  .reviews-row a { display: block; margin: 0 0 14px; break-inside: avoid; }
+  .reviews-row img { display: block; width: 100%; height: auto; border-radius: 6px; box-shadow: 0 4px 14px rgba(0, 0, 0, .15); }
   .reviews-row .ph { background: radial-gradient(circle at 50% 36%, #f6efff 0 14%, transparent 15%), radial-gradient(ellipse at 50% 102%, #f6efff 0 34%, transparent 35%), #e9deff; }
-  @media (max-width: 900px) { .reviews-head { padding: 32px 20px 24px; } .reviews-head h2 { padding: 0; } .reviews-row { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+  @media (max-width: 900px) { .reviews-head { padding: 32px 20px 24px; } .reviews-head h2 { padding: 0; } .reviews-row { column-count: 2; column-gap: 10px; padding: 10px; } .reviews-row a { margin-bottom: 10px; } }
 
   /* Ultima pagina: barra con il nome del sito */
   .site-footer { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px 24px; min-height: 70px; padding: 20px 5%; background: linear-gradient(135deg, #2b0d1d 0%, #341023 100%); color: #efe3e6; font-family: "Montserrat", Arial, sans-serif; font-size: .95rem; letter-spacing: .12em; }
@@ -750,11 +750,17 @@
 <section class="reviews" id="otzyvy">
   <div class="reviews-head"><h2>Отзывы</h2></div>
   <div class="reviews-row">
-      <figure><span class="ph" role="img" aria-label=""></span></figure>
-      <figure><span class="ph" role="img" aria-label=""></span></figure>
-      <figure><span class="ph" role="img" aria-label=""></span></figure>
-      <figure><span class="ph" role="img" aria-label=""></span></figure>
-      <figure><span class="ph" role="img" aria-label=""></span></figure>
+    <a href="foto/feedback1.webp" target="_blank" rel="noopener"><img src="foto/feedback1.webp" alt="" loading="lazy" width="589" height="1280"></a>
+    <a href="foto/feedback2.webp" target="_blank" rel="noopener"><img src="foto/feedback2.webp" alt="" loading="lazy" width="589" height="1280"></a>
+    <a href="foto/feedback3.webp" target="_blank" rel="noopener"><img src="foto/feedback3.webp" alt="" loading="lazy" width="589" height="1280"></a>
+    <a href="foto/feedback4.webp" target="_blank" rel="noopener"><img src="foto/feedback4.webp" alt="" loading="lazy" width="960" height="811"></a>
+    <a href="foto/feedback5.webp" target="_blank" rel="noopener"><img src="foto/feedback5.webp" alt="" loading="lazy" width="589" height="1280"></a>
+    <a href="foto/feedback6.webp" target="_blank" rel="noopener"><img src="foto/feedback6.webp" alt="" loading="lazy" width="589" height="1280"></a>
+    <a href="foto/feedback7.webp" target="_blank" rel="noopener"><img src="foto/feedback7.webp" alt="" loading="lazy" width="589" height="1280"></a>
+    <a href="foto/feedback8.webp" target="_blank" rel="noopener"><img src="foto/feedback8.webp" alt="" loading="lazy" width="960" height="707"></a>
+    <a href="foto/feedback9.webp" target="_blank" rel="noopener"><img src="foto/feedback9.webp" alt="" loading="lazy" width="589" height="1280"></a>
+    <a href="foto/feedback10.webp" target="_blank" rel="noopener"><img src="foto/feedback10.webp" alt="" loading="lazy" width="589" height="1280"></a>
+    <a href="foto/feedback11.webp" target="_blank" rel="noopener"><img src="foto/feedback11.webp" alt="" loading="lazy" width="589" height="1280"></a>
   </div>
 </section>
 
