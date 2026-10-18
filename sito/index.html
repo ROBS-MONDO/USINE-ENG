@@ -245,6 +245,11 @@
   .intro .sub { margin: 14px 0 0; font-size: .95rem; }
   .intro.solo .intro-head { grid-template-columns: 1fr; gap: 0; }
   .intro.solo h2 { max-width: 640px; }
+  .ticket { padding-left: 0; padding-right: 0; }
+  .ticket .intro-inner { max-width: none; padding: 0 5.5vw; }
+  .ticket .intro-head { grid-template-columns: 1fr; gap: 28px; }
+  .ticket h2 { max-width: none; font-size: clamp(1.3rem, 2.4vw, 2.3rem); }
+  .ticket .intro-text { max-width: none; }
   .team .intro-head { margin-bottom: 44px; }
   .team h2 { color: #d2a864; }
   .team-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 225px)); gap: 48px 25px; justify-content: start; }
@@ -252,7 +257,7 @@
   .member .ph { display: block; width: 100%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; background: radial-gradient(circle at 50% 38%, #f6efff 0 22%, transparent 23%), radial-gradient(ellipse at 50% 105%, #f6efff 0 42%, transparent 43%), #fff; }
   .member .nm { margin: 18px 0 4px; font-weight: 700; font-size: .95rem; }
   .member .role { margin: 0; font-size: .8rem; color: #7a6a75; }
-  @media (max-width: 900px) { .intro { padding: 40px 20px; } .intro-head { grid-template-columns: 1fr; gap: 20px; } .intro .btn { margin-top: 28px; } .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 16px; } }
+  @media (max-width: 900px) { .ticket .intro-inner { padding: 0 20px; } .intro { padding: 40px 20px; } .intro-head { grid-template-columns: 1fr; gap: 20px; } .intro .btn { margin-top: 28px; } .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 16px; } }
 
   /* Pagina: отзывы (titolo + fila di 5 foto verticali) */
   .reviews { background: #fff; }
@@ -696,7 +701,7 @@
         <p>Живое общение с людьми из разных стран — пространство для дружбы, обмена опытом и будущего сотрудничества.</p>
         <p>Питание включено — в перерывах будет время отдохнуть, познакомиться и продолжить интересный разговор.</p>
         <p>Приходи со своим вопросом, мечтой или любопытством. Опыт участия в играх не нужен.</p>
-        <p>Позволь себе этот день. Возможно, именно с него начнётся твой звёздный час.</p>
+        <p><strong>Позволь себе этот день. Возможно, именно с него начнётся твой звёздный час.</strong></p>
       </div>
     </div>
     <a class="btn" href="#oplata">Купить билет<span class="arrow" aria-hidden="true">→</span></a>
