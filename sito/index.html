@@ -318,6 +318,27 @@
   @media (max-width: 1250px) { .pay-grid { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 760px) { .pay-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 560px) { .pay { padding: 48px 20px; } .pay-grid { grid-template-columns: 1fr; } .pay-card h3, .pay-card .en { min-height: 0; } }
+
+  /* Modulo di candidatura (finestra) */
+  .modal { position: fixed; inset: 0; z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(20, 8, 28, .72); overflow-y: auto; }
+  .modal.open { display: flex; }
+  .modal-box { position: relative; width: 100%; max-width: 560px; margin: auto; padding: 44px 44px 36px; background: #f1e8fe; color: #1c1020; border-radius: 4px; box-shadow: 0 20px 60px rgba(0, 0, 0, .5); }
+  .modal-close { position: absolute; top: 10px; right: 14px; width: 36px; height: 36px; border: 0; background: transparent; color: #2b0d1d; font-size: 28px; line-height: 1; cursor: pointer; }
+  .modal-box h2 { margin: 0 0 14px; text-align: center; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.15rem, 2.4vw, 1.6rem); line-height: 1.2; color: #1c1020; }
+  .modal-lead { margin: 0 0 22px; text-align: center; font-size: .95rem; line-height: 1.45; }
+  .modal-form input[type="text"], .modal-form input[type="tel"] { display: block; width: 100%; height: 56px; margin: 0 0 16px; padding: 0 20px; border: 1px solid #cfc3e6; border-radius: 3px; background: #f7f2ff; color: #1c1020; font: 400 .95rem "Montserrat", Arial, sans-serif; }
+  .modal-form input::placeholder { color: #6b6378; }
+  .modal-form input:focus-visible { outline: 2px solid #d2a864; outline-offset: 1px; border-color: #d2a864; }
+  .modal-check { display: flex; align-items: center; gap: 10px; margin: 4px 0 20px; font-size: .85rem; }
+  .modal-check input { width: 18px; height: 18px; margin: 0; flex: 0 0 auto; accent-color: #2b0d1d; }
+  .modal-submit { display: block; width: 100%; height: 56px; border: 2px solid #d2a864; border-radius: 6px; background: #d2a864; color: #2b0d1d; font: 700 .95rem/1 "Montserrat", Arial, sans-serif; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; transition: background .2s, color .2s; }
+  .modal-submit:hover, .modal-submit:focus-visible { background: transparent; }
+  .modal-submit[disabled] { opacity: .6; cursor: wait; }
+  .modal-note { margin: 18px 0 0; text-align: center; font-size: .8rem; line-height: 1.5; }
+  .modal-status { margin: 14px 0 0; text-align: center; font-size: .9rem; font-weight: 700; min-height: 1.2em; }
+  .modal-status.err { color: #a02020; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  @media (max-width: 520px) { .modal-box { padding: 40px 22px 26px; } }
 </style>
 </head>
 <body>
@@ -887,5 +908,77 @@
   })();
 </script>
 
+<div class="modal" id="form-modal" role="dialog" aria-modal="true" aria-labelledby="form-title" hidden>
+  <div class="modal-box">
+    <button type="button" class="modal-close" aria-label="Закрыть" data-close>&times;</button>
+    <h2 id="form-title">Стать тренером фестиваля «Звёздный час»</h2>
+    <p class="modal-lead">Если вы проводите трансформационные игры, практики или мастер-классы — заполните анкету, чтобы стать частью международного фестиваля «Звёздный час». Мы создаём пространство для опытных и растущих экспертов.</p>
+    <form class="modal-form" id="apply-form" action="send.php" method="post" novalidate>
+      <input type="text" name="name" placeholder="имя и фамилия" autocomplete="name" required>
+      <input type="text" name="city" placeholder="город и страна проживания" autocomplete="address-level2" required>
+      <input type="tel" name="phone" placeholder="Телефон (WhatsApp / Telegram)" autocomplete="tel" required>
+      <input type="text" name="instagram" placeholder="Ссылка на Instagram">
+      <input type="text" name="product" placeholder="Ваша специализация / продукт" required>
+      <div class="hp" aria-hidden="true"><label>Не заполняйте это поле <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+      <label class="modal-check"><input type="checkbox" name="consent" value="1" required> Принимаю политику обработки и хранения данных</label>
+      <button type="submit" class="modal-submit">Отправить заявку</button>
+      <p class="modal-status" id="form-status" role="status" aria-live="polite"></p>
+    </form>
+    <p class="modal-note">Мы рассматриваем каждую заявку лично.<br>После отправки анкеты с вами свяжется команда в течение 3–5 дней</p>
+  </div>
+</div>
+
+<script>
+  // Finestra con il modulo: si apre da tutti i bottoni, tranne "Купить билет" e "Оплатить"
+  (function () {
+    var modal = document.getElementById("form-modal");
+    var form = document.getElementById("apply-form");
+    var status = document.getElementById("form-status");
+    var lastFocus = null;
+    function open(e) {
+      if (e) e.preventDefault();
+      lastFocus = document.activeElement;
+      modal.hidden = false; modal.classList.add("open");
+      document.body.style.overflow = "hidden";
+      status.textContent = ""; status.className = "modal-status";
+      var f = form.querySelector("input"); if (f) f.focus();
+    }
+    function close() {
+      modal.classList.remove("open"); modal.hidden = true;
+      document.body.style.overflow = "";
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+    Array.prototype.forEach.call(document.querySelectorAll(".btn, .tier-btn"), function (b) {
+      if (b.hasAttribute("data-pay")) return;                // pagamenti: link Stripe
+      if (b.closest("#bilet")) return;                       // "Купить билет"
+      if ((b.getAttribute("href") || "").indexOf("http") === 0) return;
+      b.addEventListener("click", open);
+    });
+    modal.addEventListener("click", function (e) { if (e.target === modal || e.target.hasAttribute("data-close")) close(); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && modal.classList.contains("open")) close(); });
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var req = form.querySelectorAll("[required]"), ok = true;
+      Array.prototype.forEach.call(req, function (el) {
+        var bad = el.type === "checkbox" ? !el.checked : !el.value.trim();
+        if (bad && ok) { el.focus(); }
+        if (bad) ok = false;
+      });
+      if (!ok) { status.textContent = "Заполните обязательные поля и поставьте галочку согласия."; status.className = "modal-status err"; return; }
+      var btn = form.querySelector(".modal-submit"); btn.disabled = true; status.textContent = ""; status.className = "modal-status";
+      fetch(form.action, { method: "POST", body: new FormData(form), headers: { "Accept": "application/json" } })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok && j.ok, j: j }; }); })
+        .then(function (res) {
+          if (!res.ok) throw new Error("send");
+          form.reset(); status.textContent = "Спасибо! Заявка отправлена. Мы свяжемся с вами в течение 3–5 дней.";
+        })
+        .catch(function () {
+          status.textContent = "Не удалось отправить. Напишите нам: info@luxembourgfestival.com";
+          status.className = "modal-status err";
+        })
+        .then(function () { btn.disabled = false; });
+    });
+  })();
+</script>
 </body>
 </html>
