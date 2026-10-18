@@ -269,6 +269,15 @@
   .reviews-row .ph { background: radial-gradient(circle at 50% 36%, #f6efff 0 14%, transparent 15%), radial-gradient(ellipse at 50% 102%, #f6efff 0 34%, transparent 35%), #e9deff; }
   @media (max-width: 900px) { .reviews-head { padding: 32px 20px 24px; } .reviews-head h2 { padding: 0; } .reviews-row { column-count: 2; column-gap: 10px; padding: 10px; } .reviews-row a { margin-bottom: 10px; } }
 
+  .rev-list { max-width: 880px; margin: 0 auto; padding: 36px 24px 56px; display: flex; flex-direction: column; gap: 0; }
+  .rev { padding: 22px 0; border-bottom: 1px solid #ddd; color: #2b0d1d; }
+  .rev:first-child { border-top: 1px solid #ddd; }
+  .rev-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .rev-av { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f1e8fe; color: #2b0d1d; font-weight: 700; font-size: .95rem; }
+  .rev-name { font-weight: 700; font-size: .95rem; }
+  .rev-body p { margin: 0 0 .9em; font-size: clamp(.95rem, 1.15vw, 1.05rem); line-height: 1.65; }
+  .rev-body p:last-child { margin-bottom: 0; }
+  @media (max-width: 900px) { .rev-list { padding: 24px 20px 40px; } }
   /* Ultima pagina: barra con il nome del sito */
   .site-footer { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px 24px; min-height: 70px; padding: 20px 5%; background: linear-gradient(135deg, #2b0d1d 0%, #341023 100%); color: #efe3e6; font-family: "Montserrat", Arial, sans-serif; font-size: .95rem; letter-spacing: .12em; }
   .site-footer a { color: inherit; text-decoration: none; }
@@ -749,18 +758,51 @@
 
 <section class="reviews" id="otzyvy">
   <div class="reviews-head"><h2>Отзывы</h2></div>
-  <div class="reviews-row">
-    <a href="foto/feedback1.webp" target="_blank" rel="noopener"><img src="foto/feedback1.webp" alt="" loading="lazy" width="589" height="1280"></a>
-    <a href="foto/feedback2.webp" target="_blank" rel="noopener"><img src="foto/feedback2.webp" alt="" loading="lazy" width="589" height="1280"></a>
-    <a href="foto/feedback3.webp" target="_blank" rel="noopener"><img src="foto/feedback3.webp" alt="" loading="lazy" width="589" height="1280"></a>
-    <a href="foto/feedback4.webp" target="_blank" rel="noopener"><img src="foto/feedback4.webp" alt="" loading="lazy" width="960" height="811"></a>
-    <a href="foto/feedback5.webp" target="_blank" rel="noopener"><img src="foto/feedback5.webp" alt="" loading="lazy" width="589" height="1280"></a>
-    <a href="foto/feedback6.webp" target="_blank" rel="noopener"><img src="foto/feedback6.webp" alt="" loading="lazy" width="589" height="1280"></a>
-    <a href="foto/feedback7.webp" target="_blank" rel="noopener"><img src="foto/feedback7.webp" alt="" loading="lazy" width="589" height="1280"></a>
-    <a href="foto/feedback8.webp" target="_blank" rel="noopener"><img src="foto/feedback8.webp" alt="" loading="lazy" width="960" height="707"></a>
-    <a href="foto/feedback9.webp" target="_blank" rel="noopener"><img src="foto/feedback9.webp" alt="" loading="lazy" width="589" height="1280"></a>
-    <a href="foto/feedback10.webp" target="_blank" rel="noopener"><img src="foto/feedback10.webp" alt="" loading="lazy" width="589" height="1280"></a>
-    <a href="foto/feedback11.webp" target="_blank" rel="noopener"><img src="foto/feedback11.webp" alt="" loading="lazy" width="589" height="1280"></a>
+  <div class="rev-list">
+    <article class="rev">
+      <header class="rev-head"><span class="rev-av" aria-hidden="true">E</span><span class="rev-name">Elena Игропрактик Лион</span></header>
+      <div class="rev-body"><p>Благодарю от всего сердца организаторов фестиваля @Юлия Обони и @Лена Виолова за это волшебное пространство!</p><p>Организаторы, мастера и участники — вы были такими яркими, красивыми, многогранными, живыми, настоящими… Словно каждый светился изнутри.</p><p>Я встретила родственные души, ощутила глубокое единение, вдохновение, женскую поддержку и невероятную силу круга.</p><p>Я очень рада нашему знакомству, и с огромной радостью буду принимать участие в следующих фестивалях и совместных проектах.</p><p>Спасибо за вашу заботу и за атмосферу, в которую влюбляешься с первой минуты!</p><p>Люблю и обнимаю всей душой.</p></div>
+    </article>
+    <article class="rev">
+      <header class="rev-head"><span class="rev-av" aria-hidden="true">Н</span><span class="rev-name">Наталья Архангельская</span></header>
+      <div class="rev-body"><p>Коллеги, с Новым годом!</p><p>Пусть в этом году игры будут глубокими и бережными, процессы — честными и осознанными, а участники — вовлечёнными и готовыми к открытиям.</p><p>Отдельная большая благодарность Лене и Юле за создание и поддержку этого пространства — безопасного, профессионального и по-настоящему объединяющего. Спасибо за доверие, возможность делиться опытом и расти вместе.</p><p>Пусть будет больше сильных запросов, точных инсайтов, мягких поворотов и радости от той важной работы, которую мы делаем.</p><p>С новым уровнем, новыми смыслами и красивыми внутренними изменениями!</p></div>
+    </article>
+    <article class="rev">
+      <header class="rev-head"><span class="rev-av" aria-hidden="true">K</span><span class="rev-name">Ksenia Коуч</span></header>
+      <div class="rev-body"><p>Какие невероятные дни в Париже! Столько вдохновения, красоты, встреч, веселья, идей, жизни, смыслов. Хочется просто обнять этот фестиваль целиком — за ту энергию, атмосферу и людей, которые его создавали.</p><p>Спасибо чудесным нашим организаторам @Юлия Обони и @Лена Виолова и всей команде помощников за сердце, вложенное в каждую деталь, за пространство, где можно быть собой и быть среди своих людей.</p><p>Благодарю всех чудесных экспертов, мастеров и творцов — за мудрость, щедрость, тепло, за обмен, от которого хочется расти, творить и делиться дальше. Каждый из вас добавил свою ноту — вместе это звучало как настоящая симфония вдохновения.</p></div>
+    </article>
+    <article class="rev">
+      <header class="rev-head"><span class="rev-av" aria-hidden="true">С</span><span class="rev-name">Селена Фрея</span></header>
+      <div class="rev-body"><p>Дорогие Светлячки! Энергия праздника и вдохновения переполняет до сих пор.</p><p>Благодарю вас, мои дорогие Юличка и Леночка, за вашу искренность и теплоту души. Благодарю за возможность прикоснуться перышком ангела к таким замечательным душам людей.</p><p>Я встретила столько родственных душ, что это был настоящий фейерверк эмоций. Заземлялась полночи.</p><p>Увожу с собой любовь к Парижу и энергию благодати, которую отправляю каждому из вас.</p></div>
+    </article>
+    <article class="rev">
+      <header class="rev-head"><span class="rev-av" aria-hidden="true">У</span><span class="rev-name">Участница фестиваля</span></header>
+      <div class="rev-body"><p>От всего сердца хочу поблагодарить организаторов фестиваля @Юлия Обони и @Лена Виолова за чудесное пространство — пространство открытых сердец, талантливых и творческих женщин.</p><p>Какие же вы все красивые, разные, необычные, удивительные! Я счастлива, что смогла познакомиться с вами, встретиться, прикоснуться к вашей энергии.</p><p>Фестиваль получился замечательный — целый день столько полезных инсайтов, вдохновения, классных знакомств! Особенно тронуло заботливое отношение организаторов к каждому участнику, к каждой детали. Спасибо вам большое!</p></div>
+    </article>
+    <article class="rev">
+      <header class="rev-head"><span class="rev-av" aria-hidden="true">У</span><span class="rev-name">Участница фестиваля</span></header>
+      <div class="rev-body"><p>Огромная благодарность Елене, Юле, Насте за это фантастическое мероприятие! Это было круто, организация просто топ! Очень вдохновляюще и расширяюще, эмоции и энергия зашкаливают, спасибо за этот праздник жизни, за все ваши труды и усилия. Спасибо вам за волшебный праздник, который вы нам подарили! Девочки, вы чудесные! Благодарю от всей души, я в восторге от фестиваля! Фейерверк, дискотека, Танцы с Медведем, невероятно вкусный торт, как может быть еще лучше?! Вы задали такую планку, ух!</p><p>Мой внутренний ребенок ликует от сегодняшнего невероятно красивого, чудесного, волшебного, наполняющего праздника. Благодарю, благодарю, благодарю.</p></div>
+    </article>
+    <article class="rev">
+      <header class="rev-head"><span class="rev-av" aria-hidden="true">N</span><span class="rev-name">Nadia</span></header>
+      <div class="rev-body"><p>Дорогие мастерицы, спикеры, эксперты — каждая из вас целая вселенная.</p><p>Спасибо ВАМ за этот день, наполненный глубиной, мудростью и женской силой. За ваше присутствие, за щедрость, с которой вы делились опытом, идеями, энергией. Благодаря вам пространство фестиваля дышало вдохновением — каждая игра, каждое слово, каждое прикосновение стало частью большого общего поля.</p><p>Вы такие разные — и именно в этом сила. Кто-то несёт структуру, кто-то нежность, кто-то трансформацию. Вместе вы создаёте ту самую живую ткань, где рождается настоящее волшебство.</p><p>Благодарю за встречу, за открытость и искренность. Пусть этот день станет точкой, из которой пойдут новые проекты, игры, союзы и открытия. С любовью и восхищением.</p></div>
+    </article>
+    <article class="rev">
+      <header class="rev-head"><span class="rev-av" aria-hidden="true">Т</span><span class="rev-name">Татьяна Мельник</span></header>
+      <div class="rev-body"><p>Девочки, Лена, Юля. Сердечная благодарность за организацию такого чудесного фестиваля! За вашу колоссальную, трудоёмкую и энергозатратную работу — вы сделали это на высшем уровне. С такой любовью, вниманием и заботой о каждом участнике, всё было продумано до мельчайших деталей.</p><p>Вы создали пространство, где были и глубокие трансформационные процессы, и лёгкость, радость и веселье. Настоящий праздник души, состояние счастья и мощная общая энергия, которая наполняла всё вокруг.</p><p>А вкуснейший торт, сюрприз с медведем и море блесток стали ярким и неожиданным финалом вечера!</p><p>Спасибо за атмосферу, за тепло, за вдохновение и за то, что создаёте такую магию!</p></div>
+    </article>
+    <article class="rev">
+      <header class="rev-head"><span class="rev-av" aria-hidden="true">У</span><span class="rev-name">Участница фестиваля</span></header>
+      <div class="rev-body"><p>Девочки организаторы, Юлия и Елена!!!! Огромное благодарю за этот прекрасный, волшебный, наполненный фестиваль. Вы такие умнички! Организация на высшем уровне! Столько кайфа, наслаждения, расширения и вдохновения получила.</p></div>
+    </article>
+    <article class="rev">
+      <header class="rev-head"><span class="rev-av" aria-hidden="true">У</span><span class="rev-name">Участница фестиваля</span></header>
+      <div class="rev-body"><p>Девочки, добрый вечер. Вчера я окунулась в атмосферу просто удивительного фестиваля. Всё вокруг дышало теплом и гармонией, каждый уголок был наполнен вдохновением. Столько талантливых мастеров, каждый со своей уникальной энергией и знаниями! Было так классно делиться тем, что умеешь, и с удивлением принимать новое.</p><p>Этот день оставил в душе тихую радость и ощущение красоты.</p></div>
+    </article>
+    <article class="rev">
+      <header class="rev-head"><span class="rev-av" aria-hidden="true">У</span><span class="rev-name">Участница фестиваля</span></header>
+      <div class="rev-body"><p>Юля, Лена — вы проделали по-настоящему огромную работу. Это колоссальная ответственность, терпение, выдержка, внимание к каждому человеку и каждой детали.</p><p>Вы — удивительные организаторы. Вы занимаетесь именно тем, что любите, тем, что у вас получается по-настоящему мастерски. И ещё больше восхищает то, как вы раскрываетесь в других своих гранях — как творцы, как гиды, как проводники в новые пространства.</p><p>Хочу поблагодарить вас за то пространство, которое вы создали. Нас было больше 70 человек из разных стран мира — и вы смогли распределить всех так мягко и гармонично, что каждый оказался у того мастера, у которого должен был быть именно сейчас, на этапе своего развития.</p><p>На фестивале были мастера с большим опытом, были те, кто только начинает свой путь, те, кто ещё ищет своё предназначение. И быть в такой среде — бесценно. В одиночку сложно. А здесь есть с кем делиться знаниями, у кого учиться, на кого равняться.</p><p>Я уже писала Юле в комментариях, что сюрпризы на фестивале заслуживают отдельного поста. И это правда. В прошлом году — зеркальные человечки. В этом — огромный мишка, блёстки, вкуснейший торт, сияние и совершенно потрясающая атмосфера. Это было захватывающе. Настоящий восторг.</p><p>И я хочу ещё раз сказать: я восхищаюсь вашими организаторскими способностями и выражаю вам свою искренною, сердечную благодарность. Каждому, кто причастен к фестивалю. Всем творцам, кто создавал, вдохновлял, дарил частичку себя. Одну из картин Иры я даже увезла в Италию — чтобы этот свет остался со мной.</p></div>
+    </article>
   </div>
 </section>
 
