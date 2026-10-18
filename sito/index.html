@@ -703,6 +703,12 @@
   </div>
 </section>
 
+<section class="film" id="video2">
+  <video id="film-video2" muted loop playsinline preload="none" poster="video-festival2-poster.webp">
+    <source src="video-festival2.mp4" type="video/mp4">
+  </video>
+</section>
+
 <section class="intro on-lilac ticket" id="bilet">
   <div class="intro-inner">
     <div class="intro-head">
@@ -849,29 +855,30 @@
 <footer class="site-footer"><a href="https://luxembourgfestival.com">LuxembourgFestival.com</a><p class="copy">© 2026 Luxembourg Festival. Все права защищены.</p><a class="mail" href="mailto:info@luxembourgfestival.com">info@luxembourgfestival.com</a></footer>
 
 <script>
-  // Il video a tutto schermo parte da solo (senza audio) quando la sezione sta per diventare visibile
+  // I video a tutto schermo partono da soli (senza audio) quando la sezione sta per diventare visibile
   (function () {
-    var v = document.getElementById("film-video");
-    if (!v) return;
-    var visible = false;
-    function play() {
-      v.muted = true;
-      var p = v.play();
-      if (p && p.catch) p.catch(function () {});
-    }
-    function onVisible(on) {
-      visible = on;
-      if (on) { v.preload = "auto"; play(); } else { v.pause(); }
-    }
-    // se il browser rimanda l'avvio, riprova appena il video e' pronto o al primo gesto dell'utente
-    v.addEventListener("canplay", function () { if (visible) play(); });
-    ["touchstart", "click", "scroll", "keydown"].forEach(function (ev) {
-      window.addEventListener(ev, function () { if (visible && v.paused) play(); }, { once: true, passive: true });
+    var videos = document.querySelectorAll(".film video");
+    Array.prototype.forEach.call(videos, function (v) {
+      var visible = false;
+      function play() {
+        v.muted = true;
+        var p = v.play();
+        if (p && p.catch) p.catch(function () {});
+      }
+      function onVisible(on) {
+        visible = on;
+        if (on) { v.preload = "auto"; play(); } else { v.pause(); }
+      }
+      // se il browser rimanda l'avvio, riprova appena il video e' pronto o al primo gesto dell'utente
+      v.addEventListener("canplay", function () { if (visible) play(); });
+      ["touchstart", "click", "scroll", "keydown"].forEach(function (ev) {
+        window.addEventListener(ev, function () { if (visible && v.paused) play(); }, { once: true, passive: true });
+      });
+      if (!("IntersectionObserver" in window)) { onVisible(true); return; }
+      new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { onVisible(e.isIntersecting); });
+      }, { rootMargin: "200px 0px", threshold: 0 }).observe(v);
     });
-    if (!("IntersectionObserver" in window)) { onVisible(true); return; }
-    new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { onVisible(e.isIntersecting); });
-    }, { rootMargin: "200px 0px", threshold: 0 }).observe(v);
   })();
 </script>
 
