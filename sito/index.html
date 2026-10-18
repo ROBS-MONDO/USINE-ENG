@@ -275,6 +275,14 @@
   .rev-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
   .rev-av { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f1e8fe; color: #2b0d1d; font-weight: 700; font-size: .95rem; }
   .rev-name { font-weight: 700; font-size: .95rem; }
+  .rev-body { position: relative; }
+  .rev-body.clamp { max-height: calc(1.65em * 2); overflow: hidden; font-size: clamp(.95rem, 1.15vw, 1.05rem); line-height: 1.65; }
+  .rev-body.clamp p { display: inline; margin: 0; font-size: inherit; line-height: inherit; }
+  .rev-body.clamp p::after { content: " "; }
+  .rev-more { display: none; position: absolute; right: 0; bottom: 0; padding: 0 0 0 48px; border: 0; background: linear-gradient(to right, rgba(255, 255, 255, 0), #fff 40px); color: #2b0d1d; font: 700 clamp(.95rem, 1.15vw, 1.05rem)/1.65 "Montserrat", Arial, sans-serif; text-decoration: underline; cursor: pointer; }
+  .rev-body.clamp .rev-more { display: block; }
+  .rev-body.open .rev-more { display: inline; position: static; padding: 0; margin-left: 8px; background: none; }
+  .rev-body.open { max-height: none; }
   .rev-body p { margin: 0 0 .9em; font-size: clamp(.95rem, 1.15vw, 1.05rem); line-height: 1.65; }
   .rev-body p:last-child { margin-bottom: 0; }
   @media (max-width: 900px) { .rev-list { padding: 24px 20px 40px; } }
@@ -978,6 +986,39 @@
         })
         .then(function () { btn.disabled = false; });
     });
+  })();
+</script>
+<script>
+  // Recensioni: massimo due righe, con "Читать далее" alla fine della seconda riga
+  (function () {
+    var bodies = document.querySelectorAll(".rev-body");
+    Array.prototype.forEach.call(bodies, function (b) {
+      var btn = document.createElement("button");
+      btn.type = "button"; btn.className = "rev-more"; btn.textContent = "Читать далее";
+      btn.setAttribute("aria-expanded", "false");
+      b.appendChild(btn);
+      btn.addEventListener("click", function () {
+        var open = b.classList.toggle("open");
+        b.classList.toggle("clamp", !open);
+        btn.textContent = open ? "Свернуть" : "Читать далее";
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        if (open) { b.classList.add("clamp-off"); }
+      });
+    });
+    function fit() {
+      Array.prototype.forEach.call(bodies, function (b) {
+        if (b.classList.contains("open")) return;
+        b.classList.add("clamp");
+        var btn = b.querySelector(".rev-more");
+        btn.style.display = "none";
+        var over = b.scrollHeight > b.clientHeight + 2;
+        btn.style.display = "";
+        if (!over) b.classList.remove("clamp");
+      });
+    }
+    fit();
+    window.addEventListener("resize", fit);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
   })();
 </script>
 </body>
