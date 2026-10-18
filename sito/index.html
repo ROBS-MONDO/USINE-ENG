@@ -704,7 +704,7 @@
 </section>
 
 <section class="film" id="video2">
-  <video id="film-video2" muted loop playsinline preload="none" poster="video-festival2-poster.webp">
+  <video id="film-video2" muted loop playsinline webkit-playsinline disablepictureinpicture preload="none" poster="video-festival2-poster.webp">
     <source src="video-festival2.mp4" type="video/mp4">
   </video>
 </section>
@@ -871,6 +871,11 @@
       }
       // se il browser rimanda l'avvio, riprova appena il video e' pronto o al primo gesto dell'utente
       v.addEventListener("canplay", function () { if (visible) play(); });
+      // se il video si blocca (rete lenta o decoder), prova a ripartire
+      ["stalled", "waiting", "suspend"].forEach(function (ev) {
+        v.addEventListener(ev, function () { if (visible && v.paused) play(); });
+      });
+      v.addEventListener("pause", function () { if (visible && !v.ended) setTimeout(function () { if (visible && v.paused) play(); }, 300); });
       ["touchstart", "click", "scroll", "keydown"].forEach(function (ev) {
         window.addEventListener(ev, function () { if (visible && v.paused) play(); }, { once: true, passive: true });
       });
