@@ -17,7 +17,7 @@ Dopo il pagamento del biglietto da 60 euro Stripe avvisa il sito, che crea un bi
 2. Compila:
    - `db`: hostname, nome, utente e password del database (dal pannello Aruba);
    - `smtp.pass`: password della casella `info@luxembourgfestival.com`;
-   - `scan.password_hash`: hash della password dello staff. Per crearlo: `php ticket/make-hash.php "LA_TUA_PASSWORD"`. Se non puoi usare il terminale, dimmelo e lo creiamo in un altro modo;
+   - `scan.password_hash`: hash della password dello staff. Per crearlo apri sul tuo computer `strumenti/crea-hash-password.html` (non va caricato sul sito), scrivi la password, copia il risultato e incollalo tra gli apici;
    - `stripe.webhook_secret` e `stripe.payment_link_id`: vedi il punto 3.
 3. Dopo la configurazione cancella `ticket/make-hash.php`.
 

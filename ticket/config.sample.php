@@ -38,7 +38,7 @@ return [
 
     // Accesso alla pagina di scansione /scan/ (staff).
     // Crea l'hash con:  php -r "echo password_hash('LA_TUA_PASSWORD', PASSWORD_DEFAULT);"
-    // oppure con lo strumento ticket/make-hash.php (poi cancellalo).
+    // oppure apri sul tuo computer strumenti/crea-hash-password.html (non va caricato sul sito).
     'scan' => [
         'password_hash' => '',
     ],
