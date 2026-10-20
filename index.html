@@ -53,6 +53,10 @@
   /* Pagina 1: video a schermo intero */
   .hero { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: #000; }
   .hero video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  /* niente pulsante play nativo sul video della prima pagina */
+  .hero video::-webkit-media-controls, .hero video::-webkit-media-controls-start-playback-button,
+  .hero video::-webkit-media-controls-overlay-play-button, .hero video::-webkit-media-controls-panel { display: none !important; -webkit-appearance: none; opacity: 0; }
+  .hero video { pointer-events: none; }
   .scroll-hint { position: absolute; left: 50%; bottom: 28px; width: 28px; height: 28px; margin-left: -14px;
     border-right: 2px solid rgba(255,255,255,.85); border-bottom: 2px solid rgba(255,255,255,.85);
     transform: rotate(45deg); animation: bounce 1.8s infinite; }
@@ -403,7 +407,7 @@
 <body>
 
 <section class="hero">
-  <video autoplay muted loop playsinline preload="auto" poster="poster.webp">
+  <video autoplay muted loop playsinline webkit-playsinline disablepictureinpicture disableremoteplayback preload="auto" poster="poster.webp">
     <source src="STAR_HOUR_Luxembourg_Hero.mp4" type="video/mp4">
   </video>
   <a class="scroll-hint" href="#festival" aria-label="Scroll"></a>
@@ -928,6 +932,26 @@
 </section>
 
 <footer class="site-footer"><a href="https://www.luxembourgfestival.com">LuxembourgFestival.com</a><p class="copy">© 2026 Luxembourg Festival. Все права защищены.</p><a class="mail" href="mailto:info@luxembourgfestival.com">info@luxembourgfestival.com</a><div class="foot-privacy"><a class="privacy-btn" href="privacy.html">Политика конфиденциальности</a></div></footer>
+
+<script>
+  // Video della prima pagina: parte da solo, senza pulsante play (anche su mobile)
+  (function () {
+    var v = document.querySelector(".hero video"); if (!v) return;
+    v.muted = true; v.defaultMuted = true; v.setAttribute("muted", ""); v.removeAttribute("controls");
+    function play() { v.muted = true; var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+    play();
+    ["loadedmetadata", "loadeddata", "canplay", "stalled", "suspend"].forEach(function (ev) {
+      v.addEventListener(ev, function () { if (v.paused) play(); });
+    });
+    v.addEventListener("pause", function () { if (!v.ended) setTimeout(function () { if (v.paused) play(); }, 200); });
+    document.addEventListener("visibilitychange", function () { if (!document.hidden && v.paused) play(); });
+    window.addEventListener("pageshow", function () { if (v.paused) play(); });
+    // se il telefono blocca l'avvio automatico (es. risparmio energetico), riprova al primo tocco o scorrimento
+    ["touchstart", "touchend", "click", "scroll", "keydown"].forEach(function (ev) {
+      window.addEventListener(ev, function () { if (v.paused) play(); }, { once: true, passive: true });
+    });
+  })();
+</script>
 
 <script>
   // I video a tutto schermo partono da soli (senza audio) quando la sezione sta per diventare visibile
