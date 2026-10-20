@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Controllo ingressi</title>
+<link rel="stylesheet" href="scan.css">
+</head>
+<body>
+<main id="app">
+  <section id="login" hidden>
+    <h1>Controllo ingressi</h1>
+    <form id="login-form">
+      <input type="password" id="pw" placeholder="Password staff" autocomplete="current-password" required>
+      <button type="submit">Entra</button>
+      <p id="login-msg" class="msg"></p>
+    </form>
+  </section>
+
+  <section id="scanner" hidden>
+    <header>
+      <div id="stats">—</div>
+      <button type="button" id="btn-list" class="ghost">Cerca</button>
+      <button type="button" id="btn-logout" class="ghost">Esci</button>
+    </header>
+    <div id="viewport">
+      <video id="video" playsinline muted></video>
+      <canvas id="canvas" hidden></canvas>
+      <div id="frame"></div>
+    </div>
+    <p id="hint">Inquadra il QR del biglietto</p>
+    <div id="result" hidden>
+      <div id="result-title"></div>
+      <div id="result-name"></div>
+      <div id="result-detail"></div>
+      <button type="button" id="btn-next">Prossimo</button>
+    </div>
+  </section>
+
+  <section id="search" hidden>
+    <header>
+      <button type="button" id="btn-back" class="ghost">← Scanner</button>
+      <a id="btn-export" class="ghost" href="api.php?action=export">Scarica elenco CSV</a>
+    </header>
+    <input type="search" id="q" placeholder="Nome, email o codice (min. 2 lettere)" autocomplete="off">
+    <ul id="items"></ul>
+  </section>
+</main>
+<script src="jsQR.js"></script>
+<script src="scan.js"></script>
+</body>
+</html>

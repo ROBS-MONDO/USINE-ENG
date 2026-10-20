@@ -30,9 +30,9 @@
   Header unset X-Powered-By
 </IfModule>
 
-# send.php accetta solo richieste POST
+# send.php e stripe-webhook.php accettano solo richieste POST
 <IfModule mod_rewrite.c>
-  RewriteCond %{REQUEST_URI} ^/send\.php$ [NC]
+  RewriteCond %{REQUEST_URI} ^/(send|stripe-webhook)\.php$ [NC]
   RewriteCond %{REQUEST_METHOD} !^(POST|OPTIONS)$ [NC]
   RewriteRule ^ - [F,L]
 </IfModule>

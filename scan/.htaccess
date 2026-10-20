@@ -1,0 +1,6 @@
+# Pagina riservata allo staff: non indicizzare, non salvare in cache
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow, noarchive"
+  Header always set Cache-Control "no-store"
+  Header always set Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=(), usb=()"
+</IfModule>
