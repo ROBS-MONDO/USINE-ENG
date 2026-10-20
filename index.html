@@ -1042,6 +1042,7 @@
           if (!res.ok) throw new Error("send");
           form.reset(); if (tsId !== null && window.turnstile) window.turnstile.reset(tsId);
           status.textContent = "Спасибо! Заявка отправлена. Мы свяжемся с вами в течение 3–5 дней.";
+          setTimeout(close, 2500);
         })
         .catch(function () {
           status.textContent = "Не удалось отправить. Напишите нам: info@luxembourgfestival.com";
