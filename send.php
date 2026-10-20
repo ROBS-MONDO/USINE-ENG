@@ -5,6 +5,9 @@ header('Content-Type: application/json; charset=utf-8');
 $to   = 'info@luxembourgfestival.com';
 $from = 'info@luxembourgfestival.com'; // deve essere un indirizzo del dominio
 
+// Controllo anti-robot Cloudflare Turnstile: incolla qui la "Secret key" (lascia '' per non usarlo)
+$turnstileSecret = '';
+
 function fail($code) { http_response_code($code); echo json_encode(['ok' => false]); exit; }
 function clean($v, $max = 300) {
     $v = trim((string)$v);
@@ -29,6 +32,20 @@ if (count($hits) >= 5) fail(429);
 $hits[] = time();
 @file_put_contents($file, implode("\n", $hits), LOCK_EX);
 if (!empty($_POST['website'])) { echo json_encode(['ok' => true]); exit; } // campo trappola per i bot
+
+if ($turnstileSecret !== '') {
+    $token = (string)($_POST['cf-turnstile-response'] ?? '');
+    if ($token === '') fail(422);
+    $ctx = stream_context_create(['http' => [
+        'method'  => 'POST',
+        'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
+        'content' => http_build_query(['secret' => $turnstileSecret, 'response' => $token, 'remoteip' => $_SERVER['REMOTE_ADDR'] ?? '']),
+        'timeout' => 8,
+    ]]);
+    $res = @file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify', false, $ctx);
+    $j = $res ? json_decode($res, true) : null;
+    if (empty($j['success'])) fail(403);
+}
 
 $name    = clean($_POST['name'] ?? '');
 $city    = clean($_POST['city'] ?? '');
