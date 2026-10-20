@@ -32,3 +32,5 @@ header { display: flex; gap: 8px; align-items: center; padding: 10px 0; }
 #items .tag.in { background: #c2410c; }
 #items .tag.x { background: #b91c1c; }
 #items button { padding: 8px 12px; font-size: .85rem; }
+select { font: inherit; border-radius: 10px; border: 1px solid #5b3a4d; background: #2b0d1d; color: #e9c987; padding: 8px 10px; }
+.langbar { display: flex; justify-content: flex-end; padding-top: 12px; }

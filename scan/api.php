@@ -23,7 +23,7 @@ if ($action === 'login' && $isPost) {
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'x';
     $file = sys_get_temp_dir() . '/lf_login_' . md5($ip);
     $hits = is_file($file) ? array_filter(array_map('intval', (array)@file($file, FILE_IGNORE_NEW_LINES)), function ($t) { return $t > time() - 900; }) : [];
-    if (count($hits) >= 8) { reply(['error' => 'troppi tentativi, riprova tra qualche minuto'], 429); }
+    if (count($hits) >= 8) { reply(['error' => 'too_many'], 429); }
     $hash = cfg()['scan']['password_hash'] ?? '';
     $pw = (string)($_POST['password'] ?? '');
     if ($hash !== '' && password_verify($pw, $hash)) {
@@ -35,12 +35,12 @@ if ($action === 'login' && $isPost) {
     $hits[] = time();
     @file_put_contents($file, implode("\n", $hits), LOCK_EX);
     usleep(600000);
-    reply(['error' => 'password errata'], 401);
+    reply(['error' => 'bad_password'], 401);
 }
 if ($action === 'logout' && $isPost) { $_SESSION = []; session_destroy(); reply(['ok' => true]); }
 if ($action === 'me') { reply(['staff' => !empty($_SESSION['staff'])]); }
 
-if (empty($_SESSION['staff'])) { reply(['error' => 'login richiesto'], 401); }
+if (empty($_SESSION['staff'])) { reply(['error' => 'login_required'], 401); }
 
 function csv_cell($v) {
     $v = (string)$v;
@@ -88,7 +88,7 @@ try {
         $st = $pdo->prepare('SELECT stripe_session_id FROM tickets WHERE code=?');
         $st->execute([$code]);
         $sid = $st->fetchColumn();
-        if (!$sid) { reply(['error' => 'biglietto non trovato'], 404); }
+        if (!$sid) { reply(['error' => 'not_found'], 404); }
         tk_send_for_session($sid, false);
         reply(['ok' => true]);
     }
@@ -104,8 +104,8 @@ try {
         exit;
     }
 
-    reply(['error' => 'azione sconosciuta'], 400);
+    reply(['error' => 'bad_action'], 400);
 } catch (Throwable $e) {
     log_line('scan: ' . get_class($e) . ' ' . $e->getMessage());
-    reply(['error' => 'errore del server'], 500);
+    reply(['error' => 'server_error'], 500);
 }
