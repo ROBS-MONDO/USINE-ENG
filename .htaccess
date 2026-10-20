@@ -10,7 +10,7 @@
 
   # Blocca file nascosti (tranne .well-known) e file di backup/sorgenti
   RewriteRule ^\.(?!well-known/) - [F,L]
-  RewriteRule \.(bak|old|orig|swp|sql|log|ini|sh|md)$ - [F,L,NC]
+  RewriteRule \.(bak|old|orig|swp|sql|log|ini|sh|md|oldphp)$ - [F,L,NC]
 </IfModule>
 
 # Niente elenco dei file nelle cartelle
@@ -30,7 +30,7 @@
   Header unset X-Powered-By
 </IfModule>
 
-# Nasconde la versione di PHP e proteggendo send.php da usi diversi da POST
+# send.php accetta solo richieste POST
 <IfModule mod_rewrite.c>
   RewriteCond %{REQUEST_URI} ^/send\.php$ [NC]
   RewriteCond %{REQUEST_METHOD} !^(POST|OPTIONS)$ [NC]
