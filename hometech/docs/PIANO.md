@@ -5,10 +5,10 @@ Marketplace on-demand: il cliente richiede un tecnico (idraulico, elettricista, 
 ## Struttura
 - `api/` backend Node.js/Express (archivio in memoria per ora). `npm install && npm start`, `npm test`.
 - `web/` sito di presentazione (HTML statico, da portare a Next.js quando serve l'area clienti/admin).
-- `app/` app Expo (React Native), unica app con ruolo cliente o tecnico. Lingue: FR, DE, EN, IT, PT (segue la lingua del telefono, predefinita FR).
+- `app/` app cliente Expo (React Native). L'app tecnici sarà separata (una prima versione delle schermate è nella cronologia git, commit "App: schermate tecnico"). Lingue: FR, DE, EN, IT, PT (segue la lingua del telefono, predefinita FR).
 
 ## Stato
-Fatto: schermate cliente e tecnico nell'app (disponibilità, richieste vicine, accetta, avanzamento), multilingua, registrazione, posizione e disponibilità tecnici, ricerca per vicinanza e competenza, richiesta, accettazione, avanzamento (accepted -> on_the_way -> in_progress -> done), test del flusso.
+Fatto: app cliente multilingua, registrazione, posizione e disponibilità tecnici, ricerca per vicinanza e competenza, richiesta, accettazione, avanzamento (accepted -> on_the_way -> in_progress -> done), test del flusso.
 
 ## Prossimi passi
 1. PostgreSQL + PostGIS al posto dell'archivio in memoria.

@@ -18,7 +18,7 @@
 
 ## App
 - Imposta `EXPO_PUBLIC_API_URL=https://tuodominio.it/api` e crea le build con EAS (`npx eas build`), poi pubblica su App Store e Google Play.
-- Le app devono parlare con l'API solo in HTTPS.
+- Le app (cliente e, in seguito, tecnici) devono parlare con l'API solo in HTTPS.
 
 ## Prima di aprire al pubblico
 - L'API oggi ha dati in memoria e nessun login vero: non va esposta a utenti reali finché non ci sono database (PostgreSQL/PostGIS) e autenticazione.
