@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HomeTech - Il tecnico giusto, a casa tua</title>
+  <style>
+    :root { --bg:#fff; --fg:#14213d; --accent:#fca311; --muted:#5c677d; --card:#f4f6fa; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#0d1321; --fg:#e8ecf4; --muted:#9aa5b8; --card:#1b2438; } }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,sans-serif; background:var(--bg); color:var(--fg); line-height:1.5; }
+    header, section, footer { max-width:960px; margin:0 auto; padding:24px 16px; }
+    nav { display:flex; justify-content:space-between; align-items:center; font-weight:700; }
+    h1 { font-size:clamp(2rem,6vw,3.2rem); line-height:1.1; margin:48px 0 16px; }
+    p.lead { color:var(--muted); font-size:1.15rem; max-width:560px; }
+    .btn { display:inline-block; background:var(--accent); color:#14213d; padding:14px 22px; border-radius:10px; font-weight:700; text-decoration:none; margin:8px 8px 0 0; }
+    .btn.alt { background:transparent; color:var(--fg); border:2px solid var(--accent); }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; }
+    .card { background:var(--card); padding:20px; border-radius:14px; }
+    .card h3 { margin:0 0 6px; }
+    footer { color:var(--muted); font-size:.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <nav><span>HomeTech</span><a href="#tecnici">Sei un tecnico?</a></nav>
+    <h1>Il tecnico giusto,<br>a casa tua in pochi minuti.</h1>
+    <p class="lead">Descrivi il problema, vedi i professionisti vicini a te e segui il loro arrivo in tempo reale.</p>
+    <a class="btn" href="#">Scarica l'app cliente</a>
+    <a class="btn alt" href="#tecnici">Lavora con noi</a>
+  </header>
+
+  <section>
+    <h2>Come funziona</h2>
+    <div class="grid">
+      <div class="card"><h3>1. Richiedi</h3>Scegli il tipo di intervento: idraulico, elettricista, fabbro e altri.</div>
+      <div class="card"><h3>2. Localizziamo</h3>Troviamo il tecnico disponibile più vicino a casa tua.</div>
+      <div class="card"><h3>3. Segui l'arrivo</h3>Vedi il tecnico in mappa e conferma l'intervento.</div>
+    </div>
+  </section>
+
+  <section id="tecnici">
+    <h2>Sei un tecnico?</h2>
+    <p class="lead">Ricevi richieste di lavoro nella tua zona, accetta quando vuoi e gestisci tutto dall'app.</p>
+    <a class="btn" href="#">Scarica l'app tecnici</a>
+  </section>
+
+  <footer>© HomeTech</footer>
+</body>
+</html>
