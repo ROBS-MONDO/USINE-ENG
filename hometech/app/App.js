@@ -1,60 +1,40 @@
 import { useState } from 'react';
 import { Button, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
-import * as Location from 'expo-location';
+import { api } from './src/api';
+import { SKILLS, t } from './src/i18n';
+import ClientScreen from './src/ClientScreen';
+import TechnicianScreen from './src/TechnicianScreen';
 
-const API = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
-const SKILLS = ['idraulico', 'elettricista', 'fabbro', 'caldaista', 'imbianchino', 'tuttofare'];
-
-async function api(method, path, body) {
-  const res = await fetch(API + path, { method, headers: { 'content-type': 'application/json' }, body: body && JSON.stringify(body) });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error);
-  return data;
-}
-
-// Schermata cliente minimale: login fittizio, scelta intervento, richiesta con posizione GPS.
+// Accesso fittizio (solo nome) finche' l'API non ha l'autenticazione vera.
 export default function App() {
-  const [client, setClient] = useState(null);
+  const [role, setRole] = useState('client');
   const [name, setName] = useState('');
-  const [skill, setSkill] = useState(SKILLS[0]);
-  const [description, setDescription] = useState('');
-  const [request, setRequest] = useState(null);
+  const [user, setUser] = useState(null);
   const [error, setError] = useState('');
 
-  const run = (fn) => async () => { setError(''); try { await fn(); } catch (e) { setError(e.message); } };
-
-  const register = run(async () => setClient(await api('POST', '/users', { name, role: 'client' })));
-
-  const send = run(async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') throw new Error('Serve il permesso di localizzazione');
-    const { coords } = await Location.getCurrentPositionAsync({});
-    setRequest(await api('POST', '/requests', { clientId: client.id, skill, description, lat: coords.latitude, lng: coords.longitude }));
-  });
-
-  const refresh = run(async () => setRequest(await api('GET', `/requests/${request.id}`)));
+  const enter = async () => {
+    setError('');
+    try {
+      setUser(await api('POST', '/users', { name, role, skills: role === 'technician' ? SKILLS : [] }));
+    } catch (e) { setError(e.message); }
+  };
 
   return (
     <SafeAreaView style={s.root}>
       <Text style={s.title}>HomeTech</Text>
-      {!client ? (
+      {!user ? (
         <View style={s.box}>
-          <TextInput style={s.input} placeholder="Il tuo nome" value={name} onChangeText={setName} />
-          <Button title="Entra" onPress={register} />
+          <View style={s.row}>
+            <Button title={role === 'client' ? `[${t.client}]` : t.client} onPress={() => setRole('client')} />
+            <Button title={role === 'technician' ? `[${t.technician}]` : t.technician} onPress={() => setRole('technician')} />
+          </View>
+          <TextInput style={s.input} placeholder={t.name} value={name} onChangeText={setName} />
+          <Button title={t.enter} onPress={enter} />
         </View>
-      ) : !request ? (
-        <View style={s.box}>
-          <Text>Che intervento serve?</Text>
-          <View style={s.row}>{SKILLS.map((k) => <Button key={k} title={k === skill ? `[${k}]` : k} onPress={() => setSkill(k)} />)}</View>
-          <TextInput style={s.input} placeholder="Descrivi il problema" value={description} onChangeText={setDescription} />
-          <Button title="Trova un tecnico" onPress={send} />
-        </View>
+      ) : user.role === 'client' ? (
+        <ClientScreen user={user} onError={setError} />
       ) : (
-        <View style={s.box}>
-          <Text>Stato: {request.status}</Text>
-          <Text>Tecnici vicini trovati: {request.candidates?.length ?? 0}</Text>
-          <Button title="Aggiorna" onPress={refresh} />
-        </View>
+        <TechnicianScreen user={user} onError={setError} />
       )}
       {!!error && <Text style={s.error}>{error}</Text>}
     </SafeAreaView>

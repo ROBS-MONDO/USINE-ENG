@@ -19,7 +19,11 @@ export function createApp(store = createStore()) {
   app.get('/technicians/:id/requests', (req, res) => res.json(store.openRequestsFor(req.params.id)));
 
   app.post('/requests', (req, res) => res.status(201).json(store.createRequest(req.body)));
-  app.get('/requests/:id', (req, res) => res.json(store.getRequest(req.params.id)));
+  app.get('/requests/:id', (req, res) => {
+    const r = store.getRequest(req.params.id);
+    const t = r.technicianId ? store.getUser(r.technicianId) : null;
+    res.json({ ...r, technician: t && { name: t.name, phone: t.phone, location: t.location } });
+  });
   app.post('/requests/:id/accept', (req, res) => res.json(store.accept(req.params.id, req.body.technicianId)));
   app.post('/requests/:id/status', (req, res) => res.json(store.advance(req.params.id, req.body.technicianId, req.body.status)));
 

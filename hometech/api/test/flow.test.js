@@ -26,6 +26,7 @@ test('flusso completo: richiesta, assegnazione al piu vicino, intervento', async
 
     assert.equal((await call('POST', `/requests/${req.id}/accept`, { technicianId: near.id })).body.status, 'accepted');
     assert.equal((await call('POST', `/requests/${req.id}/accept`, { technicianId: far.id })).status, 409);
+    assert.equal((await call('GET', `/requests/${req.id}`)).body.technician.name, 'Vicino');
     assert.equal((await call('POST', `/requests/${req.id}/status`, { technicianId: near.id, status: 'done' })).status, 409);
     for (const s of ['on_the_way', 'in_progress', 'done']) {
       assert.equal((await call('POST', `/requests/${req.id}/status`, { technicianId: near.id, status: s })).body.status, s);
