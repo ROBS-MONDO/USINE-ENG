@@ -3,9 +3,9 @@ package Banbury;
 import java.awt.*;
 
 /** SYNOPTIQUE 2: BAMBURY 1 (mescolatore W118, serbatoio Ceraclor CS201). */
-public class SynoptiqueBambury1 extends SynoptiquePanel {
+public class GovoniBY1 extends SynoptiquePanel {
 
-    public SynoptiqueBambury1() {
+    public GovoniBY1() {
         cfg.title = "SYNOPTIQUE 2: BAMBURY 1";
         cfg.lslFormat = "LSL1%02d";
         cfg.suffix = "A";

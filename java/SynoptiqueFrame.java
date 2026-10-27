@@ -9,8 +9,8 @@ public class SynoptiqueFrame extends JFrame {
     public SynoptiqueFrame() {
         super("Sinottici Bambury");
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Synoptique 2: Bambury 1", new SynoptiqueBambury1());
-        tabs.addTab("Synoptique 3: Bambury 2", new SynoptiqueBambury2());
+        tabs.addTab("Synoptique 2: Bambury 1", new GovoniBY1());
+        tabs.addTab("Synoptique 3: Bambury 2", new GovoniBY2());
         add(tabs, BorderLayout.CENTER);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();
