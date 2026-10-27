@@ -6,6 +6,9 @@ DOMAIN="${1:?uso: setup-server.sh dominio.it}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
 if command -v dnf >/dev/null 2>&1; then
+  # Le immagini VPS sono vecchie: aggiorna tutto per primo, altrimenti OpenSSH e OpenSSL
+  # possono restare non allineati e SSH smette di funzionare.
+  dnf -y upgrade
   dnf -y install epel-release
   dnf -y install nginx certbot python3-certbot-nginx git curl rsync tar firewalld fail2ban policycoreutils-python-utils dnf-automatic
   curl -fsSL https://rpm.nodesource.com/setup_22.x | bash -
@@ -29,6 +32,7 @@ if command -v dnf >/dev/null 2>&1; then
   NGINX_CONF=/etc/nginx/conf.d/hometech.conf
 else
   apt-get update
+  apt-get -y upgrade
   apt-get install -y nginx certbot python3-certbot-nginx ufw fail2ban git curl rsync unattended-upgrades
   curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
   apt-get install -y nodejs
