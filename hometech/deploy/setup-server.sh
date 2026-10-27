@@ -7,7 +7,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 
 if command -v dnf >/dev/null 2>&1; then
   dnf -y install epel-release
-  dnf -y install nginx certbot python3-certbot-nginx git curl rsync tar firewalld policycoreutils-python-utils dnf-automatic
+  dnf -y install nginx certbot python3-certbot-nginx git curl rsync tar firewalld fail2ban policycoreutils-python-utils dnf-automatic
   curl -fsSL https://rpm.nodesource.com/setup_22.x | bash -
   dnf -y install nodejs
 
@@ -22,10 +22,14 @@ if command -v dnf >/dev/null 2>&1; then
   sed -i 's/^apply_updates.*/apply_updates = yes/' /etc/dnf/automatic.conf
   systemctl enable --now dnf-automatic.timer
 
+  # Blocca per un'ora chi sbaglia 5 volte l'accesso SSH in 10 minuti
+  printf '[sshd]\nenabled = true\nmaxretry = 5\nfindtime = 10m\nbantime = 1h\n' > /etc/fail2ban/jail.d/sshd.local
+  systemctl enable --now fail2ban
+
   NGINX_CONF=/etc/nginx/conf.d/hometech.conf
 else
   apt-get update
-  apt-get install -y nginx certbot python3-certbot-nginx ufw git curl rsync unattended-upgrades
+  apt-get install -y nginx certbot python3-certbot-nginx ufw fail2ban git curl rsync unattended-upgrades
   curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
   apt-get install -y nodejs
 
