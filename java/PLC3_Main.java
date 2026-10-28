@@ -444,12 +444,7 @@ public class PLC3_Main extends JFrame {
                 NodeId.parse("ns=2;s=Banbury 2.PLC3.R101");
 
         private static final NodeId NODE_DOSAGGIO_DOA =
-                NodeId.parse("ns=2;s=Banbury 2.PLC3.M06010");
-        // DIAGNOSTIC DOA: tag alternatif sans zéro (M6010), essayé avant M06010
-        private static final NodeId NODE_DOSAGGIO_DOA_SANS_ZERO =
                 NodeId.parse("ns=2;s=Banbury 2.PLC3.M6010");
-        private static final int DOA_DIAG_PAUSE_MS = 2000;
-
         private static final NodeId NODE_DOSAGGIO_SILANO =
                 NodeId.parse("ns=2;s=Banbury 2.PLC3.M06011");
         private static final NodeId NODE_DOSAGGIO_OLIO =
@@ -3164,20 +3159,12 @@ public class PLC3_Main extends JFrame {
 
                     Thread.sleep(150);
 
-                    // DIAGNOSTIC: essai M6010 puis, après une pause, M06010
-                    StatusCode stOnSansZero = tryDoaWrite(NODE_DOSAGGIO_DOA_SANS_ZERO, true);
+                    StatusCode stOn = writeBooleanNode(NODE_DOSAGGIO_DOA, true);
+                    if (!isGood(stOn)) {
+                        throw new RuntimeException("Écriture TRUE DOA refusée : " + stOn);
+                    }
+
                     mustWriteFalse = true;
-
-                    StatusCode stOnAvecZero = null;
-                    if (waitDoaSecondSendConfirmation(stOnSansZero)) {
-                        stOnAvecZero = tryDoaWrite(NODE_DOSAGGIO_DOA, true);
-                    }
-
-                    if (!isGood(stOnSansZero) && !isGood(stOnAvecZero)) {
-                        mustWriteFalse = false;
-                        throw new RuntimeException("Écriture TRUE DOA refusée : M6010=" + stOnSansZero
-                                + " / M06010=" + (stOnAvecZero == null ? "non envoyé" : stOnAvecZero));
-                    }
 
                     waitUntilLiquidSequenceMustStop(NODE_LIQUID_RESET_MONITOR);
 
@@ -3185,11 +3172,9 @@ public class PLC3_Main extends JFrame {
                         return;
                     }
 
-                    StatusCode stOffSansZero = tryDoaWrite(NODE_DOSAGGIO_DOA_SANS_ZERO, false);
-                    StatusCode stOffAvecZero = tryDoaWrite(NODE_DOSAGGIO_DOA, false);
-                    if (!isGood(stOffSansZero) && !isGood(stOffAvecZero)) {
-                        throw new RuntimeException("Écriture FALSE DOA refusée : M6010=" + stOffSansZero
-                                + " / M06010=" + stOffAvecZero);
+                    StatusCode stOff = writeBooleanNode(NODE_DOSAGGIO_DOA, false);
+                    if (!isGood(stOff)) {
+                        throw new RuntimeException("Écriture FALSE DOA refusée : " + stOff);
                     }
 
                     mustWriteFalse = false;
@@ -3224,10 +3209,6 @@ public class PLC3_Main extends JFrame {
 
                     if (mustWriteFalse) {
                         try {
-                            writeBooleanNode(NODE_DOSAGGIO_DOA_SANS_ZERO, false);
-                        } catch (Exception ignored) {
-                        }
-                        try {
                             writeBooleanNode(NODE_DOSAGGIO_DOA, false);
                         } catch (Exception ignored) {
                         }
@@ -3257,140 +3238,6 @@ public class PLC3_Main extends JFrame {
                     });
                 }
             }, "plc3-doa-sequence-thread").start();
-        }
-
-        /**
-         * DIAGNOSTIC DOA: écrit sur un des deux tags (M6010 / M06010), affiche une fenêtre
-         * non bloquante avec le tag en cours et logue le résultat. Ne lève pas d'exception
-         * pour que l'autre tag puisse être essayé.
-         */
-        private StatusCode tryDoaWrite(NodeId node, boolean value) {
-            final String tagName = node.toParseableString();
-            final String action = value ? "TRUE" : "FALSE";
-
-            JDialog info = showDoaDiagDialog(
-                    "Écriture " + action + " DOA sur le tag :\n" + tagName);
-
-            StatusCode status = null;
-            String outcome;
-            String details;
-            try {
-                status = writeBooleanNode(node, value);
-                outcome = isGood(status) ? "SUCCESS" : "REJECTED";
-                details = action + " " + status;
-            } catch (Exception ex) {
-                outcome = "ERROR";
-                details = action + " " + ex.getMessage();
-            }
-
-            PLC3_Main.logWrite(node, action, action, outcome, "DOA diagnostic: " + details);
-
-            final String resultText = "Écriture " + action + " DOA sur le tag :\n" + tagName
-                    + "\n\nRésultat : " + outcome + "\n" + details;
-            updateDoaDiagDialog(info, resultText);
-            try {
-                Thread.sleep(DOA_DIAG_PAUSE_MS);
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-            }
-            closeDoaDiagDialog(info);
-
-            return status;
-        }
-
-        /**
-         * DIAGNOSTIC DOA: après le premier envoi (M6010), attend que l'opérateur clique sur
-         * le bouton pour envoyer aussi sur M06010. Retourne false si l'opérateur annule.
-         */
-        private boolean waitDoaSecondSendConfirmation(StatusCode firstResult) {
-            final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
-            final AtomicBoolean send = new AtomicBoolean(false);
-            final JDialog[] holder = new JDialog[1];
-
-            try {
-                SwingUtilities.invokeAndWait(() -> {
-                    JDialog d = new JDialog(parentFrame, "DOA - diagnostic tag", false);
-                    d.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-
-                    JTextArea area = new JTextArea(
-                            "Premier envoi sur M6010 : " + firstResult
-                                    + "\n\nProchain tag : " + NODE_DOSAGGIO_DOA.toParseableString());
-                    area.setEditable(false);
-                    area.setFont(new Font("SansSerif", Font.BOLD, 18));
-                    area.setBorder(BorderFactory.createEmptyBorder(16, 24, 16, 24));
-
-                    JButton btnSend = new JButton("ENVOYER sur M06010");
-                    btnSend.setFont(new Font("SansSerif", Font.BOLD, 18));
-                    btnSend.addActionListener(e -> {
-                        send.set(true);
-                        latch.countDown();
-                    });
-
-                    JButton btnSkip = new JButton("NE PAS ENVOYER");
-                    btnSkip.setFont(new Font("SansSerif", Font.BOLD, 18));
-                    btnSkip.addActionListener(e -> latch.countDown());
-
-                    JPanel buttons = new JPanel();
-                    buttons.add(btnSend);
-                    buttons.add(btnSkip);
-
-                    d.add(area, BorderLayout.CENTER);
-                    d.add(buttons, BorderLayout.SOUTH);
-                    d.pack();
-                    d.setLocationRelativeTo(parentFrame);
-                    d.setVisible(true);
-                    holder[0] = d;
-                });
-
-                while (!shutdown && !latch.await(250, TimeUnit.MILLISECONDS)) {
-                    // attente du clic opérateur
-                }
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-            } catch (Exception ignored) {
-            } finally {
-                closeDoaDiagDialog(holder[0]);
-            }
-
-            return send.get() && !shutdown;
-        }
-
-        private JDialog showDoaDiagDialog(String text) {
-            final JDialog[] holder = new JDialog[1];
-            try {
-                SwingUtilities.invokeAndWait(() -> {
-                    JDialog d = new JDialog(parentFrame, "DOA - diagnostic tag", false);
-                    JTextArea area = new JTextArea(text);
-                    area.setEditable(false);
-                    area.setFont(new Font("SansSerif", Font.BOLD, 18));
-                    area.setBorder(BorderFactory.createEmptyBorder(16, 24, 16, 24));
-                    d.add(area);
-                    d.pack();
-                    d.setLocationRelativeTo(parentFrame);
-                    d.setVisible(true);
-                    holder[0] = d;
-                });
-            } catch (Exception ignored) {
-            }
-            return holder[0];
-        }
-
-        private void updateDoaDiagDialog(JDialog dialog, String text) {
-            if (dialog == null) return;
-            SwingUtilities.invokeLater(() -> {
-                for (Component c : dialog.getContentPane().getComponents()) {
-                    if (c instanceof JTextArea) {
-                        ((JTextArea) c).setText(text);
-                    }
-                }
-                dialog.pack();
-                dialog.setLocationRelativeTo(parentFrame);
-            });
-        }
-
-        private void closeDoaDiagDialog(JDialog dialog) {
-            if (dialog == null) return;
-            SwingUtilities.invokeLater(dialog::dispose);
         }
 
         private void handleHuileButtonClick() {
