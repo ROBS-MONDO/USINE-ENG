@@ -3167,13 +3167,16 @@ public class PLC3_Main extends JFrame {
                     // DIAGNOSTIC: essai M6010 puis, après une pause, M06010
                     StatusCode stOnSansZero = tryDoaWrite(NODE_DOSAGGIO_DOA_SANS_ZERO, true);
                     mustWriteFalse = true;
-                    Thread.sleep(DOA_DIAG_PAUSE_MS);
-                    StatusCode stOnAvecZero = tryDoaWrite(NODE_DOSAGGIO_DOA, true);
+
+                    StatusCode stOnAvecZero = null;
+                    if (waitDoaSecondSendConfirmation(stOnSansZero)) {
+                        stOnAvecZero = tryDoaWrite(NODE_DOSAGGIO_DOA, true);
+                    }
 
                     if (!isGood(stOnSansZero) && !isGood(stOnAvecZero)) {
                         mustWriteFalse = false;
                         throw new RuntimeException("Écriture TRUE DOA refusée : M6010=" + stOnSansZero
-                                + " / M06010=" + stOnAvecZero);
+                                + " / M06010=" + (stOnAvecZero == null ? "non envoyé" : stOnAvecZero));
                     }
 
                     waitUntilLiquidSequenceMustStop(NODE_LIQUID_RESET_MONITOR);
@@ -3293,6 +3296,63 @@ public class PLC3_Main extends JFrame {
             closeDoaDiagDialog(info);
 
             return status;
+        }
+
+        /**
+         * DIAGNOSTIC DOA: après le premier envoi (M6010), attend que l'opérateur clique sur
+         * le bouton pour envoyer aussi sur M06010. Retourne false si l'opérateur annule.
+         */
+        private boolean waitDoaSecondSendConfirmation(StatusCode firstResult) {
+            final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+            final AtomicBoolean send = new AtomicBoolean(false);
+            final JDialog[] holder = new JDialog[1];
+
+            try {
+                SwingUtilities.invokeAndWait(() -> {
+                    JDialog d = new JDialog(parentFrame, "DOA - diagnostic tag", false);
+                    d.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+                    JTextArea area = new JTextArea(
+                            "Premier envoi sur M6010 : " + firstResult
+                                    + "\n\nProchain tag : " + NODE_DOSAGGIO_DOA.toParseableString());
+                    area.setEditable(false);
+                    area.setFont(new Font("SansSerif", Font.BOLD, 18));
+                    area.setBorder(BorderFactory.createEmptyBorder(16, 24, 16, 24));
+
+                    JButton btnSend = new JButton("ENVOYER sur M06010");
+                    btnSend.setFont(new Font("SansSerif", Font.BOLD, 18));
+                    btnSend.addActionListener(e -> {
+                        send.set(true);
+                        latch.countDown();
+                    });
+
+                    JButton btnSkip = new JButton("NE PAS ENVOYER");
+                    btnSkip.setFont(new Font("SansSerif", Font.BOLD, 18));
+                    btnSkip.addActionListener(e -> latch.countDown());
+
+                    JPanel buttons = new JPanel();
+                    buttons.add(btnSend);
+                    buttons.add(btnSkip);
+
+                    d.add(area, BorderLayout.CENTER);
+                    d.add(buttons, BorderLayout.SOUTH);
+                    d.pack();
+                    d.setLocationRelativeTo(parentFrame);
+                    d.setVisible(true);
+                    holder[0] = d;
+                });
+
+                while (!shutdown && !latch.await(250, TimeUnit.MILLISECONDS)) {
+                    // attente du clic opérateur
+                }
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            } catch (Exception ignored) {
+            } finally {
+                closeDoaDiagDialog(holder[0]);
+            }
+
+            return send.get() && !shutdown;
         }
 
         private JDialog showDoaDiagDialog(String text) {
