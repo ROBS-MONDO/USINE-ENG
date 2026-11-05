@@ -6,6 +6,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,7 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Tracciabilita' materie prime - VERSIONE DI PROVA con inserimento a mano.
+ * Tracciabilita' materie prime.
  *
  * Tre schede:
  *  1. Ingresso merce : registra un lotto in arrivo (bolla, fornitore, lotto
@@ -25,21 +30,25 @@ import java.util.Map;
  *     interno, quantita' pesata) con controllo di tolleranza e residuo.
  *  3. Tracciabilita' : ricerca per lotto interno / lotto fornitore / batch / MP.
  *
- * IMPORTANTE: per ora NON c'e' nessun collegamento al database. I dati vivono
- * solo in memoria e si perdono alla chiusura. Tutto il codice SQL e' lasciato
- * in commento (cercare "DB-REM") ed e' pronto da riattivare, insieme allo
- * script CREATE TABLE riportato in fondo al file.
+ * DATABASE: se nella cartella di lancio c'e' il file "tracciabilita.properties" (oppure
+ * le variabili d'ambiente TRACC_DB_USER / TRACC_DB_PASSWORD) con le credenziali, i dati
+ * sono letti/scritti sulle tabelle di sql/tracciabilita_tabelle.sql (SQL Server "Mondo").
+ * Senza credenziali il programma parte in modalita' manuale: dati solo in memoria, persi
+ * alla chiusura. Le credenziali NON sono nel codice.
  */
 public class TracciabilitaManager extends JFrame {
 
-    private static final String VERSION = "V0.01 (manuale, senza DB)";
+    private static final String VERSION = "V0.02";
 
-    // DB-REM: collegamento a SQL Server "Mondo" (stesso di DistintaBaseManager).
-    // private static final String DB_URL =
-    //         "jdbc:sqlserver://srv-bambury:1433;databaseName=Mondo;encrypt=true;"
-    //                 + "trustServerCertificate=true;sslProtocol=TLSv1.2;loginTimeout=5";
-    // private static final String DB_USER = "...";      // spostare in file di configurazione
-    // private static final String DB_PASSWORD = "...";
+    // Collegamento a SQL Server "Mondo" (stesso server di DistintaBaseManager).
+    private static final String DB_URL =
+            "jdbc:sqlserver://srv-bambury:1433;databaseName=Mondo;encrypt=true;"
+                    + "trustServerCertificate=true;sslProtocol=TLSv1.2;loginTimeout=5";
+    private static final String CONFIG_FILE = "tracciabilita.properties";
+    private String dbUrl = DB_URL;
+    private String dbUser = "";
+    private String dbPassword = "";
+    private boolean dbAttivo = false;
 
     /** Merce arrivata ma non ancora validata (controllo qualita'/accettazione): non utilizzabile. */
     private static final String STATO_DA_VALIDARE = "DA VALIDARE";
@@ -98,6 +107,7 @@ public class TracciabilitaManager extends JFrame {
     public TracciabilitaManager() {
         super("Traçabilité matières premières - " + VERSION);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        caricaConfigurazione();
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.setFont(new Font("SansSerif", Font.BOLD, 15));
@@ -105,10 +115,24 @@ public class TracciabilitaManager extends JFrame {
         tabs.addTab("Prelievo zona", buildPrelievoPanel());
         tabs.addTab("Tracciabilità", buildRicercaPanel());
 
-        JLabel avviso = new JLabel("  Modalità manuale: nessun collegamento al database, i dati restano solo in memoria.");
+        JLabel avviso = new JLabel();
         avviso.setOpaque(true);
-        avviso.setBackground(new Color(255, 244, 199));
         avviso.setBorder(new EmptyBorder(4, 4, 4, 4));
+        avviso.setBackground(new Color(255, 244, 199));
+        avviso.setText("  Modalità manuale: nessun collegamento al database, i dati restano solo in memoria "
+                + "(creare " + CONFIG_FILE + " con db.user e db.password per attivarlo).");
+        if (dbAttivo) {
+            try {
+                caricaDaDb();
+                avviso.setText("  Collegato al database Mondo (SRV-BAMBURY) come " + dbUser + ".");
+                avviso.setBackground(new Color(214, 240, 214));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                dbAttivo = false;
+                avviso.setText("  Database non raggiungibile (" + messaggio(ex)
+                        + "): modalità manuale, i dati restano solo in memoria.");
+            }
+        }
 
         JPanel root = new JPanel(new BorderLayout());
         root.add(avviso, BorderLayout.NORTH);
@@ -166,7 +190,7 @@ public class TracciabilitaManager extends JFrame {
                     catch (Exception ex) { throw new IllegalStateException("Scadenza non valida (usare AAAA-MM-GG)."); }
                 }
                 Lotto l = new Lotto();
-                l.lottoInterno = nextLottoInterno();
+                l.lottoInterno = dbAttivo ? "" : nextLottoInterno();   // con il DB lo assegna la sequenza
                 l.codiceMp = mp;
                 l.descrizione = txtDescr.getText().trim();
                 l.fornitore = txtFornitore.getText().trim();
@@ -177,8 +201,10 @@ public class TracciabilitaManager extends JFrame {
                 l.qtaResidua = qta;
                 l.um = (String) cbUm.getSelectedItem();
                 l.stato = (String) cbStato.getSelectedItem();
+                if (dbAttivo) {
+                    salvaLottoDb(l);   // assegna l.lottoInterno e scrive MpLotto + MpMovimento in transazione
+                }
                 lotti.put(l.lottoInterno, l);
-                // DB-REM: salvaLotto(l);  // INSERT INTO dbo.MpLotto ... (vedi script in fondo)
                 refreshLottiTable();
                 JOptionPane.showMessageDialog(this, "Lotto interno creato: " + l.lottoInterno
                         + "\n(stampare l'etichetta e applicarla al sacco/pallet)",
@@ -210,8 +236,16 @@ public class TracciabilitaManager extends JFrame {
                         "Lotto da validare", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            l.stato = "OK".equals(l.stato) ? "BLOCCATO" : "OK";
-            // DB-REM: aggiornaStatoLotto(l);  // UPDATE dbo.MpLotto SET Stato = ? WHERE LottoInterno = ?
+            String nuovo = "OK".equals(l.stato) ? "BLOCCATO" : "OK";
+            try {
+                if (dbAttivo) {
+                    aggiornaStatoDb(l.lottoInterno, l.stato, nuovo);
+                }
+            } catch (Exception ex) {
+                erroreDb(ex);
+                return;
+            }
+            l.stato = nuovo;
             refreshLottiTable();
         });
 
@@ -228,10 +262,27 @@ public class TracciabilitaManager extends JFrame {
                     "Validazione del lotto " + l.lottoInterno + " (" + l.codiceMp + ").\nNome di chi valida:",
                     "Valida lotto", JOptionPane.QUESTION_MESSAGE);
             if (chi == null || chi.trim().isEmpty()) return;
+            try {
+                if (dbAttivo) {
+                    validaLottoDb(l.lottoInterno, chi.trim());
+                }
+            } catch (Exception ex) {
+                erroreDb(ex);
+                return;
+            }
             l.stato = "OK";
             l.validatoDa = chi.trim() + " " + LocalDateTime.now().format(TS);
-            // DB-REM: validaLotto(l);  // UPDATE dbo.MpLotto SET Stato='OK', ValidatoDa=?, DataValidazione=SYSDATETIME()
             refreshLottiTable();
+        });
+
+        JButton btnAggiorna = new JButton("Aggiorna dal DB");
+        btnAggiorna.setEnabled(dbAttivo);
+        btnAggiorna.addActionListener(e -> {
+            try {
+                ricaricaLottiDb();
+            } catch (Exception ex) {
+                erroreDb(ex);
+            }
         });
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
@@ -240,6 +291,7 @@ public class TracciabilitaManager extends JFrame {
         buttons.add(btnEtichetta);
         buttons.add(btnValida);
         buttons.add(btnStato);
+        buttons.add(btnAggiorna);
 
         lottiTable = new JTable(lottiModel);
         styleTable(lottiTable);
@@ -287,8 +339,7 @@ public class TracciabilitaManager extends JFrame {
 
     private String nextLottoInterno() {
         contatoreLotto++;
-        // DB-REM: con il DB il progressivo va letto/riservato in tabella (es. SEQUENCE o
-        // SELECT MAX) per evitare doppioni tra piu' postazioni.
+        // Solo modalita' manuale: con il DB il progressivo viene dalla sequenza dbo.SeqLottoInterno.
         return String.format(Locale.ROOT, "L%02d-%06d", LocalDate.now().getYear() % 100, contatoreLotto);
     }
 
@@ -321,6 +372,7 @@ public class TracciabilitaManager extends JFrame {
         lblBilancia.setForeground(Color.GRAY);
         JButton btnConnetti = new JButton("Connetti bilancia");
         JButton btnLeggi = new JButton("Leggi peso dalla bilancia");
+        final String[] pesoLetto = {null};   // ultimo peso copiato dalla bilancia (per distinguere il peso digitato a mano)
         upper(txtBatch);
         upper(txtMp);
         upper(txtLotto);
@@ -443,7 +495,8 @@ public class TracciabilitaManager extends JFrame {
                         "Bilancia", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            txtPesata.setText(formatNum(v));
+            pesoLetto[0] = formatNum(v);
+            txtPesata.setText(pesoLetto[0]);
         });
 
         JButton btnSave = new JButton("Registra prelievo");
@@ -470,6 +523,9 @@ public class TracciabilitaManager extends JFrame {
                 String batch = txtBatch.getText().trim().toUpperCase(Locale.ROOT);
                 if (batch.isEmpty()) throw new IllegalStateException("Batch obbligatorio.");
                 String lottoId = txtLotto.getText().trim().toUpperCase(Locale.ROOT);
+                if (dbAttivo) {
+                    ricaricaLottiDb();   // stato, residui e lotti inseriti da altre postazioni
+                }
                 Lotto l = lotti.get(lottoId);
                 if (l == null) throw new IllegalStateException("Lotto interno " + lottoId + " inesistente.");
                 String mp = txtMp.getText().trim().toUpperCase(Locale.ROOT);
@@ -548,24 +604,28 @@ public class TracciabilitaManager extends JFrame {
                 p.um = umPesata;
                 p.esito = esito;
                 p.operatore = txtOperatore.getText().trim();
-                contatorePrelievo++;
-                p.id = String.format(Locale.ROOT, "P%02d-%07d", LocalDate.now().getYear() % 100, contatorePrelievo);
+                p.manuale = !txtPesata.getText().trim().equals(pesoLetto[0]);
+                if (dbAttivo) {
+                    // assegna p.id, ricontrolla stato/residuo e scrive BatchPrelievo + MpMovimento in transazione
+                    salvaPrelievoDb(p, l, pesataInUmLotto);
+                } else {
+                    contatorePrelievo++;
+                    p.id = String.format(Locale.ROOT, "P%02d-%07d", LocalDate.now().getYear() % 100, contatorePrelievo);
+                }
                 prelievi.add(p);
                 l.qtaResidua -= pesataInUmLotto;
-                // DB-REM: salvaPrelievo(p);  // INSERT INTO dbo.BatchPrelievo + INSERT dbo.MpMovimento (in transazione)
 
-                prelieviModel.addRow(new Object[]{p.dataOra, p.batch, p.zona, p.codiceMp, p.lottoInterno,
-                        formatNum(p.qtaPrevista), formatNum(p.min), formatNum(p.max),
-                        formatNum(p.qtaPesata) + " " + p.um, p.esito, p.operatore});
+                addPrelievoRow(p);
                 refreshLottiTable();
                 if (chkStampa.isSelected()) {
                     stampaZpl(p.zona, buildZplDose(p, l));
                 }
                 txtLotto.setText("");
                 txtPesata.setText("");
+                pesoLetto[0] = null;
                 txtLotto.requestFocusInWindow();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+                erroreDb(ex);
             }
         });
 
@@ -605,6 +665,14 @@ public class TracciabilitaManager extends JFrame {
         Runnable cerca = () -> {
             String q = txtCerca.getText().trim().toUpperCase(Locale.ROOT);
             ricercaModel.setRowCount(0);
+            if (dbAttivo) {
+                try {
+                    cercaDb(q);
+                } catch (Exception ex) {
+                    erroreDb(ex);
+                }
+                return;
+            }
             for (Prelievo p : prelievi) {
                 Lotto l = lotti.get(p.lottoInterno);
                 String lf = l == null ? "" : l.lottoFornitore;
@@ -617,7 +685,6 @@ public class TracciabilitaManager extends JFrame {
                             lf, bolla, formatNum(p.qtaPesata) + " " + p.um, p.esito, p.operatore});
                 }
             }
-            // DB-REM: versione con DB = SELECT da dbo.BatchPrelievo JOIN dbo.MpLotto con gli stessi filtri.
         };
         btnCerca.addActionListener(e -> cerca.run());
         txtCerca.addActionListener(e -> cerca.run());
@@ -635,6 +702,311 @@ public class TracciabilitaManager extends JFrame {
         p.add(top, BorderLayout.NORTH);
         p.add(new JScrollPane(t), BorderLayout.CENTER);
         return p;
+    }
+
+    // ------------------------------------------------------------------
+    // Accesso al database (attivo solo se configurato: vedi caricaConfigurazione)
+    // ------------------------------------------------------------------
+
+    private void caricaConfigurazione() {
+        java.util.Properties pr = new java.util.Properties();
+        java.io.File f = new java.io.File(CONFIG_FILE);
+        if (f.isFile()) {
+            try (java.io.InputStream in = new java.io.FileInputStream(f)) {
+                pr.load(in);
+            } catch (Exception ex) {
+                System.err.println("Impossibile leggere " + CONFIG_FILE + ": " + ex.getMessage());
+            }
+        }
+        dbUrl = pr.getProperty("db.url", DB_URL).trim();
+        String u = System.getenv("TRACC_DB_USER");
+        String pw = System.getenv("TRACC_DB_PASSWORD");
+        dbUser = (u != null && !u.isEmpty() ? u : pr.getProperty("db.user", "")).trim();
+        dbPassword = pw != null && !pw.isEmpty() ? pw : pr.getProperty("db.password", "");
+        dbAttivo = !dbUser.isEmpty();
+    }
+
+    private Connection openConnection() throws Exception {
+        System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
+        System.setProperty("https.protocols", "TLSv1.2");
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        DriverManager.setLoginTimeout(5);
+        return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+    }
+
+    private static String nz(String s) {
+        return s == null ? "" : s.trim();
+    }
+
+    private static String messaggio(Exception ex) {
+        return ex.getMessage() == null ? ex.getClass().getSimpleName() : ex.getMessage();
+    }
+
+    private void erroreDb(Exception ex) {
+        if (!(ex instanceof IllegalStateException)) {
+            ex.printStackTrace();
+        }
+        JOptionPane.showMessageDialog(this, messaggio(ex), "Erreur", JOptionPane.ERROR_MESSAGE);
+    }
+
+    /** Carica lotti e ultimi prelievi dal database all'avvio. */
+    private void caricaDaDb() throws Exception {
+        try (Connection conn = openConnection()) {
+            leggiLotti(conn);
+            prelievi.clear();
+            prelieviModel.setRowCount(0);
+            String sql = "SELECT TOP 1000 IdPrelievo, BatchId, Zona, CodiceMP, LottoInterno, QtaPrevista, PesoMin, "
+                    + "PesoMax, QtaPesata, UM, Esito, PesoManuale, Operatore, "
+                    + "CONVERT(VARCHAR(19), DataOra, 120) AS DataOra FROM dbo.BatchPrelievo ORDER BY Id DESC";
+            List<Prelievo> recenti = new ArrayList<>();
+            try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Prelievo p = new Prelievo();
+                    p.id = nz(rs.getString("IdPrelievo"));
+                    p.batch = nz(rs.getString("BatchId"));
+                    p.zona = nz(rs.getString("Zona"));
+                    p.codiceMp = nz(rs.getString("CodiceMP"));
+                    p.lottoInterno = nz(rs.getString("LottoInterno"));
+                    p.qtaPrevista = rs.getDouble("QtaPrevista");
+                    p.min = rs.getDouble("PesoMin");
+                    p.max = rs.getDouble("PesoMax");
+                    p.qtaPesata = rs.getDouble("QtaPesata");
+                    p.um = nz(rs.getString("UM"));
+                    p.esito = nz(rs.getString("Esito"));
+                    p.manuale = rs.getBoolean("PesoManuale");
+                    p.operatore = nz(rs.getString("Operatore"));
+                    p.dataOra = nz(rs.getString("DataOra"));
+                    recenti.add(p);
+                }
+            }
+            for (int i = recenti.size() - 1; i >= 0; i--) {   // dal piu' vecchio al piu' recente
+                prelievi.add(recenti.get(i));
+                addPrelievoRow(recenti.get(i));
+            }
+        }
+        refreshLottiTable();
+    }
+
+    private void ricaricaLottiDb() throws Exception {
+        try (Connection conn = openConnection()) {
+            leggiLotti(conn);
+        }
+        refreshLottiTable();
+    }
+
+    /** Legge tutti i lotti; il residuo e' la somma dei movimenti (MpMovimento). */
+    private void leggiLotti(Connection conn) throws SQLException {
+        String sql = "SELECT l.LottoInterno, l.CodiceMP, l.Descrizione, l.Fornitore, l.BollaIngresso, "
+                + "l.LottoFornitore, CONVERT(VARCHAR(10), l.Scadenza, 23) AS Scadenza, l.QtaIniziale, l.UM, "
+                + "l.Stato, l.ValidatoDa, CONVERT(VARCHAR(19), l.DataValidazione, 120) AS DataValidazione, "
+                + "COALESCE((SELECT SUM(m.Qta) FROM dbo.MpMovimento m WHERE m.LottoInterno = l.LottoInterno), 0) AS Residuo "
+                + "FROM dbo.MpLotto l ORDER BY l.DataIngresso, l.LottoInterno";
+        Map<String, Lotto> letti = new LinkedHashMap<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Lotto l = new Lotto();
+                l.lottoInterno = nz(rs.getString("LottoInterno"));
+                l.codiceMp = nz(rs.getString("CodiceMP"));
+                l.descrizione = nz(rs.getString("Descrizione"));
+                l.fornitore = nz(rs.getString("Fornitore"));
+                l.bolla = nz(rs.getString("BollaIngresso"));
+                l.lottoFornitore = nz(rs.getString("LottoFornitore"));
+                l.scadenza = nz(rs.getString("Scadenza"));
+                l.qtaIniziale = rs.getDouble("QtaIniziale");
+                l.qtaResidua = rs.getDouble("Residuo");
+                l.um = nz(rs.getString("UM"));
+                l.stato = nz(rs.getString("Stato"));
+                String chi = nz(rs.getString("ValidatoDa"));
+                String quando = nz(rs.getString("DataValidazione"));
+                l.validatoDa = (chi + " " + quando).trim();
+                letti.put(l.lottoInterno, l);
+            }
+        }
+        lotti.clear();
+        lotti.putAll(letti);
+    }
+
+    private int prossimoDaSequenza(Connection conn, String sequenza) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement("SELECT NEXT VALUE FOR " + sequenza);
+             ResultSet rs = ps.executeQuery()) {
+            rs.next();
+            return rs.getInt(1);
+        }
+    }
+
+    /** Nuovo lotto: numero dalla sequenza, riga in MpLotto e movimento INGRESSO, in una transazione. */
+    private void salvaLottoDb(Lotto l) throws Exception {
+        try (Connection conn = openConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                int n = prossimoDaSequenza(conn, "dbo.SeqLottoInterno");
+                l.lottoInterno = String.format(Locale.ROOT, "L%02d-%06d", LocalDate.now().getYear() % 100, n);
+                String sql = "INSERT INTO dbo.MpLotto (LottoInterno, CodiceMP, Descrizione, Fornitore, BollaIngresso, "
+                        + "LottoFornitore, Scadenza, QtaIniziale, UM, Stato) VALUES (?,?,?,?,?,?,?,?,?,?)";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, l.lottoInterno);
+                    ps.setString(2, l.codiceMp);
+                    ps.setString(3, l.descrizione);
+                    ps.setString(4, l.fornitore);
+                    ps.setString(5, l.bolla);
+                    ps.setString(6, l.lottoFornitore);
+                    if (l.scadenza.isEmpty()) {
+                        ps.setNull(7, java.sql.Types.DATE);
+                    } else {
+                        ps.setDate(7, java.sql.Date.valueOf(l.scadenza));
+                    }
+                    ps.setDouble(8, l.qtaIniziale);
+                    ps.setString(9, l.um);
+                    ps.setString(10, l.stato);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "INSERT INTO dbo.MpMovimento (LottoInterno, Tipo, Qta, Rif) VALUES (?, 'INGRESSO', ?, ?)")) {
+                    ps.setString(1, l.lottoInterno);
+                    ps.setDouble(2, l.qtaIniziale);
+                    ps.setString(3, trunc(l.bolla, 50));
+                    ps.executeUpdate();
+                }
+                conn.commit();
+            } catch (Exception ex) {
+                conn.rollback();
+                throw ex;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    /** Cambia stato solo se nel DB e' ancora quello atteso (evita di scavalcare una validazione fatta altrove). */
+    private void aggiornaStatoDb(String lotto, String statoAtteso, String nuovoStato) throws Exception {
+        try (Connection conn = openConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "UPDATE dbo.MpLotto SET Stato = ? WHERE LottoInterno = ? AND Stato = ?")) {
+            ps.setString(1, nuovoStato);
+            ps.setString(2, lotto);
+            ps.setString(3, statoAtteso);
+            if (ps.executeUpdate() != 1) {
+                throw new IllegalStateException("Lo stato del lotto " + lotto
+                        + " è cambiato nel frattempo: premere \"Aggiorna dal DB\" e riprovare.");
+            }
+        }
+    }
+
+    private void validaLottoDb(String lotto, String chi) throws Exception {
+        try (Connection conn = openConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "UPDATE dbo.MpLotto SET Stato = 'OK', ValidatoDa = ?, DataValidazione = SYSDATETIME() "
+                             + "WHERE LottoInterno = ? AND Stato = 'DA VALIDARE'")) {
+            ps.setString(1, trunc(chi, 100));
+            ps.setString(2, lotto);
+            if (ps.executeUpdate() != 1) {
+                throw new IllegalStateException("Il lotto " + lotto
+                        + " non è più DA VALIDARE: premere \"Aggiorna dal DB\".");
+            }
+        }
+    }
+
+    /**
+     * Registra il prelievo: sotto blocco ricontrolla stato e residuo (un'altra postazione potrebbe
+     * aver consumato il lotto), poi scrive BatchPrelievo e il movimento PRELIEVO (quantita' negativa
+     * nell'UM del lotto) nella stessa transazione.
+     */
+    private void salvaPrelievoDb(Prelievo p, Lotto l, double qtaInUmLotto) throws Exception {
+        try (Connection conn = openConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                double residuo;
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "SELECT COALESCE(SUM(Qta), 0) FROM dbo.MpMovimento WITH (UPDLOCK, HOLDLOCK) WHERE LottoInterno = ?")) {
+                    ps.setString(1, l.lottoInterno);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        rs.next();
+                        residuo = rs.getDouble(1);
+                    }
+                }
+                if (qtaInUmLotto > residuo + 1e-9) {
+                    throw new IllegalStateException("Residuo del lotto insufficiente (" + formatNum(residuo)
+                            + " " + l.um + "): aggiornato da un'altra postazione.");
+                }
+                try (PreparedStatement ps = conn.prepareStatement("SELECT Stato FROM dbo.MpLotto WHERE LottoInterno = ?")) {
+                    ps.setString(1, l.lottoInterno);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        String stato = rs.next() ? nz(rs.getString(1)) : "";
+                        if (!"OK".equals(stato)) {
+                            throw new IllegalStateException("Il lotto " + l.lottoInterno + " ora è in stato '"
+                                    + stato + "': non utilizzabile.");
+                        }
+                    }
+                }
+                int n = prossimoDaSequenza(conn, "dbo.SeqPrelievo");
+                p.id = String.format(Locale.ROOT, "P%02d-%07d", LocalDate.now().getYear() % 100, n);
+                String sql = "INSERT INTO dbo.BatchPrelievo (IdPrelievo, BatchId, Zona, CodiceMP, LottoInterno, "
+                        + "QtaPrevista, PesoMin, PesoMax, QtaPesata, UM, Esito, PesoManuale, Operatore) "
+                        + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, p.id);
+                    ps.setString(2, p.batch);
+                    ps.setString(3, trunc(p.zona, 30));
+                    ps.setString(4, p.codiceMp);
+                    ps.setString(5, p.lottoInterno);
+                    ps.setDouble(6, p.qtaPrevista);
+                    ps.setDouble(7, p.min);
+                    ps.setDouble(8, p.max);
+                    ps.setDouble(9, p.qtaPesata);
+                    ps.setString(10, p.um);
+                    ps.setString(11, trunc(p.esito, 60));
+                    ps.setBoolean(12, p.manuale);
+                    ps.setString(13, trunc(p.operatore, 50));
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "INSERT INTO dbo.MpMovimento (LottoInterno, Tipo, Qta, Rif, Operatore) "
+                                + "VALUES (?, 'PRELIEVO', ?, ?, ?)")) {
+                    ps.setString(1, l.lottoInterno);
+                    ps.setDouble(2, -qtaInUmLotto);
+                    ps.setString(3, p.id);
+                    ps.setString(4, trunc(p.operatore, 50));
+                    ps.executeUpdate();
+                }
+                conn.commit();
+            } catch (Exception ex) {
+                conn.rollback();
+                throw ex;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    /** Ricerca di tracciabilita' sul database (ultimi 1000 risultati). */
+    private void cercaDb(String q) throws Exception {
+        String sql = "SELECT TOP 1000 CONVERT(VARCHAR(19), p.DataOra, 120) AS DataOra, p.BatchId, p.Zona, p.CodiceMP, "
+                + "p.LottoInterno, l.LottoFornitore, l.BollaIngresso, p.QtaPesata, p.UM, p.Esito, p.Operatore "
+                + "FROM dbo.BatchPrelievo p LEFT JOIN dbo.MpLotto l ON l.LottoInterno = p.LottoInterno "
+                + "WHERE (? = '' OR p.BatchId LIKE ? OR p.LottoInterno LIKE ? OR p.CodiceMP LIKE ? "
+                + "OR l.LottoFornitore LIKE ? OR l.BollaIngresso LIKE ?) ORDER BY p.Id DESC";
+        String like = "%" + q.replace("[", "[[]").replace("%", "[%]").replace("_", "[_]") + "%";
+        try (Connection conn = openConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, q);
+            for (int i = 2; i <= 6; i++) {
+                ps.setString(i, like);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ricercaModel.addRow(new Object[]{nz(rs.getString("DataOra")), nz(rs.getString("BatchId")),
+                            nz(rs.getString("Zona")), nz(rs.getString("CodiceMP")), nz(rs.getString("LottoInterno")),
+                            nz(rs.getString("LottoFornitore")), nz(rs.getString("BollaIngresso")),
+                            formatNum(rs.getDouble("QtaPesata")) + " " + nz(rs.getString("UM")),
+                            nz(rs.getString("Esito")), nz(rs.getString("Operatore"))});
+                }
+            }
+        }
+    }
+
+    private void addPrelievoRow(Prelievo p) {
+        prelieviModel.addRow(new Object[]{p.dataOra, p.batch, p.zona, p.codiceMp, p.lottoInterno,
+                formatNum(p.qtaPrevista), formatNum(p.min), formatNum(p.max),
+                formatNum(p.qtaPesata) + " " + p.um + (p.manuale ? " (manuale)" : ""), p.esito, p.operatore});
     }
 
     // ------------------------------------------------------------------
@@ -1040,6 +1412,7 @@ public class TracciabilitaManager extends JFrame {
         double min;
         double max;
         double qtaPesata;
+        boolean manuale;   // true = peso digitato a mano, non letto dalla bilancia
         String um = "G";
         String esito = "";
         String operatore = "";
@@ -1052,53 +1425,4 @@ public class TracciabilitaManager extends JFrame {
         }
         SwingUtilities.invokeLater(() -> new TracciabilitaManager().setVisible(true));
     }
-
-    /* ======================================================================
-     * DB-REM: SCRIPT TABELLE (SQL Server "Mondo") - da eseguire quando si riattiva il DB
-     * ======================================================================
-     *
-     * CREATE TABLE dbo.MpLotto (
-     *   LottoInterno   NVARCHAR(20)  NOT NULL PRIMARY KEY,
-     *   CodiceMP       NVARCHAR(50)  NOT NULL,
-     *   Descrizione    NVARCHAR(255) NOT NULL DEFAULT '',
-     *   Fornitore      NVARCHAR(100) NOT NULL DEFAULT '',
-     *   BollaIngresso  NVARCHAR(50)  NOT NULL DEFAULT '',
-     *   LottoFornitore NVARCHAR(100) NOT NULL DEFAULT '',
-     *   Scadenza       DATE NULL,
-     *   QtaIniziale    FLOAT NOT NULL,
-     *   UM             NVARCHAR(10)  NOT NULL DEFAULT 'KG',
-     *   Stato          NVARCHAR(20)  NOT NULL DEFAULT 'DA VALIDARE',  -- DA VALIDARE / OK / BLOCCATO
-     *   ValidatoDa     NVARCHAR(100) NOT NULL DEFAULT '',
-     *   DataValidazione DATETIME2 NULL,
-     *   DataIngresso   DATETIME2 NOT NULL DEFAULT SYSDATETIME()
-     * );
-     *
-     * CREATE TABLE dbo.MpMovimento (          -- registro append-only: residuo = SUM(Qta)
-     *   Id           INT IDENTITY(1,1) PRIMARY KEY,
-     *   LottoInterno NVARCHAR(20) NOT NULL,
-     *   Tipo         NVARCHAR(20) NOT NULL,   -- INGRESSO / PRELIEVO / RETTIFICA / SCARTO
-     *   Qta          FLOAT NOT NULL,          -- positivo in ingresso, negativo in prelievo
-     *   Rif          NVARCHAR(50) NOT NULL DEFAULT '',  -- es. batch
-     *   DataOra      DATETIME2 NOT NULL DEFAULT SYSDATETIME()
-     * );
-     *
-     * CREATE TABLE dbo.BatchPrelievo (
-     *   Id           INT IDENTITY(1,1) PRIMARY KEY,
-     *   Batch        NVARCHAR(30) NOT NULL,
-     *   Zona         NVARCHAR(30) NOT NULL,
-     *   CodiceMP     NVARCHAR(50) NOT NULL,
-     *   LottoInterno NVARCHAR(20) NOT NULL,
-     *   QtaPrevista  FLOAT NOT NULL DEFAULT 0,
-     *   PesoMin      FLOAT NOT NULL DEFAULT 0,
-     *   PesoMax      FLOAT NOT NULL DEFAULT 0,
-     *   QtaPesata    FLOAT NOT NULL,
-     *   Esito        NVARCHAR(20) NOT NULL DEFAULT 'OK',
-     *   Operatore    NVARCHAR(50) NOT NULL DEFAULT '',
-     *   DataOra      DATETIME2 NOT NULL DEFAULT SYSDATETIME()
-     * );
-     *
-     * Metodi Java da riattivare (salvaLotto, salvaPrelievo, aggiornaStatoLotto): usare
-     * PreparedStatement con conn.setAutoCommit(false) e commit/rollback, come
-     * saveDistinta() in DistintaBaseManager.
-     */
 }
