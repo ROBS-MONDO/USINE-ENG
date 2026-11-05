@@ -1,0 +1,579 @@
+package MES;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+/**
+ * Tracciabilita' materie prime - VERSIONE DI PROVA con inserimento a mano.
+ *
+ * Tre schede:
+ *  1. Ingresso merce : registra un lotto in arrivo (bolla, fornitore, lotto
+ *     fornitore, quantita'), genera il LOTTO INTERNO e ne mostra l'etichetta ZPL.
+ *  2. Prelievo zona  : registra cio' che una zona preleva per un batch (lotto
+ *     interno, quantita' pesata) con controllo di tolleranza e residuo.
+ *  3. Tracciabilita' : ricerca per lotto interno / lotto fornitore / batch / MP.
+ *
+ * IMPORTANTE: per ora NON c'e' nessun collegamento al database. I dati vivono
+ * solo in memoria e si perdono alla chiusura. Tutto il codice SQL e' lasciato
+ * in commento (cercare "DB-REM") ed e' pronto da riattivare, insieme allo
+ * script CREATE TABLE riportato in fondo al file.
+ */
+public class TracciabilitaManager extends JFrame {
+
+    private static final String VERSION = "V0.01 (manuale, senza DB)";
+
+    // DB-REM: collegamento a SQL Server "Mondo" (stesso di DistintaBaseManager).
+    // private static final String DB_URL =
+    //         "jdbc:sqlserver://srv-bambury:1433;databaseName=Mondo;encrypt=true;"
+    //                 + "trustServerCertificate=true;sslProtocol=TLSv1.2;loginTimeout=5";
+    // private static final String DB_USER = "...";      // spostare in file di configurazione
+    // private static final String DB_PASSWORD = "...";
+
+    private static final String[] ZONE = {"ZONA 1", "ZONA 2", "ZONA 3", "ZONA 4", "ZONA 5"};
+    private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    // ---- Dati in memoria (sostituiscono le tabelle finche' il DB e' scollegato) ----
+    private final Map<String, Lotto> lotti = new LinkedHashMap<>();
+    private final List<Prelievo> prelievi = new ArrayList<>();
+    private int contatoreLotto = 0;
+
+    private final DefaultTableModel lottiModel = new DefaultTableModel(new String[]{
+            "Lotto interno", "Code MP", "Désignation", "Fournisseur", "Bolla", "Lotto fornitore",
+            "Scadenza", "Qté initiale", "Qté résiduelle", "UM", "Stato"}, 0) {
+        @Override public boolean isCellEditable(int r, int c) { return false; }
+    };
+    private final DefaultTableModel prelieviModel = new DefaultTableModel(new String[]{
+            "Data/ora", "Batch", "Zona", "Code MP", "Lotto interno", "Qté prévue", "Min", "Max",
+            "Qté pesée", "Esito", "Opérateur"}, 0) {
+        @Override public boolean isCellEditable(int r, int c) { return false; }
+    };
+    private final DefaultTableModel ricercaModel = new DefaultTableModel(new String[]{
+            "Data/ora", "Batch", "Zona", "Code MP", "Lotto interno", "Lotto fornitore", "Bolla",
+            "Qté pesée", "Esito", "Opérateur"}, 0) {
+        @Override public boolean isCellEditable(int r, int c) { return false; }
+    };
+
+    private JTable lottiTable;
+
+    public TracciabilitaManager() {
+        super("Traçabilité matières premières - " + VERSION);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.setFont(new Font("SansSerif", Font.BOLD, 15));
+        tabs.addTab("Ingresso merce", buildIngressoPanel());
+        tabs.addTab("Prelievo zona", buildPrelievoPanel());
+        tabs.addTab("Tracciabilità", buildRicercaPanel());
+
+        JLabel avviso = new JLabel("  Modalità manuale: nessun collegamento al database, i dati restano solo in memoria.");
+        avviso.setOpaque(true);
+        avviso.setBackground(new Color(255, 244, 199));
+        avviso.setBorder(new EmptyBorder(4, 4, 4, 4));
+
+        JPanel root = new JPanel(new BorderLayout());
+        root.add(avviso, BorderLayout.NORTH);
+        root.add(tabs, BorderLayout.CENTER);
+        setContentPane(root);
+        setSize(1200, 720);
+        setLocationRelativeTo(null);
+    }
+
+    // ------------------------------------------------------------------
+    // Scheda 1: Ingresso merce
+    // ------------------------------------------------------------------
+
+    private JPanel buildIngressoPanel() {
+        JTextField txtMp = new JTextField(12);
+        JTextField txtDescr = new JTextField(28);
+        JTextField txtFornitore = new JTextField(20);
+        JTextField txtBolla = new JTextField(14);
+        JTextField txtLottoForn = new JTextField(16);
+        JTextField txtScadenza = new JTextField(10);
+        JTextField txtQta = new JTextField(8);
+        JComboBox<String> cbUm = new JComboBox<>(new String[]{"KG", "G", "L", "PZ"});
+        JComboBox<String> cbStato = new JComboBox<>(new String[]{"OK", "QUARANTENA"});
+        upper(txtMp);
+
+        JPanel form = new JPanel(new GridBagLayout());
+        GridBagConstraints g = new GridBagConstraints();
+        g.insets = new Insets(4, 6, 4, 6);
+        g.anchor = GridBagConstraints.WEST;
+        int row = 0;
+        addField(form, g, row, 0, "Code MP:", txtMp);
+        addField(form, g, row++, 2, "Désignation:", txtDescr);
+        addField(form, g, row, 0, "Fournisseur:", txtFornitore);
+        addField(form, g, row++, 2, "Bolla d'ingresso:", txtBolla);
+        addField(form, g, row, 0, "Lotto fornitore:", txtLottoForn);
+        addField(form, g, row++, 2, "Scadenza (AAAA-MM-GG):", txtScadenza);
+        addField(form, g, row, 0, "Quantità:", txtQta);
+        addField(form, g, row++, 2, "UM:", cbUm);
+        addField(form, g, row, 0, "Stato iniziale:", cbStato);
+
+        JButton btnAdd = new JButton("Registra lotto + genera lotto interno");
+        JButton btnEtichetta = new JButton("Mostra etichetta ZPL");
+        JButton btnStato = new JButton("Blocca / sblocca");
+        JButton btnPulisci = new JButton("Pulisci campi");
+
+        btnAdd.addActionListener(e -> {
+            try {
+                String mp = txtMp.getText().trim().toUpperCase(Locale.ROOT);
+                if (mp.isEmpty()) throw new IllegalStateException("Code MP obbligatorio.");
+                double qta = toDouble(txtQta.getText());
+                if (qta <= 0) throw new IllegalStateException("Quantità deve essere maggiore di zero.");
+                String scad = txtScadenza.getText().trim();
+                if (!scad.isEmpty()) {
+                    try { LocalDate.parse(scad); }
+                    catch (Exception ex) { throw new IllegalStateException("Scadenza non valida (usare AAAA-MM-GG)."); }
+                }
+                Lotto l = new Lotto();
+                l.lottoInterno = nextLottoInterno();
+                l.codiceMp = mp;
+                l.descrizione = txtDescr.getText().trim();
+                l.fornitore = txtFornitore.getText().trim();
+                l.bolla = txtBolla.getText().trim();
+                l.lottoFornitore = txtLottoForn.getText().trim();
+                l.scadenza = scad;
+                l.qtaIniziale = qta;
+                l.qtaResidua = qta;
+                l.um = (String) cbUm.getSelectedItem();
+                l.stato = (String) cbStato.getSelectedItem();
+                lotti.put(l.lottoInterno, l);
+                // DB-REM: salvaLotto(l);  // INSERT INTO dbo.MpLotto ... (vedi script in fondo)
+                refreshLottiTable();
+                JOptionPane.showMessageDialog(this, "Lotto interno creato: " + l.lottoInterno
+                        + "\n(stampare l'etichetta e applicarla al sacco/pallet)",
+                        "Lotto registrato", JOptionPane.INFORMATION_MESSAGE);
+                txtLottoForn.setText("");
+                txtQta.setText("");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        btnPulisci.addActionListener(e -> {
+            for (JTextField t : new JTextField[]{txtMp, txtDescr, txtFornitore, txtBolla, txtLottoForn, txtScadenza, txtQta}) {
+                t.setText("");
+            }
+        });
+
+        btnEtichetta.addActionListener(e -> {
+            Lotto l = selectedLotto();
+            if (l != null) showZpl(l);
+        });
+
+        btnStato.addActionListener(e -> {
+            Lotto l = selectedLotto();
+            if (l == null) return;
+            l.stato = "OK".equals(l.stato) ? "BLOCCATO" : "OK";
+            // DB-REM: aggiornaStatoLotto(l);  // UPDATE dbo.MpLotto SET Stato = ? WHERE LottoInterno = ?
+            refreshLottiTable();
+        });
+
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        buttons.add(btnAdd);
+        buttons.add(btnPulisci);
+        buttons.add(btnEtichetta);
+        buttons.add(btnStato);
+
+        lottiTable = new JTable(lottiModel);
+        styleTable(lottiTable);
+        lottiTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        JPanel top = new JPanel(new BorderLayout());
+        top.add(form, BorderLayout.CENTER);
+        top.add(buttons, BorderLayout.SOUTH);
+
+        JPanel p = new JPanel(new BorderLayout(8, 8));
+        p.setBorder(new EmptyBorder(10, 10, 10, 10));
+        p.add(top, BorderLayout.NORTH);
+        p.add(new JScrollPane(lottiTable), BorderLayout.CENTER);
+        return p;
+    }
+
+    private Lotto selectedLotto() {
+        int viewRow = lottiTable.getSelectedRow();
+        if (viewRow < 0) {
+            JOptionPane.showMessageDialog(this, "Selezionare prima un lotto nella tabella.",
+                    "Nessuna selezione", JOptionPane.WARNING_MESSAGE);
+            return null;
+        }
+        return lotti.get(String.valueOf(lottiModel.getValueAt(lottiTable.convertRowIndexToModel(viewRow), 0)));
+    }
+
+    private void showZpl(Lotto l) {
+        String zpl = "^XA\n"
+                + "^CI28\n"
+                + "^FO30,25^A0N,40,40^FD" + l.codiceMp + "^FS\n"
+                + "^FO30,70^A0N,26,26^FD" + trunc(l.descrizione, 34) + "^FS\n"
+                + "^FO30,110^A0N,24,24^FDLotto int.: " + l.lottoInterno + "^FS\n"
+                + "^FO30,140^A0N,24,24^FDLotto forn.: " + l.lottoFornitore + "^FS\n"
+                + "^FO30,170^A0N,24,24^FDBolla: " + l.bolla + "^FS\n"
+                + "^FO30,200^A0N,24,24^FDQta: " + formatNum(l.qtaIniziale) + " " + l.um
+                + "  Scad: " + l.scadenza + "^FS\n"
+                + "^FO380,40^BQN,2,6^FDQA," + l.lottoInterno + "^FS\n"
+                + "^XZ\n";
+        JTextArea area = new JTextArea(zpl, 14, 48);
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+        area.setEditable(false);
+        JOptionPane.showMessageDialog(this, new JScrollPane(area),
+                "Etichetta " + l.lottoInterno + " (ZPL, per stampante Zebra)", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    private String nextLottoInterno() {
+        contatoreLotto++;
+        // DB-REM: con il DB il progressivo va letto/riservato in tabella (es. SEQUENCE o
+        // SELECT MAX) per evitare doppioni tra piu' postazioni.
+        return String.format(Locale.ROOT, "L%02d-%06d", LocalDate.now().getYear() % 100, contatoreLotto);
+    }
+
+    private void refreshLottiTable() {
+        lottiModel.setRowCount(0);
+        for (Lotto l : lotti.values()) {
+            lottiModel.addRow(new Object[]{l.lottoInterno, l.codiceMp, l.descrizione, l.fornitore, l.bolla,
+                    l.lottoFornitore, l.scadenza, formatNum(l.qtaIniziale), formatNum(l.qtaResidua), l.um, l.stato});
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Scheda 2: Prelievo per zona
+    // ------------------------------------------------------------------
+
+    private JPanel buildPrelievoPanel() {
+        JTextField txtBatch = new JTextField(12);
+        JComboBox<String> cbZona = new JComboBox<>(ZONE);
+        cbZona.setEditable(true);
+        JTextField txtMp = new JTextField(12);
+        JTextField txtLotto = new JTextField(14);
+        JTextField txtPrevista = new JTextField(8);
+        JTextField txtTol = new JTextField("1", 5);
+        JTextField txtPesata = new JTextField(8);
+        JTextField txtOperatore = new JTextField(12);
+        upper(txtBatch);
+        upper(txtMp);
+        upper(txtLotto);
+
+        JLabel lblMinMax = new JLabel("Min / Max: -");
+        lblMinMax.setFont(new Font("SansSerif", Font.BOLD, 14));
+        DocumentListener dl = new DocumentListener() {
+            private void upd() {
+                double prev = toDouble(txtPrevista.getText());
+                double tol = toDouble(txtTol.getText());
+                lblMinMax.setText(prev <= 0 ? "Min / Max: -"
+                        : "Min / Max: " + formatNum(Math.rint(prev * (1 - tol / 100.0)))
+                        + " / " + formatNum(Math.rint(prev * (1 + tol / 100.0))));
+            }
+            @Override public void insertUpdate(DocumentEvent e) { upd(); }
+            @Override public void removeUpdate(DocumentEvent e) { upd(); }
+            @Override public void changedUpdate(DocumentEvent e) { upd(); }
+        };
+        txtPrevista.getDocument().addDocumentListener(dl);
+        txtTol.getDocument().addDocumentListener(dl);
+
+        JPanel form = new JPanel(new GridBagLayout());
+        GridBagConstraints g = new GridBagConstraints();
+        g.insets = new Insets(4, 6, 4, 6);
+        g.anchor = GridBagConstraints.WEST;
+        int row = 0;
+        addField(form, g, row, 0, "Batch (N° LOT):", txtBatch);
+        addField(form, g, row++, 2, "Zona:", cbZona);
+        addField(form, g, row, 0, "Code MP:", txtMp);
+        addField(form, g, row++, 2, "Lotto interno (scan):", txtLotto);
+        addField(form, g, row, 0, "Qté prévue (g/kg):", txtPrevista);
+        addField(form, g, row++, 2, "Tol. %:", txtTol);
+        g.gridx = 0; g.gridy = row; g.gridwidth = 4;
+        form.add(lblMinMax, g);
+        g.gridwidth = 1;
+        row++;
+        addField(form, g, row, 0, "Qté pesée:", txtPesata);
+        addField(form, g, row++, 2, "Opérateur:", txtOperatore);
+
+        JButton btnSave = new JButton("Registra prelievo");
+        JButton btnLista = new JButton("Lotti disponibili per questo MP");
+
+        btnLista.addActionListener(e -> {
+            String mp = txtMp.getText().trim().toUpperCase(Locale.ROOT);
+            StringBuilder sb = new StringBuilder();
+            for (Lotto l : lotti.values()) {
+                if (mp.isEmpty() || l.codiceMp.equals(mp)) {
+                    sb.append(l.lottoInterno).append("  |  forn. ").append(l.lottoFornitore)
+                            .append("  |  residuo ").append(formatNum(l.qtaResidua)).append(' ').append(l.um)
+                            .append("  |  scad. ").append(l.scadenza.isEmpty() ? "-" : l.scadenza)
+                            .append("  |  ").append(l.stato).append('\n');
+                }
+            }
+            JOptionPane.showMessageDialog(this,
+                    sb.length() == 0 ? "Nessun lotto registrato." : sb.toString(),
+                    "Lotti disponibili", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        btnSave.addActionListener(e -> {
+            try {
+                String batch = txtBatch.getText().trim().toUpperCase(Locale.ROOT);
+                if (batch.isEmpty()) throw new IllegalStateException("Batch obbligatorio.");
+                String lottoId = txtLotto.getText().trim().toUpperCase(Locale.ROOT);
+                Lotto l = lotti.get(lottoId);
+                if (l == null) throw new IllegalStateException("Lotto interno " + lottoId + " inesistente.");
+                String mp = txtMp.getText().trim().toUpperCase(Locale.ROOT);
+                if (!mp.isEmpty() && !mp.equals(l.codiceMp)) {
+                    throw new IllegalStateException("Il lotto " + lottoId + " è di " + l.codiceMp
+                            + ", non di " + mp + ". Materiale sbagliato!");
+                }
+                if (!"OK".equals(l.stato)) {
+                    throw new IllegalStateException("Lotto " + lottoId + " in stato " + l.stato + ": non utilizzabile.");
+                }
+                if (!l.scadenza.isEmpty() && LocalDate.parse(l.scadenza).isBefore(LocalDate.now())) {
+                    throw new IllegalStateException("Lotto " + lottoId + " scaduto il " + l.scadenza + ".");
+                }
+                double pesata = toDouble(txtPesata.getText());
+                if (pesata <= 0) throw new IllegalStateException("Quantità pesata obbligatoria.");
+                if (pesata > l.qtaResidua) {
+                    throw new IllegalStateException("Residuo del lotto insufficiente ("
+                            + formatNum(l.qtaResidua) + " " + l.um + ").");
+                }
+
+                double prev = toDouble(txtPrevista.getText());
+                double tol = toDouble(txtTol.getText());
+                double min = Math.rint(prev * (1 - tol / 100.0));
+                double max = Math.rint(prev * (1 + tol / 100.0));
+                String esito = "OK";
+                if (prev > 0 && (pesata < min || pesata > max)) {
+                    int c = JOptionPane.showConfirmDialog(this,
+                            "Peso " + formatNum(pesata) + " fuori tolleranza (" + formatNum(min) + " - "
+                                    + formatNum(max) + ").\nRegistrare comunque?",
+                            "Fuori tolleranza", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                    if (c != JOptionPane.YES_OPTION) return;
+                    esito = "FUORI TOL.";
+                }
+
+                Prelievo p = new Prelievo();
+                p.dataOra = LocalDateTime.now().format(TS);
+                p.batch = batch;
+                p.zona = String.valueOf(cbZona.getSelectedItem());
+                p.codiceMp = l.codiceMp;
+                p.lottoInterno = l.lottoInterno;
+                p.qtaPrevista = prev;
+                p.min = min;
+                p.max = max;
+                p.qtaPesata = pesata;
+                p.esito = esito;
+                p.operatore = txtOperatore.getText().trim();
+                prelievi.add(p);
+                l.qtaResidua -= pesata;
+                // DB-REM: salvaPrelievo(p);  // INSERT INTO dbo.BatchPrelievo + INSERT dbo.MpMovimento (in transazione)
+
+                prelieviModel.addRow(new Object[]{p.dataOra, p.batch, p.zona, p.codiceMp, p.lottoInterno,
+                        formatNum(p.qtaPrevista), formatNum(p.min), formatNum(p.max),
+                        formatNum(p.qtaPesata), p.esito, p.operatore});
+                refreshLottiTable();
+                txtLotto.setText("");
+                txtPesata.setText("");
+                txtLotto.requestFocusInWindow();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        buttons.add(btnSave);
+        buttons.add(btnLista);
+
+        JTable t = new JTable(prelieviModel);
+        styleTable(t);
+
+        JPanel top = new JPanel(new BorderLayout());
+        top.add(form, BorderLayout.CENTER);
+        top.add(buttons, BorderLayout.SOUTH);
+
+        JPanel p = new JPanel(new BorderLayout(8, 8));
+        p.setBorder(new EmptyBorder(10, 10, 10, 10));
+        p.add(top, BorderLayout.NORTH);
+        p.add(new JScrollPane(t), BorderLayout.CENTER);
+        return p;
+    }
+
+    // ------------------------------------------------------------------
+    // Scheda 3: Tracciabilita' (ricerca avanti/indietro)
+    // ------------------------------------------------------------------
+
+    private JPanel buildRicercaPanel() {
+        JTextField txtCerca = new JTextField(24);
+        upper(txtCerca);
+        JButton btnCerca = new JButton("Cerca");
+
+        Runnable cerca = () -> {
+            String q = txtCerca.getText().trim().toUpperCase(Locale.ROOT);
+            ricercaModel.setRowCount(0);
+            for (Prelievo p : prelievi) {
+                Lotto l = lotti.get(p.lottoInterno);
+                String lf = l == null ? "" : l.lottoFornitore;
+                String bolla = l == null ? "" : l.bolla;
+                boolean match = q.isEmpty()
+                        || p.batch.contains(q) || p.lottoInterno.contains(q) || p.codiceMp.contains(q)
+                        || lf.toUpperCase(Locale.ROOT).contains(q) || bolla.toUpperCase(Locale.ROOT).contains(q);
+                if (match) {
+                    ricercaModel.addRow(new Object[]{p.dataOra, p.batch, p.zona, p.codiceMp, p.lottoInterno,
+                            lf, bolla, formatNum(p.qtaPesata), p.esito, p.operatore});
+                }
+            }
+            // DB-REM: versione con DB = SELECT da dbo.BatchPrelievo JOIN dbo.MpLotto con gli stessi filtri.
+        };
+        btnCerca.addActionListener(e -> cerca.run());
+        txtCerca.addActionListener(e -> cerca.run());
+
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        top.add(new JLabel("Batch / lotto interno / lotto fornitore / bolla / Code MP:"));
+        top.add(txtCerca);
+        top.add(btnCerca);
+
+        JTable t = new JTable(ricercaModel);
+        styleTable(t);
+
+        JPanel p = new JPanel(new BorderLayout(8, 8));
+        p.setBorder(new EmptyBorder(10, 10, 10, 10));
+        p.add(top, BorderLayout.NORTH);
+        p.add(new JScrollPane(t), BorderLayout.CENTER);
+        return p;
+    }
+
+    // ------------------------------------------------------------------
+    // Utility
+    // ------------------------------------------------------------------
+
+    private static void addField(JPanel panel, GridBagConstraints g, int row, int col, String label, JComponent field) {
+        g.gridx = col; g.gridy = row;
+        panel.add(new JLabel(label), g);
+        g.gridx = col + 1;
+        panel.add(field, g);
+    }
+
+    private static void styleTable(JTable t) {
+        t.setRowHeight(26);
+        t.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        t.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 14));
+    }
+
+    /** Il testo digitato diventa sempre maiuscolo (come i campi codice di DistintaBaseManager). */
+    private static void upper(JTextField field) {
+        ((javax.swing.text.AbstractDocument) field.getDocument()).setDocumentFilter(new javax.swing.text.DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String s, javax.swing.text.AttributeSet a)
+                    throws javax.swing.text.BadLocationException {
+                super.insertString(fb, offset, s == null ? null : s.toUpperCase(Locale.ROOT), a);
+            }
+            @Override
+            public void replace(FilterBypass fb, int offset, int len, String s, javax.swing.text.AttributeSet a)
+                    throws javax.swing.text.BadLocationException {
+                super.replace(fb, offset, len, s == null ? null : s.toUpperCase(Locale.ROOT), a);
+            }
+        });
+    }
+
+    private static double toDouble(String s) {
+        String v = s == null ? "" : s.trim().replace(",", ".");
+        if (v.isEmpty()) return 0;
+        try { return Double.parseDouble(v); } catch (NumberFormatException ex) { return 0; }
+    }
+
+    private static String formatNum(double v) {
+        return v == Math.rint(v) ? String.valueOf((long) v) : String.format(Locale.ROOT, "%.3f", v);
+    }
+
+    private static String trunc(String s, int n) {
+        return s.length() <= n ? s : s.substring(0, n);
+    }
+
+    static class Lotto {
+        String lottoInterno = "";
+        String codiceMp = "";
+        String descrizione = "";
+        String fornitore = "";
+        String bolla = "";
+        String lottoFornitore = "";
+        String scadenza = "";
+        double qtaIniziale;
+        double qtaResidua;
+        String um = "KG";
+        String stato = "OK";
+    }
+
+    static class Prelievo {
+        String dataOra = "";
+        String batch = "";
+        String zona = "";
+        String codiceMp = "";
+        String lottoInterno = "";
+        double qtaPrevista;
+        double min;
+        double max;
+        double qtaPesata;
+        String esito = "";
+        String operatore = "";
+    }
+
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignored) {
+        }
+        SwingUtilities.invokeLater(() -> new TracciabilitaManager().setVisible(true));
+    }
+
+    /* ======================================================================
+     * DB-REM: SCRIPT TABELLE (SQL Server "Mondo") - da eseguire quando si riattiva il DB
+     * ======================================================================
+     *
+     * CREATE TABLE dbo.MpLotto (
+     *   LottoInterno   NVARCHAR(20)  NOT NULL PRIMARY KEY,
+     *   CodiceMP       NVARCHAR(50)  NOT NULL,
+     *   Descrizione    NVARCHAR(255) NOT NULL DEFAULT '',
+     *   Fornitore      NVARCHAR(100) NOT NULL DEFAULT '',
+     *   BollaIngresso  NVARCHAR(50)  NOT NULL DEFAULT '',
+     *   LottoFornitore NVARCHAR(100) NOT NULL DEFAULT '',
+     *   Scadenza       DATE NULL,
+     *   QtaIniziale    FLOAT NOT NULL,
+     *   UM             NVARCHAR(10)  NOT NULL DEFAULT 'KG',
+     *   Stato          NVARCHAR(20)  NOT NULL DEFAULT 'OK',
+     *   DataIngresso   DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+     * );
+     *
+     * CREATE TABLE dbo.MpMovimento (          -- registro append-only: residuo = SUM(Qta)
+     *   Id           INT IDENTITY(1,1) PRIMARY KEY,
+     *   LottoInterno NVARCHAR(20) NOT NULL,
+     *   Tipo         NVARCHAR(20) NOT NULL,   -- INGRESSO / PRELIEVO / RETTIFICA / SCARTO
+     *   Qta          FLOAT NOT NULL,          -- positivo in ingresso, negativo in prelievo
+     *   Rif          NVARCHAR(50) NOT NULL DEFAULT '',  -- es. batch
+     *   DataOra      DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+     * );
+     *
+     * CREATE TABLE dbo.BatchPrelievo (
+     *   Id           INT IDENTITY(1,1) PRIMARY KEY,
+     *   Batch        NVARCHAR(30) NOT NULL,
+     *   Zona         NVARCHAR(30) NOT NULL,
+     *   CodiceMP     NVARCHAR(50) NOT NULL,
+     *   LottoInterno NVARCHAR(20) NOT NULL,
+     *   QtaPrevista  FLOAT NOT NULL DEFAULT 0,
+     *   PesoMin      FLOAT NOT NULL DEFAULT 0,
+     *   PesoMax      FLOAT NOT NULL DEFAULT 0,
+     *   QtaPesata    FLOAT NOT NULL,
+     *   Esito        NVARCHAR(20) NOT NULL DEFAULT 'OK',
+     *   Operatore    NVARCHAR(50) NOT NULL DEFAULT '',
+     *   DataOra      DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+     * );
+     *
+     * Metodi Java da riattivare (salvaLotto, salvaPrelievo, aggiornaStatoLotto): usare
+     * PreparedStatement con conn.setAutoCommit(false) e commit/rollback, come
+     * saveDistinta() in DistintaBaseManager.
+     */
+}
