@@ -49,14 +49,27 @@ if ($turnstileSecret !== '') {
 
 // Modulo "Второй день": basta l'email; il messaggio e l'oggetto sono fissi
 if (($_POST['form'] ?? '') === 'second_day') {
-    $email = clean($_POST['email'] ?? '', 200);
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) fail(422);
+    // basta uno dei due contatti: email oppure telefono (prefisso + numero); possono esserci entrambi
+    $email  = clean($_POST['email'] ?? '', 200);
+    $prefix = str_replace(' ', '', clean($_POST['phone_prefix'] ?? '', 8));
+    $phone  = clean($_POST['phone'] ?? '', 30);
+    $hasEmail = $email !== '';
+    $hasPhone = ($prefix !== '' || $phone !== '');
+    if (!$hasEmail && !$hasPhone) fail(422);
+    if ($hasEmail && !filter_var($email, FILTER_VALIDATE_EMAIL)) fail(422);
+    $phoneFull = '';
+    if ($hasPhone) {
+        $digits = preg_replace('/\D/', '', $phone);
+        if (!preg_match('/^\+?\d{1,4}$/', $prefix) || !preg_match('/^[\d\s().-]+$/', $phone) || strlen($digits) < 5 || strlen($digits) > 15) fail(422);
+        $phoneFull = ($prefix[0] === '+' ? $prefix : '+' . $prefix) . ' ' . $phone;
+    }
+    $contact = implode(', ', array_filter([$hasEmail ? $email : '', $phoneFull]));
     $body  = "Здравствуйте! Хочу узнать об участии во втором дне фестиваля «Звёздный час» в Люксембурге — «Сила объединения». Пришлите, пожалуйста, дату, место, стоимость и условия регистрации.\n\n";
-    $body .= "Мой контакт: $email\n";
+    $body .= "Мой контакт: $contact\n";
     $body .= "\nIP: " . ($_SERVER['REMOTE_ADDR'] ?? '') . "\nДата: " . date('Y-m-d H:i:s') . "\n";
     $subject = '=?UTF-8?B?' . base64_encode('Заявка на участие') . '?=';
     $headers = "From: Luxembourg Festival <$from>\r\n"
-             . "Reply-To: $email\r\n"
+             . ($hasEmail ? "Reply-To: $email\r\n" : '')
              . "MIME-Version: 1.0\r\n"
              . "Content-Type: text/plain; charset=UTF-8\r\n";
     $sent = @mail($to, $subject, $body, $headers);

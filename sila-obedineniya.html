@@ -22,7 +22,7 @@
   .modal-status.err { color: #a02020; }
   .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
   @media (max-width: 520px) { .modal-box { padding: 40px 22px 26px; } }
-.reqform{max-width:600px;margin:26px auto 0}.reqrow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.reqrow input{flex:1 1 250px;min-width:0;padding:16px 18px;font:16px Arial,sans-serif;background:#ffffff0d;color:var(--ink);border:1px solid #ffffff40;border-radius:2px}.reqrow input::placeholder{color:var(--muted)}.reqrow input:focus-visible{outline:2px solid var(--gold);outline-offset:1px}.reqrow .btn{margin-top:0;flex:0 0 auto}.reqrow .btn[disabled]{opacity:.6;cursor:wait}.reqform .status{min-height:1.4em;color:var(--gold);font-size:14px;text-align:center}.reqform .status.err{color:#ff9a9a}#ts-box2{display:flex;justify-content:center;margin-top:14px}.reqform .note a{color:inherit}
+.reqform{max-width:600px;margin:28px auto 0;text-align:left}.reqmsg{border:1px solid #ffffff30;background:#ffffff08;padding:20px 22px;margin-bottom:18px}.reqmsg p{margin:8px 0;color:var(--ink);font-size:15px;max-width:none}.reqlabel{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}.reqmsg .reqcontact{color:var(--gold)}.reqmsg .reqcontact span{color:var(--ink)}.reqfield{width:100%;padding:15px 18px;font:16px Arial,sans-serif;background:#ffffff0d;color:var(--ink);border:1px solid #ffffff40;border-radius:2px}.reqfield::placeholder{color:var(--muted)}.reqfield:focus-visible{outline:2px solid var(--gold);outline-offset:1px}.reqphone{display:grid;grid-template-columns:110px 1fr;gap:10px;margin-top:10px}.reqhint{margin:10px 0 0;font-size:13px;color:var(--muted);text-align:center;max-width:none}.reqform .btn{display:block;margin:20px auto 0}.reqform .btn[disabled]{opacity:.45;cursor:not-allowed}.reqform .status{min-height:1.4em;color:var(--gold);font-size:14px;text-align:center}.reqform .status.err{color:#ff9a9a}#ts-box2{display:flex;justify-content:center;margin-top:14px}.reqform .note{text-align:center;margin-left:auto;margin-right:auto}.reqform .note a{color:inherit}
 </style></head><body><nav><b>ЗВЁЗДНЫЙ ЧАС ✦</b><a href="#program">Второй день · Люксембург ↗</a></nav><main><section class="hero"><div class="orb"></div><div class="star">✦</div><div class="eyebrow">Фестиваль в Люксембурге · специальная программа</div><h1>Твой масштаб<br>начинается<br>с <em>«мы».</em></h1><p class="lead">«Звёздный час. Сила объединения» — пять часов, чтобы проявиться, найти своих людей и превратить большую идею в совместный проект на 2027 год.</p><a class="btn" href="#join" data-open-form>Хочу быть частью</a><a class="btn secondary" href="#program">Посмотреть программу ↓</a><div class="facts"><div><b>3</b>ведущие вместе</div><div><b>5 часов</b>погружения</div><div><b>2027</b>горизонт масштаба</div></div></section>
 <section class="section light"><div class="intro"><div><div class="eyebrow">Идея второго дня</div><h2>У тебя есть сила.<br>А вместе —<br>целая вселенная.</h2></div><div><p>В первый день фестиваля — выступления тренеров и практики мастеров. Во второй — мы собираем эту энергию в движение: от личного проявления к общим идеям, партнёрствам и действиям.</p><p>Три организатора из Люксембурга, Парижа и Испании объединяются, чтобы вместе провести вас через опыт синергии: услышать друг друга, соединить сильные стороны и создать больше, чем каждая могла бы по отдельности.</p><div class="quote">«Я могу быть заметной. Я могу найти своих. Мы можем создать большое».</div></div></div><div class="tags"><span class="tag">Экспертам и практикам</span><span class="tag">Авторам и творцам</span><span class="tag">Организаторам и лидерам</span><span class="tag">Тем, кто готов к следующему шагу</span></div></section>
 <section class="section"><div class="eyebrow">Три точки на карте. Одна общая идея.</div><h2>Объединение,<br>которое можно почувствовать.</h2><p class="lead">Мы ведём этот день втроём: делимся опытом, соединяем подходы и показываем партнёрство в действии.</p><div class="trio"><div class="country"><span>Люксембург</span><h3>Собирать людей</h3><p>Создавать пространство доверия, в котором знакомство становится началом общего дела.</p></div><div class="country"><span>Париж</span><h3>Раскрывать силу</h3><p>Помогать увидеть свою ценность, заявить о себе и смелее выходить к людям.</p></div><div class="country"><span>Испания</span><h3>Соединять идеи</h3><p>Превращать творческую энергию в коллаборации, проекты и конкретные шаги.</p></div></div><p class="note" style="margin-top:30px;color:var(--muted)">Все три ведущие участвуют в общей программе. Географические блоки раскрывают концепцию дня, а не закрепляют роли.</p></section>
@@ -40,9 +40,15 @@
 <section class="banner"><div class="eyebrow" style="color:#634a29">Наш горизонт — международное сообщество</div><h2>Большие сообщества рождаются<br>с одного настоящего контакта.</h2><p>Наше намерение на 2027 год — соединять людей, города и страны через совместные проекты.<br>Этот день — приглашение стать частью такого движения.</p></section>
 <section class="section"><div class="eyebrow" style="text-align:center">Перед встречей</div><h2 style="text-align:center">Можно прийти собой.</h2><div class="faq"><details open=""><summary>Если я никого не знаю и мне сложно знакомиться?</summary><p>Знакомства встроены в программу: будут вопросы, небольшие группы и время, чтобы освоиться. Вы сами выбираете, чем делиться и в каких активностях участвовать.</p></details><details><summary>Нужен ли готовый проект или большая аудитория?</summary><p>Достаточно идеи, опыта или желания найти направление. Для совместного проекта полезны разные сильные стороны: знания, творчество, организация и умение соединять людей.</p></details><details><summary>Что взять с собой?</summary><p>Телефон с зарядкой, блокнот и одну идею, которую хочется развивать. Если есть ссылки на ваши проекты — сохраните их для обмена контактами.</p></details><details><summary>Когда, где и сколько стоит участие?</summary><p>Второй день фестиваля «Звёздный час» пройдёт в Люксембурге. Дата, адрес, время начала и стоимость будут добавлены после подтверждения организаторами.</p></details></div></section>
 <section class="section cta" id="join"><div class="eyebrow">Люксембург · Звёздный час · второй день</div><h2>Твоя следующая глава<br>может начаться с «давай вместе».</h2><p>Приходи со своей идеей, опытом и желанием быть частью большего. Найдём точки соприкосновения — и сделаем первый шаг.</p><form class="reqform" id="req-form" novalidate>
-<div class="reqrow"><input type="email" name="email" id="req-email" placeholder="Ваш email" autocomplete="email" aria-label="Ваш email" required><button type="submit" class="btn">Подготовить запрос на участие ↗</button></div>
+<div class="reqmsg"><div class="reqlabel">Сообщение организатору</div>
+<p>Здравствуйте! Хочу узнать об участии во втором дне фестиваля «Звёздный час» в Люксембурге — «Сила объединения». Пришлите, пожалуйста, дату, место, стоимость и условия регистрации.</p>
+<p class="reqcontact">Мой контакт: <span id="req-contact">…</span></p></div>
+<input class="reqfield" type="email" name="email" id="req-email" placeholder="Ваш email" autocomplete="email" aria-label="Ваш email">
+<div class="reqphone"><input class="reqfield" type="text" name="phone_prefix" id="req-prefix" placeholder="+352" inputmode="tel" autocomplete="tel-country-code" maxlength="6" aria-label="Код страны"><input class="reqfield" type="tel" name="phone" id="req-phone" placeholder="Телефон" autocomplete="tel-national" maxlength="24" aria-label="Телефон"></div>
+<p class="reqhint">Укажите email или телефон — достаточно одного, можно оба.</p>
 <div class="hp" aria-hidden="true"><label>Не заполняйте это поле <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
 <div id="ts-box2"></div>
+<button type="submit" class="btn" id="req-send" disabled>Подготовить запрос на участие ↗</button>
 <p class="status" id="req-status" role="status" aria-live="polite"></p>
 <p class="note">Отправляя запрос, вы принимаете <a href="privacy.html" target="_blank" rel="noopener">политику обработки данных</a>.</p>
 </form></section></main><footer><span>✦ ЗВЁЗДНЫЙ ЧАС · ЛЮКСЕМБУРГ</span><span>Сила объединения · Горизонт 2027</span></footer><div class="modal" id="form-modal" role="dialog" aria-modal="true" aria-labelledby="form-title" hidden>
@@ -142,11 +148,31 @@
     var n = 0;
     (function wait() { if (window.turnstile) { cb(); } else if (++n < 100) { setTimeout(wait, 100); } else { cb(new Error("ts")); } })();
   };
-  // Modulo "Подготовить запрос": basta l'email, il messaggio e l'oggetto sono fissi (send.php)
+  // Modulo "Подготовить запрос": basta uno tra email e telefono (prefisso + numero); il messaggio e l'oggetto sono fissi (send.php)
   (function () {
     var form = document.getElementById("req-form"); if (!form) return;
-    var email = document.getElementById("req-email"), status = document.getElementById("req-status"), btn = form.querySelector("button"), tsId = null, tsLoading = false;
+    var email = document.getElementById("req-email"), prefix = document.getElementById("req-prefix"), phone = document.getElementById("req-phone");
+    var status = document.getElementById("req-status"), btn = document.getElementById("req-send"), line = document.getElementById("req-contact"), tsId = null, tsLoading = false;
+    var RE_MAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     function say(msg, err) { status.textContent = msg; status.className = "status" + (err ? " err" : ""); }
+    function digits(v) { return v.replace(/\D/g, ""); }
+    function state() {
+      var e = email.value.trim(), pf = prefix.value.replace(/\s/g, ""), ph = phone.value.trim();
+      var eFilled = e !== "", pFilled = pf !== "" || ph !== "";
+      var eOk = eFilled && RE_MAIL.test(e);
+      var pfOk = /^\+?\d{1,4}$/.test(pf), phOk = /^[\d\s().-]+$/.test(ph) && digits(ph).length >= 5 && digits(ph).length <= 15;
+      return { eFilled: eFilled, pFilled: pFilled, eOk: eOk, pfOk: pfOk, phOk: phOk,
+        ok: (eFilled || pFilled) && (!eFilled || eOk) && (!pFilled || (pfOk && phOk)) };
+    }
+    function refresh() {
+      var st = state(), parts = [];
+      if (email.value.trim()) parts.push(email.value.trim());
+      if (st.pFilled) parts.push(((/^\+/.test(prefix.value.trim()) || !prefix.value.trim()) ? "" : "+") + prefix.value.trim() + " " + phone.value.trim());
+      line.textContent = parts.length ? parts.join(", ") : "…";
+      btn.disabled = !st.ok;
+    }
+    [email, prefix, phone].forEach(function (el) { el.addEventListener("input", function () { say(""); refresh(); }); });
+    refresh();
     function loadTs() {
       var key = window.FESTIVAL_TURNSTILE_KEY; if (!key || tsId !== null || tsLoading) return;
       tsLoading = true;
@@ -156,11 +182,14 @@
         tsId = window.turnstile.render("#ts-box2", { sitekey: key, language: "ru", theme: "dark", "error-callback": function () { say("Проверка не загрузилась. Обновите страницу или напишите нам: info@luxembourgfestival.com", true); } });
       });
     }
-    email.addEventListener("focus", loadTs);
+    [email, prefix, phone].forEach(function (el) { el.addEventListener("focus", loadTs); });
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      var v = email.value.trim();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { say("Введите корректный email.", true); email.focus(); return; }
+      var st = state();
+      if (!st.eFilled && !st.pFilled) { say("Укажите email или телефон.", true); return; }
+      if (st.eFilled && !st.eOk) { say("Введите корректный email.", true); email.focus(); return; }
+      if (st.pFilled && !st.pfOk) { say("Укажите код страны, например +352.", true); prefix.focus(); return; }
+      if (st.pFilled && !st.phOk) { say("Введите корректный номер телефона.", true); phone.focus(); return; }
       loadTs();
       if (tsId !== null && !form.querySelector("[name=cf-turnstile-response]")?.value) { say("Подтвердите, что вы не робот.", true); return; }
       btn.disabled = true; say("");
@@ -170,10 +199,10 @@
         .then(function (ok) {
           if (!ok) throw new Error("send");
           form.reset(); if (tsId !== null && window.turnstile) window.turnstile.reset(tsId);
-          say("Спасибо! Запрос отправлен. Мы ответим вам на указанный email.");
+          say("Спасибо! Запрос отправлен. Мы свяжемся с вами по указанному контакту.");
         })
         .catch(function () { say("Не удалось отправить. Напишите нам: info@luxembourgfestival.com", true); })
-        .then(function () { btn.disabled = false; });
+        .then(function () { refresh(); });
     });
   })();
 </script>
