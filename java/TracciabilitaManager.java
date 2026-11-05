@@ -41,6 +41,9 @@ public class TracciabilitaManager extends JFrame {
     // private static final String DB_USER = "...";      // spostare in file di configurazione
     // private static final String DB_PASSWORD = "...";
 
+    /** Merce arrivata ma non ancora validata (controllo qualita'/accettazione): non utilizzabile. */
+    private static final String STATO_DA_VALIDARE = "DA VALIDARE";
+
     private static final String[] ZONE = {"ZONA 1", "ZONA 2", "ZONA 3", "ZONA 4", "ZONA 5"};
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -76,7 +79,7 @@ public class TracciabilitaManager extends JFrame {
 
     private final DefaultTableModel lottiModel = new DefaultTableModel(new String[]{
             "Lotto interno", "Code MP", "Désignation", "Fournisseur", "Bolla", "Lotto fornitore",
-            "Scadenza", "Qté initiale", "Qté résiduelle", "UM", "Stato"}, 0) {
+            "Scadenza", "Qté initiale", "Qté résiduelle", "UM", "Stato", "Validato da"}, 0) {
         @Override public boolean isCellEditable(int r, int c) { return false; }
     };
     private final DefaultTableModel prelieviModel = new DefaultTableModel(new String[]{
@@ -128,7 +131,7 @@ public class TracciabilitaManager extends JFrame {
         JTextField txtScadenza = new JTextField(10);
         JTextField txtQta = new JTextField(8);
         JComboBox<String> cbUm = new JComboBox<>(new String[]{"KG", "G", "L", "PZ"});
-        JComboBox<String> cbStato = new JComboBox<>(new String[]{"OK", "QUARANTENA"});
+        JComboBox<String> cbStato = new JComboBox<>(new String[]{STATO_DA_VALIDARE, "OK"});
         upper(txtMp);
 
         JPanel form = new JPanel(new GridBagLayout());
@@ -201,8 +204,33 @@ public class TracciabilitaManager extends JFrame {
         btnStato.addActionListener(e -> {
             Lotto l = selectedLotto();
             if (l == null) return;
+            if (STATO_DA_VALIDARE.equals(l.stato)) {
+                JOptionPane.showMessageDialog(this,
+                        "Il lotto " + l.lottoInterno + " è ancora da validare: usare il pulsante \"Valida lotto\".",
+                        "Lotto da validare", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             l.stato = "OK".equals(l.stato) ? "BLOCCATO" : "OK";
             // DB-REM: aggiornaStatoLotto(l);  // UPDATE dbo.MpLotto SET Stato = ? WHERE LottoInterno = ?
+            refreshLottiTable();
+        });
+
+        JButton btnValida = new JButton("Valida lotto");
+        btnValida.addActionListener(e -> {
+            Lotto l = selectedLotto();
+            if (l == null) return;
+            if (!STATO_DA_VALIDARE.equals(l.stato)) {
+                JOptionPane.showMessageDialog(this, "Il lotto " + l.lottoInterno + " non è in stato DA VALIDARE.",
+                        "Validazione", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            String chi = JOptionPane.showInputDialog(this,
+                    "Validazione del lotto " + l.lottoInterno + " (" + l.codiceMp + ").\nNome di chi valida:",
+                    "Valida lotto", JOptionPane.QUESTION_MESSAGE);
+            if (chi == null || chi.trim().isEmpty()) return;
+            l.stato = "OK";
+            l.validatoDa = chi.trim() + " " + LocalDateTime.now().format(TS);
+            // DB-REM: validaLotto(l);  // UPDATE dbo.MpLotto SET Stato='OK', ValidatoDa=?, DataValidazione=SYSDATETIME()
             refreshLottiTable();
         });
 
@@ -210,6 +238,7 @@ public class TracciabilitaManager extends JFrame {
         buttons.add(btnAdd);
         buttons.add(btnPulisci);
         buttons.add(btnEtichetta);
+        buttons.add(btnValida);
         buttons.add(btnStato);
 
         lottiTable = new JTable(lottiModel);
@@ -267,7 +296,7 @@ public class TracciabilitaManager extends JFrame {
         lottiModel.setRowCount(0);
         for (Lotto l : lotti.values()) {
             lottiModel.addRow(new Object[]{l.lottoInterno, l.codiceMp, l.descrizione, l.fornitore, l.bolla,
-                    l.lottoFornitore, l.scadenza, formatNum(l.qtaIniziale), formatNum(l.qtaResidua), l.um, l.stato});
+                    l.lottoFornitore, l.scadenza, formatNum(l.qtaIniziale), formatNum(l.qtaResidua), l.um, l.stato, l.validatoDa});
         }
     }
 
@@ -447,6 +476,14 @@ public class TracciabilitaManager extends JFrame {
                 if (!mp.isEmpty() && !mp.equals(l.codiceMp)) {
                     throw new IllegalStateException("Il lotto " + lottoId + " è di " + l.codiceMp
                             + ", non di " + mp + ". Materiale sbagliato!");
+                }
+                if (STATO_DA_VALIDARE.equals(l.stato)) {
+                    JOptionPane.showMessageDialog(this,
+                            "MERCE ANCORA DA VALIDARE\n\nIl lotto " + lottoId + " (" + l.codiceMp
+                                    + ") è arrivato ma non è stato ancora validato.\n"
+                                    + "Non può essere utilizzato: avvisare il responsabile qualità/magazzino.",
+                            "Merce da validare", JOptionPane.WARNING_MESSAGE);
+                    return;
                 }
                 if (!"OK".equals(l.stato)) {
                     throw new IllegalStateException("Lotto " + lottoId + " in stato " + l.stato + ": non utilizzabile.");
@@ -989,6 +1026,7 @@ public class TracciabilitaManager extends JFrame {
         double qtaResidua;
         String um = "KG";
         String stato = "OK";
+        String validatoDa = "";
     }
 
     static class Prelievo {
@@ -1029,7 +1067,9 @@ public class TracciabilitaManager extends JFrame {
      *   Scadenza       DATE NULL,
      *   QtaIniziale    FLOAT NOT NULL,
      *   UM             NVARCHAR(10)  NOT NULL DEFAULT 'KG',
-     *   Stato          NVARCHAR(20)  NOT NULL DEFAULT 'OK',
+     *   Stato          NVARCHAR(20)  NOT NULL DEFAULT 'DA VALIDARE',  -- DA VALIDARE / OK / BLOCCATO
+     *   ValidatoDa     NVARCHAR(100) NOT NULL DEFAULT '',
+     *   DataValidazione DATETIME2 NULL,
      *   DataIngresso   DATETIME2 NOT NULL DEFAULT SYSDATETIME()
      * );
      *
