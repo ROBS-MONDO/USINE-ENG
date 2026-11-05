@@ -724,6 +724,48 @@ public class TracciabilitaManager extends JFrame {
         dbUser = (u != null && !u.isEmpty() ? u : pr.getProperty("db.user", "")).trim();
         dbPassword = pw != null && !pw.isEmpty() ? pw : pr.getProperty("db.password", "");
         dbAttivo = !dbUser.isEmpty();
+        caricaImpostazioniPostazione();
+    }
+
+    /** Impostazioni di questo PC (IP stampanti/bilance, formato etichetta): non contengono credenziali. */
+    private static final String POSTAZIONE_FILE = "tracciabilita-postazione.properties";
+
+    private void caricaImpostazioniPostazione() {
+        java.io.File f = new java.io.File(POSTAZIONE_FILE);
+        if (!f.isFile()) return;
+        java.util.Properties pr = new java.util.Properties();
+        try (java.io.InputStream in = new java.io.FileInputStream(f)) {
+            pr.load(in);
+        } catch (Exception ex) {
+            System.err.println("Impossibile leggere " + POSTAZIONE_FILE + ": " + ex.getMessage());
+            return;
+        }
+        for (String z : ZONE) {
+            stampantiIp.put(z, pr.getProperty("stampante." + z, "").trim());
+            bilanceIp.put(z, pr.getProperty("bilancia." + z, "").trim());
+        }
+        bilancePort = (int) toDouble(pr.getProperty("bilancia.porta", String.valueOf(bilancePort)));
+        etichettaLarghMm = (int) toDouble(pr.getProperty("etichetta.larghezzaMm", String.valueOf(etichettaLarghMm)));
+        etichettaAltMm = (int) toDouble(pr.getProperty("etichetta.altezzaMm", String.valueOf(etichettaAltMm)));
+        stampanteDpi = (int) toDouble(pr.getProperty("stampante.dpi", String.valueOf(stampanteDpi)));
+    }
+
+    private void salvaImpostazioniPostazione() {
+        java.util.Properties pr = new java.util.Properties();
+        for (String z : ZONE) {
+            pr.setProperty("stampante." + z, stampantiIp.getOrDefault(z, ""));
+            pr.setProperty("bilancia." + z, bilanceIp.getOrDefault(z, ""));
+        }
+        pr.setProperty("bilancia.porta", String.valueOf(bilancePort));
+        pr.setProperty("etichetta.larghezzaMm", String.valueOf(etichettaLarghMm));
+        pr.setProperty("etichetta.altezzaMm", String.valueOf(etichettaAltMm));
+        pr.setProperty("stampante.dpi", String.valueOf(stampanteDpi));
+        try (java.io.OutputStream out = new java.io.FileOutputStream(POSTAZIONE_FILE)) {
+            pr.store(out, "Impostazioni di questa postazione - TracciabilitaManager");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Impostazioni non salvate: " + messaggio(ex),
+                    "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private Connection openConnection() throws Exception {
@@ -1109,7 +1151,7 @@ public class TracciabilitaManager extends JFrame {
         pnl.add(th);
         pnl.add(new JLabel("Risoluzione (dpi):"));
         pnl.add(cbDpi);
-        pnl.add(new JLabel("(valori solo in memoria)"));
+        pnl.add(new JLabel("(salvati su questo PC)"));
         pnl.add(new JLabel(""));
 
         if (JOptionPane.showConfirmDialog(this, pnl, "Setup stampanti ed etichetta",
@@ -1133,6 +1175,7 @@ public class TracciabilitaManager extends JFrame {
             etichettaAltMm = ah;
         }
         stampanteDpi = (Integer) cbDpi.getSelectedItem();
+        salvaImpostazioniPostazione();
     }
 
     /**
