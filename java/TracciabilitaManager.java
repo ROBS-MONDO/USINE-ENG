@@ -48,6 +48,15 @@ public class TracciabilitaManager extends JFrame {
     private final Map<String, Lotto> lotti = new LinkedHashMap<>();
     private final List<Prelievo> prelievi = new ArrayList<>();
     private int contatoreLotto = 0;
+    private int contatorePrelievo = 0;
+
+    // Stampa etichetta "dose": IP della stampante Zebra per zona (porta raw 9100) e formato
+    // etichetta. Il formato non e' ancora deciso: si cambia da "Setup stampanti/etichetta".
+    private static final int PORTA_STAMPANTE = 9100;
+    private final Map<String, String> stampantiIp = new LinkedHashMap<>();
+    private int etichettaLarghMm = 100;
+    private int etichettaAltMm = 60;
+    private int stampanteDpi = 203;
 
     private final DefaultTableModel lottiModel = new DefaultTableModel(new String[]{
             "Lotto interno", "Code MP", "Désignation", "Fournisseur", "Bolla", "Lotto fornitore",
@@ -260,6 +269,7 @@ public class TracciabilitaManager extends JFrame {
         JTextField txtTol = new JTextField("1", 5);
         JTextField txtPesata = new JTextField(8);
         JTextField txtOperatore = new JTextField(12);
+        JCheckBox chkStampa = new JCheckBox("Stampa etichetta dose dopo la registrazione", true);
         upper(txtBatch);
         upper(txtMp);
         upper(txtLotto);
@@ -369,6 +379,8 @@ public class TracciabilitaManager extends JFrame {
                 p.qtaPesata = pesata;
                 p.esito = esito;
                 p.operatore = txtOperatore.getText().trim();
+                contatorePrelievo++;
+                p.id = String.format(Locale.ROOT, "P%02d-%07d", LocalDate.now().getYear() % 100, contatorePrelievo);
                 prelievi.add(p);
                 l.qtaResidua -= pesata;
                 // DB-REM: salvaPrelievo(p);  // INSERT INTO dbo.BatchPrelievo + INSERT dbo.MpMovimento (in transazione)
@@ -377,6 +389,9 @@ public class TracciabilitaManager extends JFrame {
                         formatNum(p.qtaPrevista), formatNum(p.min), formatNum(p.max),
                         formatNum(p.qtaPesata), p.esito, p.operatore});
                 refreshLottiTable();
+                if (chkStampa.isSelected()) {
+                    stampaZpl(p.zona, buildZplDose(p, l));
+                }
                 txtLotto.setText("");
                 txtPesata.setText("");
                 txtLotto.requestFocusInWindow();
@@ -386,8 +401,12 @@ public class TracciabilitaManager extends JFrame {
         });
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        JButton btnSetup = new JButton("Setup stampanti / etichetta");
+        btnSetup.addActionListener(e -> apriSetupEtichette());
         buttons.add(btnSave);
+        buttons.add(chkStampa);
         buttons.add(btnLista);
+        buttons.add(btnSetup);
 
         JTable t = new JTable(prelieviModel);
         styleTable(t);
@@ -451,6 +470,113 @@ public class TracciabilitaManager extends JFrame {
     // Utility
     // ------------------------------------------------------------------
 
+    // ------------------------------------------------------------------
+    // Etichetta "dose" (una per prelievo) e invio alla stampante Zebra
+    // ------------------------------------------------------------------
+
+    /** Etichetta del prelievo: le misure si adattano al formato impostato (mm) e ai dpi. */
+    private String buildZplDose(Prelievo p, Lotto l) {
+        double dpmm = stampanteDpi / 25.4;
+        int w = (int) Math.round(etichettaLarghMm * dpmm);
+        int h = (int) Math.round(etichettaAltMm * dpmm);
+        int m = (int) Math.round(3 * dpmm);
+        int big = (int) Math.round(7 * dpmm);
+        int mid = (int) Math.round(4.5 * dpmm);
+        int small = (int) Math.round(3.4 * dpmm);
+        int gap = (int) Math.round(1.5 * dpmm);
+        int mag = Math.max(2, (int) Math.round(20 * dpmm / 25));
+        int qrX = Math.max(m, w - m - 27 * mag);
+
+        StringBuilder z = new StringBuilder();
+        z.append("^XA\n^CI28\n^PW").append(w).append("\n^LL").append(h).append('\n');
+        int y = m;
+        y = zplLine(z, m, y, big, l.codiceMp, gap);
+        y = zplLine(z, m, y, mid, trunc(l.descrizione, 28), gap);
+        y = zplLine(z, m, y, mid, "Batch: " + p.batch + "  " + p.zona, gap);
+        y = zplLine(z, m, y, small, "Lotto int.: " + p.lottoInterno, gap);
+        y = zplLine(z, m, y, small, "Lotto forn.: " + l.lottoFornitore, gap);
+        y = zplLine(z, m, y, big, "NETTO: " + formatNum(p.qtaPesata) + " " + l.um, gap);
+        y = zplLine(z, m, y, small, "Tol: " + formatNum(p.min) + "-" + formatNum(p.max) + "  " + p.esito, gap);
+        zplLine(z, m, y, small, p.dataOra + "  Op: " + p.operatore, gap);
+        z.append("^FO").append(qrX).append(',').append(m)
+                .append("^BQN,2,").append(mag).append("^FDQA,").append(p.id).append("^FS\n");
+        z.append("^XZ\n");
+        return z.toString();
+    }
+
+    private static int zplLine(StringBuilder z, int x, int y, int size, String text, int gap) {
+        z.append("^FO").append(x).append(',').append(y).append("^A0N,").append(size).append(',').append(size)
+                .append("^FD").append(zplSafe(text)).append("^FS\n");
+        return y + size + gap;
+    }
+
+    private static String zplSafe(String s) {
+        return s == null ? "" : s.replace('^', ' ').replace('~', ' ');
+    }
+
+    /** Invia lo ZPL alla stampante della zona (TCP 9100); senza IP configurato lo mostra a video. */
+    private void stampaZpl(String zona, String zpl) {
+        String ip = stampantiIp.getOrDefault(zona, "").trim();
+        if (ip.isEmpty()) {
+            JTextArea area = new JTextArea(zpl, 16, 50);
+            area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+            area.setEditable(false);
+            JOptionPane.showMessageDialog(this, new JScrollPane(area),
+                    "Nessuna stampante per " + zona + " - ZPL dell'etichetta", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+        new Thread(() -> {
+            try (java.net.Socket s = new java.net.Socket()) {
+                s.connect(new java.net.InetSocketAddress(ip, PORTA_STAMPANTE), 3000);
+                java.io.OutputStream o = s.getOutputStream();
+                o.write(zpl.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                o.flush();
+            } catch (Exception ex) {
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this,
+                        "Stampa non riuscita su " + ip + ": " + ex.getMessage(),
+                        "Erreur stampante", JOptionPane.ERROR_MESSAGE));
+            }
+        }, "stampa-etichetta").start();
+    }
+
+    private void apriSetupEtichette() {
+        JPanel pnl = new JPanel(new GridLayout(0, 2, 6, 6));
+        Map<String, JTextField> campi = new LinkedHashMap<>();
+        for (String z : ZONE) {
+            JTextField t = new JTextField(stampantiIp.getOrDefault(z, ""), 14);
+            campi.put(z, t);
+            pnl.add(new JLabel("IP stampante " + z + ":"));
+            pnl.add(t);
+        }
+        JTextField tw = new JTextField(String.valueOf(etichettaLarghMm), 5);
+        JTextField th = new JTextField(String.valueOf(etichettaAltMm), 5);
+        JComboBox<Integer> cbDpi = new JComboBox<>(new Integer[]{203, 300, 600});
+        cbDpi.setSelectedItem(stampanteDpi);
+        pnl.add(new JLabel("Larghezza etichetta (mm):"));
+        pnl.add(tw);
+        pnl.add(new JLabel("Altezza etichetta (mm):"));
+        pnl.add(th);
+        pnl.add(new JLabel("Risoluzione (dpi):"));
+        pnl.add(cbDpi);
+        pnl.add(new JLabel("(valori solo in memoria)"));
+        pnl.add(new JLabel(""));
+
+        if (JOptionPane.showConfirmDialog(this, pnl, "Setup stampanti ed etichetta",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
+            return;
+        }
+        for (Map.Entry<String, JTextField> en : campi.entrySet()) {
+            stampantiIp.put(en.getKey(), en.getValue().getText().trim());
+        }
+        int lw = (int) toDouble(tw.getText());
+        int ah = (int) toDouble(th.getText());
+        if (lw >= 20 && ah >= 20) {
+            etichettaLarghMm = lw;
+            etichettaAltMm = ah;
+        }
+        stampanteDpi = (Integer) cbDpi.getSelectedItem();
+    }
+
     private static void addField(JPanel panel, GridBagConstraints g, int row, int col, String label, JComponent field) {
         g.gridx = col; g.gridy = row;
         panel.add(new JLabel(label), g);
@@ -509,6 +635,7 @@ public class TracciabilitaManager extends JFrame {
     }
 
     static class Prelievo {
+        String id = "";
         String dataOra = "";
         String batch = "";
         String zona = "";
