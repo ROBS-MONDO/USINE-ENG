@@ -1075,7 +1075,7 @@
     Array.prototype.forEach.call(document.querySelectorAll(".btn, .tier-btn"), function (b) {
       if (b.hasAttribute("data-pay")) return;                // pagamenti: link Stripe
       if (b.closest("#bilet")) return;                       // "Купить билет"
-      if ((b.getAttribute("href") || "").indexOf("http") === 0) return;
+      var h = b.getAttribute("href") || ""; if (h && h.charAt(0) !== "#") return;   // collegamenti ad altre pagine o siti: non aprono il modulo
       b.addEventListener("click", open);
     });
     modal.addEventListener("click", function (e) { if (e.target === modal || e.target.hasAttribute("data-close")) close(); });
