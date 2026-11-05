@@ -47,6 +47,23 @@ if ($turnstileSecret !== '') {
     if (empty($j['success'])) fail(403);
 }
 
+// Modulo "Второй день": basta l'email; il messaggio e l'oggetto sono fissi
+if (($_POST['form'] ?? '') === 'second_day') {
+    $email = clean($_POST['email'] ?? '', 200);
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) fail(422);
+    $body  = "Здравствуйте! Хочу узнать об участии во втором дне фестиваля «Звёздный час» в Люксембурге — «Сила объединения». Пришлите, пожалуйста, дату, место, стоимость и условия регистрации.\n\n";
+    $body .= "Меня зовут:\nМоя сфера / проект:\nМой контакт: $email\n";
+    $body .= "\nIP: " . ($_SERVER['REMOTE_ADDR'] ?? '') . "\nДата: " . date('Y-m-d H:i:s') . "\n";
+    $subject = '=?UTF-8?B?' . base64_encode('Заявка на участие') . '?=';
+    $headers = "From: Luxembourg Festival <$from>\r\n"
+             . "Reply-To: $email\r\n"
+             . "MIME-Version: 1.0\r\n"
+             . "Content-Type: text/plain; charset=UTF-8\r\n";
+    $sent = @mail($to, $subject, $body, $headers);
+    echo json_encode(['ok' => (bool)$sent]);
+    exit;
+}
+
 $name    = clean($_POST['name'] ?? '');
 $city    = clean($_POST['city'] ?? '');
 $phone   = clean($_POST['phone'] ?? '', 60);
