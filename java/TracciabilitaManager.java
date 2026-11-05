@@ -454,6 +454,23 @@ public class TracciabilitaManager extends JFrame {
                 if (!l.scadenza.isEmpty() && LocalDate.parse(l.scadenza).isBefore(LocalDate.now())) {
                     throw new IllegalStateException("Lotto " + lottoId + " scaduto il " + l.scadenza + ".");
                 }
+                // Avviso FEFO: esiste un altro lotto utilizzabile della stessa MP che scade prima?
+                boolean fefoDeroga = false;
+                List<Lotto> prima = lottiFefoMigliori(l);
+                if (!prima.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (Lotto o : prima) {
+                        sb.append("  ").append(o.lottoInterno).append("  scad. ").append(o.scadenza)
+                                .append("  residuo ").append(formatNum(o.qtaResidua)).append(' ').append(o.um).append('\n');
+                    }
+                    int c = JOptionPane.showConfirmDialog(this,
+                            "Attenzione FEFO: per " + l.codiceMp + " ci sono lotti che scadono prima di "
+                                    + lottoId + (l.scadenza.isEmpty() ? " (senza scadenza)" : " (scad. " + l.scadenza + ")")
+                                    + ":\n\n" + sb + "\nUsare comunque questo lotto?",
+                            "Avviso FEFO", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                    if (c != JOptionPane.YES_OPTION) return;
+                    fefoDeroga = true;
+                }
                 double pesata = toDouble(txtPesata.getText());
                 if (pesata <= 0) throw new IllegalStateException("Quantità pesata obbligatoria.");
                 String umPesata = String.valueOf(cbUm.getSelectedItem());
@@ -475,6 +492,10 @@ public class TracciabilitaManager extends JFrame {
                             "Fuori tolleranza", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                     if (c != JOptionPane.YES_OPTION) return;
                     esito = "FUORI TOL.";
+                }
+
+                if (fefoDeroga) {
+                    esito += " + DEROGA FEFO";
                 }
 
                 Prelievo p = new Prelievo();
@@ -703,6 +724,28 @@ public class TracciabilitaManager extends JFrame {
             etichettaAltMm = ah;
         }
         stampanteDpi = (Integer) cbDpi.getSelectedItem();
+    }
+
+    /**
+     * Lotti della stessa MP, utilizzabili (stato OK, residuo, non scaduti) e con scadenza
+     * precedente a quella del lotto scelto. Se il lotto scelto non ha scadenza, qualunque
+     * lotto con scadenza lo precede. Ordinati dalla scadenza piu' vicina.
+     */
+    private List<Lotto> lottiFefoMigliori(Lotto scelto) {
+        List<Lotto> result = new ArrayList<>();
+        LocalDate oggi = LocalDate.now();
+        LocalDate scadScelto = scelto.scadenza.isEmpty() ? null : LocalDate.parse(scelto.scadenza);
+        for (Lotto o : lotti.values()) {
+            if (o == scelto || !o.codiceMp.equals(scelto.codiceMp)) continue;
+            if (!"OK".equals(o.stato) || o.qtaResidua <= 0 || o.scadenza.isEmpty()) continue;
+            LocalDate sc = LocalDate.parse(o.scadenza);
+            if (sc.isBefore(oggi)) continue;
+            if (scadScelto == null || sc.isBefore(scadScelto)) {
+                result.add(o);
+            }
+        }
+        result.sort((a, b) -> LocalDate.parse(a.scadenza).compareTo(LocalDate.parse(b.scadenza)));
+        return result;
     }
 
     private static double convertiUm(double v, String da, String a) {
