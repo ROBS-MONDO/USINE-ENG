@@ -30,6 +30,13 @@
   Header unset X-Powered-By
 </IfModule>
 
+# Le pagine HTML/PHP vengono ricontrollate a ogni visita: i telefoni (soprattutto Safari su iPhone) non restano con una versione vecchia
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|php)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
 # send.php e stripe-webhook.php accettano solo richieste POST
 <IfModule mod_rewrite.c>
   RewriteCond %{REQUEST_URI} ^/(send|stripe-webhook)\.php$ [NC]
