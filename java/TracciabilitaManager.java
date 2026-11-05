@@ -58,6 +58,22 @@ public class TracciabilitaManager extends JFrame {
     private int etichettaAltMm = 60;
     private int stampanteDpi = 203;
 
+    // Bilance Ohaus (TCP, come ProdMelBanb/BalanceService): una connessione per zona.
+    // L'Ohaus accetta un solo client alla volta: non collegarsi da qui mentre un altro
+    // programma (es. ProdMelBanb) e' gia' connesso alla stessa bilancia.
+    private int bilancePort = 9761;
+    private final Map<String, String> bilanceIp = new LinkedHashMap<>();
+    private final Map<String, OhausScale> bilance = new LinkedHashMap<>();
+
+    @Override
+    public void dispose() {
+        for (OhausScale s : bilance.values()) {
+            s.close();
+        }
+        bilance.clear();
+        super.dispose();
+    }
+
     private final DefaultTableModel lottiModel = new DefaultTableModel(new String[]{
             "Lotto interno", "Code MP", "Désignation", "Fournisseur", "Bolla", "Lotto fornitore",
             "Scadenza", "Qté initiale", "Qté résiduelle", "UM", "Stato"}, 0) {
@@ -270,6 +286,12 @@ public class TracciabilitaManager extends JFrame {
         JTextField txtPesata = new JTextField(8);
         JTextField txtOperatore = new JTextField(12);
         JCheckBox chkStampa = new JCheckBox("Stampa etichetta dose dopo la registrazione", true);
+        JComboBox<String> cbUm = new JComboBox<>(new String[]{"G", "KG", "L", "PZ"});
+        JLabel lblBilancia = new JLabel("Bilancia: non connessa");
+        lblBilancia.setFont(new Font("SansSerif", Font.BOLD, 16));
+        lblBilancia.setForeground(Color.GRAY);
+        JButton btnConnetti = new JButton("Connetti bilancia");
+        JButton btnLeggi = new JButton("Leggi peso dalla bilancia");
         upper(txtBatch);
         upper(txtMp);
         upper(txtLotto);
@@ -308,6 +330,92 @@ public class TracciabilitaManager extends JFrame {
         row++;
         addField(form, g, row, 0, "Qté pesée:", txtPesata);
         addField(form, g, row++, 2, "Opérateur:", txtOperatore);
+        addField(form, g, row, 0, "UM (previsto/pesato):", cbUm);
+        g.gridx = 2; g.gridy = row; g.gridwidth = 2;
+        form.add(lblBilancia, g);
+        g.gridwidth = 1;
+
+        // Peso live della bilancia della zona selezionata, aggiornato 3 volte al secondo.
+        javax.swing.Timer uiTimer = new javax.swing.Timer(300, ev -> {
+            OhausScale s = bilance.get(String.valueOf(cbZona.getSelectedItem()));
+            if (s == null || !s.isConnected()) {
+                lblBilancia.setText("Bilancia: non connessa");
+                lblBilancia.setForeground(Color.GRAY);
+                lblBilancia.setToolTipText(null);
+                btnConnetti.setText("Connetti bilancia");
+                return;
+            }
+            btnConnetti.setText("Disconnetti bilancia");
+            lblBilancia.setToolTipText("Ultima riga ricevuta: " + s.getLastLine());
+            Double kg = s.getKg();
+            if (kg == null) {
+                lblBilancia.setText("Bilancia: in attesa di dati...");
+                lblBilancia.setForeground(Color.GRAY);
+                return;
+            }
+            boolean stabile = s.getStableKg() != null;
+            double v = daKg(kg, String.valueOf(cbUm.getSelectedItem()));
+            String um = String.valueOf(cbUm.getSelectedItem());
+            lblBilancia.setText("Bilancia: " + (Double.isNaN(v) ? formatNum(kg) + " KG" : formatNum(v) + " " + um)
+                    + (stabile ? "  STABILE" : "  instabile"));
+            lblBilancia.setForeground(stabile ? new Color(0, 140, 0) : new Color(200, 110, 0));
+        });
+        uiTimer.start();
+
+        btnConnetti.addActionListener(e -> {
+            String zona = String.valueOf(cbZona.getSelectedItem());
+            OhausScale old = bilance.get(zona);
+            if (old != null && old.isConnected()) {
+                old.close();
+                bilance.remove(zona);
+                return;
+            }
+            String ip = bilanceIp.getOrDefault(zona, "").trim();
+            if (ip.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Impostare l'IP della bilancia di " + zona + " da \"Setup stampanti / etichetta / bilance\".",
+                        "IP bilancia mancante", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            btnConnetti.setEnabled(false);
+            OhausScale s = new OhausScale(ip, bilancePort);
+            new Thread(() -> {
+                String err = s.connect();
+                SwingUtilities.invokeLater(() -> {
+                    btnConnetti.setEnabled(true);
+                    if (err == null) {
+                        bilance.put(zona, s);
+                    } else {
+                        JOptionPane.showMessageDialog(this,
+                                "Connessione a " + ip + ":" + bilancePort + " non riuscita:\n" + err
+                                        + "\n\nControllare IP/porta e che nessun altro programma sia collegato alla bilancia.",
+                                "Erreur bilancia", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            }, "connect-bilancia").start();
+        });
+
+        btnLeggi.addActionListener(e -> {
+            OhausScale s = bilance.get(String.valueOf(cbZona.getSelectedItem()));
+            if (s == null || !s.isConnected()) {
+                JOptionPane.showMessageDialog(this, "Bilancia non connessa per questa zona.",
+                        "Bilancia", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            Double kg = s.getStableKg();
+            if (kg == null) {
+                JOptionPane.showMessageDialog(this, "Peso instabile o non disponibile: attendere che si stabilizzi.",
+                        "Bilancia", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            double v = daKg(kg, String.valueOf(cbUm.getSelectedItem()));
+            if (Double.isNaN(v)) {
+                JOptionPane.showMessageDialog(this, "La bilancia legge solo in G o KG: scegliere una di queste UM.",
+                        "Bilancia", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            txtPesata.setText(formatNum(v));
+        });
 
         JButton btnSave = new JButton("Registra prelievo");
         JButton btnLista = new JButton("Lotti disponibili per questo MP");
@@ -348,7 +456,9 @@ public class TracciabilitaManager extends JFrame {
                 }
                 double pesata = toDouble(txtPesata.getText());
                 if (pesata <= 0) throw new IllegalStateException("Quantità pesata obbligatoria.");
-                if (pesata > l.qtaResidua) {
+                String umPesata = String.valueOf(cbUm.getSelectedItem());
+                double pesataInUmLotto = convertiUm(pesata, umPesata, l.um);
+                if (pesataInUmLotto > l.qtaResidua + 1e-9) {
                     throw new IllegalStateException("Residuo del lotto insufficiente ("
                             + formatNum(l.qtaResidua) + " " + l.um + ").");
                 }
@@ -377,17 +487,18 @@ public class TracciabilitaManager extends JFrame {
                 p.min = min;
                 p.max = max;
                 p.qtaPesata = pesata;
+                p.um = umPesata;
                 p.esito = esito;
                 p.operatore = txtOperatore.getText().trim();
                 contatorePrelievo++;
                 p.id = String.format(Locale.ROOT, "P%02d-%07d", LocalDate.now().getYear() % 100, contatorePrelievo);
                 prelievi.add(p);
-                l.qtaResidua -= pesata;
+                l.qtaResidua -= pesataInUmLotto;
                 // DB-REM: salvaPrelievo(p);  // INSERT INTO dbo.BatchPrelievo + INSERT dbo.MpMovimento (in transazione)
 
                 prelieviModel.addRow(new Object[]{p.dataOra, p.batch, p.zona, p.codiceMp, p.lottoInterno,
                         formatNum(p.qtaPrevista), formatNum(p.min), formatNum(p.max),
-                        formatNum(p.qtaPesata), p.esito, p.operatore});
+                        formatNum(p.qtaPesata) + " " + p.um, p.esito, p.operatore});
                 refreshLottiTable();
                 if (chkStampa.isSelected()) {
                     stampaZpl(p.zona, buildZplDose(p, l));
@@ -403,6 +514,8 @@ public class TracciabilitaManager extends JFrame {
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
         JButton btnSetup = new JButton("Setup stampanti / etichetta");
         btnSetup.addActionListener(e -> apriSetupEtichette());
+        buttons.add(btnConnetti);
+        buttons.add(btnLeggi);
         buttons.add(btnSave);
         buttons.add(chkStampa);
         buttons.add(btnLista);
@@ -443,7 +556,7 @@ public class TracciabilitaManager extends JFrame {
                         || lf.toUpperCase(Locale.ROOT).contains(q) || bolla.toUpperCase(Locale.ROOT).contains(q);
                 if (match) {
                     ricercaModel.addRow(new Object[]{p.dataOra, p.batch, p.zona, p.codiceMp, p.lottoInterno,
-                            lf, bolla, formatNum(p.qtaPesata), p.esito, p.operatore});
+                            lf, bolla, formatNum(p.qtaPesata) + " " + p.um, p.esito, p.operatore});
                 }
             }
             // DB-REM: versione con DB = SELECT da dbo.BatchPrelievo JOIN dbo.MpLotto con gli stessi filtri.
@@ -495,7 +608,7 @@ public class TracciabilitaManager extends JFrame {
         y = zplLine(z, m, y, mid, "Batch: " + p.batch + "  " + p.zona, gap);
         y = zplLine(z, m, y, small, "Lotto int.: " + p.lottoInterno, gap);
         y = zplLine(z, m, y, small, "Lotto forn.: " + l.lottoFornitore, gap);
-        y = zplLine(z, m, y, big, "NETTO: " + formatNum(p.qtaPesata) + " " + l.um, gap);
+        y = zplLine(z, m, y, big, "NETTO: " + formatNum(p.qtaPesata) + " " + p.um, gap);
         y = zplLine(z, m, y, small, "Tol: " + formatNum(p.min) + "-" + formatNum(p.max) + "  " + p.esito, gap);
         zplLine(z, m, y, small, p.dataOra + "  Op: " + p.operatore, gap);
         z.append("^FO").append(qrX).append(',').append(m)
@@ -542,12 +655,20 @@ public class TracciabilitaManager extends JFrame {
     private void apriSetupEtichette() {
         JPanel pnl = new JPanel(new GridLayout(0, 2, 6, 6));
         Map<String, JTextField> campi = new LinkedHashMap<>();
+        Map<String, JTextField> campiBil = new LinkedHashMap<>();
         for (String z : ZONE) {
             JTextField t = new JTextField(stampantiIp.getOrDefault(z, ""), 14);
             campi.put(z, t);
             pnl.add(new JLabel("IP stampante " + z + ":"));
             pnl.add(t);
+            JTextField tb = new JTextField(bilanceIp.getOrDefault(z, ""), 14);
+            campiBil.put(z, tb);
+            pnl.add(new JLabel("IP bilancia " + z + ":"));
+            pnl.add(tb);
         }
+        JTextField tPortaBil = new JTextField(String.valueOf(bilancePort), 6);
+        pnl.add(new JLabel("Porta TCP bilance:"));
+        pnl.add(tPortaBil);
         JTextField tw = new JTextField(String.valueOf(etichettaLarghMm), 5);
         JTextField th = new JTextField(String.valueOf(etichettaAltMm), 5);
         JComboBox<Integer> cbDpi = new JComboBox<>(new Integer[]{203, 300, 600});
@@ -568,6 +689,13 @@ public class TracciabilitaManager extends JFrame {
         for (Map.Entry<String, JTextField> en : campi.entrySet()) {
             stampantiIp.put(en.getKey(), en.getValue().getText().trim());
         }
+        for (Map.Entry<String, JTextField> en : campiBil.entrySet()) {
+            bilanceIp.put(en.getKey(), en.getValue().getText().trim());
+        }
+        int porta = (int) toDouble(tPortaBil.getText());
+        if (porta > 0 && porta <= 65535) {
+            bilancePort = porta;
+        }
         int lw = (int) toDouble(tw.getText());
         int ah = (int) toDouble(th.getText());
         if (lw >= 20 && ah >= 20) {
@@ -575,6 +703,192 @@ public class TracciabilitaManager extends JFrame {
             etichettaAltMm = ah;
         }
         stampanteDpi = (Integer) cbDpi.getSelectedItem();
+    }
+
+    private static double convertiUm(double v, String da, String a) {
+        if (da.equals(a)) return v;
+        if ("G".equals(da) && "KG".equals(a)) return v / 1000.0;
+        if ("KG".equals(da) && "G".equals(a)) return v * 1000.0;
+        throw new IllegalStateException("Unità incompatibili: peso in " + da + ", lotto in " + a + ".");
+    }
+
+    /** Peso della bilancia (kg) nell'UM scelta; NaN se non e' G o KG. */
+    private static double daKg(double kg, String um) {
+        if ("KG".equals(um)) return Math.round(kg * 1000.0) / 1000.0;
+        if ("G".equals(um)) return Math.round(kg * 1000.0 * 1000.0) / 1000.0;
+        return Double.NaN;
+    }
+
+    /**
+     * Lettura di una bilancia Ohaus via TCP (stesso schema di SVC.BalanceService: invia "C"/"P"
+     * per avviare lo stream continuo). Differenze volute: mantiene i decimali (BalanceService
+     * arrotonda ai kg interi) e fornisce un peso STABILE: nessun '?' nella riga e almeno
+     * 3 letture identiche (entro 0,5 g) nell'ultimo secondo circa. Il formato esatto della riga
+     * Ohaus va verificato sul campo (la riga ricevuta e' nel tooltip del peso live).
+     */
+    static final class OhausScale {
+        private static final java.util.regex.Pattern PESO = java.util.regex.Pattern.compile(
+                "([-+]?\\d+(?:\\.\\d+)?)\\s*(kg|g)\\b", java.util.regex.Pattern.CASE_INSENSITIVE);
+
+        private final String host;
+        private final int port;
+        private final Object lock = new Object();
+        private java.net.Socket socket;
+        private volatile boolean running;
+        private volatile double lastKg = Double.NaN;
+        private volatile long lastTime;
+        private volatile boolean flagInstabile;
+        private volatile String lastLine = "";
+        private final java.util.ArrayDeque<double[]> recenti = new java.util.ArrayDeque<>();
+
+        OhausScale(String host, int port) {
+            this.host = host;
+            this.port = port;
+        }
+
+        /** Ritorna null se connessa, altrimenti il messaggio d'errore. */
+        String connect() {
+            try {
+                java.net.Socket s = new java.net.Socket();
+                s.setKeepAlive(true);
+                s.setTcpNoDelay(true);
+                s.connect(new java.net.InetSocketAddress(host, port), 8000);
+                s.setSoTimeout(3000);
+                synchronized (lock) {
+                    socket = s;
+                    running = true;
+                }
+                send("C\r\n");
+                send("P\r\n");
+                Thread t = new Thread(this::leggi, "ohaus-" + host);
+                t.setDaemon(true);
+                t.start();
+                return null;
+            } catch (Exception ex) {
+                close();
+                return ex.getMessage() == null ? ex.toString() : ex.getMessage();
+            }
+        }
+
+        boolean isConnected() {
+            synchronized (lock) {
+                return running && socket != null && !socket.isClosed();
+            }
+        }
+
+        String getLastLine() {
+            return lastLine;
+        }
+
+        /** Ultimo peso ricevuto (kg), null se non ci sono dati recenti (oltre 3 s). */
+        Double getKg() {
+            if (Double.isNaN(lastKg) || System.currentTimeMillis() - lastTime > 3000) return null;
+            return lastKg;
+        }
+
+        /** Peso (kg) solo se stabile, altrimenti null. */
+        Double getStableKg() {
+            Double kg = getKg();
+            if (kg == null || flagInstabile) return null;
+            synchronized (recenti) {
+                if (recenti.size() < 3) return null;
+                double first = recenti.peekFirst()[0];
+                double last = recenti.peekLast()[0];
+                if (last - first < 800) return null;
+                double min = Double.MAX_VALUE;
+                double max = -Double.MAX_VALUE;
+                for (double[] r : recenti) {
+                    min = Math.min(min, r[1]);
+                    max = Math.max(max, r[1]);
+                }
+                if (max - min > 0.0005) return null;
+            }
+            return kg;
+        }
+
+        private void leggi() {
+            StringBuilder sb = new StringBuilder();
+            byte[] buf = new byte[256];
+            try {
+                java.io.InputStream in;
+                synchronized (lock) {
+                    in = socket.getInputStream();
+                }
+                while (running) {
+                    int n;
+                    try {
+                        n = in.read(buf);
+                    } catch (java.net.SocketTimeoutException ex) {
+                        continue;
+                    }
+                    if (n < 0) break;
+                    for (int i = 0; i < n; i++) {
+                        char c = (char) (buf[i] & 0xff);
+                        if (c == '\n') {
+                            elabora(sb.toString());
+                            sb.setLength(0);
+                        } else if (c != '\r' && sb.length() < 200) {
+                            sb.append(c);
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+                // stream chiuso o connessione persa: isConnected() diventera' false
+            } finally {
+                running = false;
+            }
+        }
+
+        private void elabora(String raw) {
+            String l = raw.trim().replace(',', '.');
+            if (l.isEmpty()) return;
+            lastLine = l;
+            java.util.regex.Matcher m = PESO.matcher(l);
+            if (!m.find()) return;
+            double v;
+            try {
+                v = Double.parseDouble(m.group(1));
+            } catch (NumberFormatException ex) {
+                return;
+            }
+            double kg = m.group(2).equalsIgnoreCase("g") ? v / 1000.0 : v;
+            flagInstabile = l.indexOf('?') >= 0;
+            long now = System.currentTimeMillis();
+            synchronized (recenti) {
+                recenti.addLast(new double[]{now, kg});
+                while (!recenti.isEmpty() && now - recenti.peekFirst()[0] > 1500) {
+                    recenti.removeFirst();
+                }
+            }
+            lastKg = kg;
+            lastTime = now;
+        }
+
+        private void send(String cmd) {
+            synchronized (lock) {
+                try {
+                    if (socket != null) {
+                        socket.getOutputStream().write(cmd.getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+                        socket.getOutputStream().flush();
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        /** Chiusura pulita (ESC per fermare lo stream, poi FIN): l'Ohaus libera cosi' lo slot client. */
+        void close() {
+            send("\u001b\r\n");
+            java.net.Socket s;
+            synchronized (lock) {
+                running = false;
+                s = socket;
+                socket = null;
+            }
+            if (s != null) {
+                try { s.close(); } catch (Exception ignored) { }
+            }
+        }
     }
 
     private static void addField(JPanel panel, GridBagConstraints g, int row, int col, String label, JComponent field) {
@@ -645,6 +959,7 @@ public class TracciabilitaManager extends JFrame {
         double min;
         double max;
         double qtaPesata;
+        String um = "G";
         String esito = "";
         String operatore = "";
     }
