@@ -52,7 +52,7 @@ if (($_POST['form'] ?? '') === 'second_day') {
     $email = clean($_POST['email'] ?? '', 200);
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) fail(422);
     $body  = "Здравствуйте! Хочу узнать об участии во втором дне фестиваля «Звёздный час» в Люксембурге — «Сила объединения». Пришлите, пожалуйста, дату, место, стоимость и условия регистрации.\n\n";
-    $body .= "Меня зовут:\nМоя сфера / проект:\nМой контакт: $email\n";
+    $body .= "Мой контакт: $email\n";
     $body .= "\nIP: " . ($_SERVER['REMOTE_ADDR'] ?? '') . "\nДата: " . date('Y-m-d H:i:s') . "\n";
     $subject = '=?UTF-8?B?' . base64_encode('Заявка на участие') . '?=';
     $headers = "From: Luxembourg Festival <$from>\r\n"
