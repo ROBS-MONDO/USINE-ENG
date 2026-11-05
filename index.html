@@ -63,6 +63,9 @@
   .day2:hover, .day2:focus-visible { background: #d2a864; color: #2b0d1d; }
   .day2-below { display: block; background: #000; padding: 14px 16px 18px; text-align: center; }
   .day2-below .btn { display: inline-block; margin-top: 0; padding: 14px 22px; font-size: .9rem; }
+  /* computer (schermo largo e orizzontale): pulsante sopra il video; telefoni/tablet: pulsante sotto il video */
+  @media (min-width: 901px) and (orientation: landscape) { .day2-below { display: none; } }
+  @media (max-width: 900px), (orientation: portrait) { .day2 { display: none !important; } .day2-below { display: block !important; } }
   .scroll-hint { position: absolute; left: 50%; bottom: 28px; width: 28px; height: 28px; margin-left: -14px;
     border-right: 2px solid rgba(255,255,255,.85); border-bottom: 2px solid rgba(255,255,255,.85);
     transform: rotate(45deg); animation: bounce 1.8s infinite; }
@@ -944,9 +947,10 @@
     var VW = 960, VH = 540, X = 443, Y = 408.5, W = 300, H = 26, FONT = 10.5, MIN = 0.95, overlay = false;
     function place() {
       var w = hero.clientWidth, h = hero.clientHeight, k = Math.max(w / VW, h / VH);
-      overlay = k >= MIN;     // sugli schermi piccoli il testo e' troppo minuscolo: il pulsante va sotto il video
+      var desk = window.matchMedia("(min-width: 901px) and (orientation: landscape)").matches;
+      overlay = desk && k >= MIN;     // sui telefoni il testo nel video e' troppo piccolo: il pulsante sta sotto il video (regole CSS)
       btn.style.display = overlay ? "flex" : "none";
-      below.style.display = overlay ? "none" : "block";
+      below.style.display = desk ? (overlay ? "none" : "block") : "";
       if (!overlay) return;
       var ox = (w - VW * k) / 2, oy = (h - VH * k) / 2;
       btn.style.left = (ox + X * k) + "px"; btn.style.top = (oy + Y * k) + "px";
