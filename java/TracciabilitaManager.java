@@ -74,6 +74,9 @@ public class TracciabilitaManager extends JFrame {
     // L'Ohaus accetta un solo client alla volta: non collegarsi da qui mentre un altro
     // programma (es. ProdMelBanb) e' gia' connesso alla stessa bilancia.
     private int bilancePort = 9761;
+
+    /** Avviso "lotto quasi finito" quando il residuo scende sotto questa % della quantita' iniziale. */
+    private int avvisoResiduoPct = 20;
     private final Map<String, String> bilanceIp = new LinkedHashMap<>();
     private final Map<String, OhausScale> bilance = new LinkedHashMap<>();
 
@@ -236,6 +239,12 @@ public class TracciabilitaManager extends JFrame {
                         "Lotto da validare", JOptionPane.WARNING_MESSAGE);
                 return;
             }
+            if ("ESAURITO".equals(l.stato)) {
+                JOptionPane.showMessageDialog(this,
+                        "Il lotto " + l.lottoInterno + " è esaurito: se in realtà c'è ancora materiale usare \"Rettifica residuo\".",
+                        "Lotto esaurito", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             String nuovo = "OK".equals(l.stato) ? "BLOCCATO" : "OK";
             try {
                 if (dbAttivo) {
@@ -275,6 +284,65 @@ public class TracciabilitaManager extends JFrame {
             refreshLottiTable();
         });
 
+        // Chiusura/ripesatura: il residuo di un lotto a consegna si scala solo dalle pesate, quindi
+        // con il tempo si scosta da quello fisico. Qui si registra il residuo reale (movimento RETTIFICA).
+        JButton btnRettifica = new JButton("Rettifica residuo");
+        btnRettifica.addActionListener(e -> {
+            try {
+                Lotto sel = selectedLotto();
+                if (sel == null) return;
+                String id = sel.lottoInterno;
+                if (dbAttivo) {
+                    ricaricaLottiDb();
+                }
+                Lotto l = lotti.get(id);
+                if (l == null) throw new IllegalStateException("Lotto " + id + " non trovato.");
+                JTextField tReale = new JTextField(10);
+                JTextField tOp = new JTextField(12);
+                JPanel pnl = new JPanel(new GridLayout(0, 2, 6, 6));
+                pnl.add(new JLabel("Residuo a sistema:"));
+                pnl.add(new JLabel(formatNum(l.qtaResidua) + " " + l.um));
+                pnl.add(new JLabel("Residuo reale pesato (" + l.um + "):"));
+                pnl.add(tReale);
+                pnl.add(new JLabel("Operatore:"));
+                pnl.add(tOp);
+                if (JOptionPane.showConfirmDialog(this, pnl, "Rettifica residuo " + id,
+                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
+                    return;
+                }
+                double reale;
+                try {
+                    reale = Double.parseDouble(tReale.getText().trim().replace(',', '.'));
+                } catch (NumberFormatException ex) {
+                    throw new IllegalStateException("Residuo reale non valido.");
+                }
+                if (reale < 0) throw new IllegalStateException("Il residuo non può essere negativo.");
+                double delta = reale - l.qtaResidua;
+                if (Math.abs(delta) < 1e-9) {
+                    JOptionPane.showMessageDialog(this, "Il residuo a sistema è già allineato.",
+                            "Rettifica", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                if (reale <= 1e-6 && JOptionPane.showConfirmDialog(this,
+                        "Residuo reale 0: il lotto " + id + " verrà segnato ESAURITO. Confermare?",
+                        "Lotto esaurito", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+                    return;
+                }
+                if (dbAttivo) {
+                    rettificaResiduoDb(id, delta, reale, tOp.getText().trim());
+                }
+                l.qtaResidua = reale;
+                if (reale <= 1e-6) {
+                    l.stato = "ESAURITO";
+                } else if ("ESAURITO".equals(l.stato)) {
+                    l.stato = "OK";
+                }
+                refreshLottiTable();
+            } catch (Exception ex) {
+                erroreDb(ex);
+            }
+        });
+
         JButton btnAggiorna = new JButton("Aggiorna dal DB");
         btnAggiorna.setEnabled(dbAttivo);
         btnAggiorna.addActionListener(e -> {
@@ -291,6 +359,7 @@ public class TracciabilitaManager extends JFrame {
         buttons.add(btnEtichetta);
         buttons.add(btnValida);
         buttons.add(btnStato);
+        buttons.add(btnRettifica);
         buttons.add(btnAggiorna);
 
         lottiTable = new JTable(lottiModel);
@@ -366,6 +435,7 @@ public class TracciabilitaManager extends JFrame {
         JTextField txtPesata = new JTextField(8);
         JTextField txtOperatore = new JTextField(12);
         JCheckBox chkStampa = new JCheckBox("Stampa etichetta dose dopo la registrazione", true);
+        JCheckBox chkParziale = new JCheckBox("Dose parziale (la completo con un altro lotto)");
         JComboBox<String> cbUm = new JComboBox<>(new String[]{"G", "KG", "L", "PZ"});
         JLabel lblBilancia = new JLabel("Bilancia: non connessa");
         lblBilancia.setFont(new Font("SansSerif", Font.BOLD, 16));
@@ -394,6 +464,52 @@ public class TracciabilitaManager extends JFrame {
         txtPrevista.getDocument().addDocumentListener(dl);
         txtTol.getDocument().addDocumentListener(dl);
 
+        // Info live: residuo del lotto scansionato e avanzamento della dose (previsto / gia' pesato).
+        JLabel lblLotto = new JLabel("Lotto: -");
+        lblLotto.setFont(new Font("SansSerif", Font.BOLD, 14));
+        JLabel lblDose = new JLabel("Dose: -");
+        lblDose.setFont(new Font("SansSerif", Font.BOLD, 14));
+        Runnable aggiornaInfo = () -> {
+            String id = txtLotto.getText().trim().toUpperCase(Locale.ROOT);
+            Lotto l = lotti.get(id);
+            Color rosso = new Color(180, 0, 0);
+            if (id.isEmpty()) {
+                lblLotto.setText("Lotto: -");
+                lblLotto.setForeground(Color.DARK_GRAY);
+            } else if (l == null) {
+                lblLotto.setText("Lotto " + id + ": sconosciuto");
+                lblLotto.setForeground(rosso);
+            } else {
+                double pct = l.qtaIniziale > 0 ? 100.0 * l.qtaResidua / l.qtaIniziale : 0;
+                lblLotto.setText("Lotto " + id + " - " + l.codiceMp + "   residuo " + formatNum(l.qtaResidua) + " "
+                        + l.um + " (" + Math.round(pct) + "% dell'iniziale)   scad. "
+                        + (l.scadenza.isEmpty() ? "-" : l.scadenza) + "   stato " + l.stato);
+                lblLotto.setForeground(!"OK".equals(l.stato) || pct <= avvisoResiduoPct ? rosso : new Color(0, 110, 0));
+            }
+            String batch = txtBatch.getText().trim().toUpperCase(Locale.ROOT);
+            String mp = l != null ? l.codiceMp : txtMp.getText().trim().toUpperCase(Locale.ROOT);
+            double prev = toDouble(txtPrevista.getText());
+            if (prev > 0 && !batch.isEmpty() && !mp.isEmpty()) {
+                String um = String.valueOf(cbUm.getSelectedItem());
+                double gia = giaPesatoMemoria(batch, String.valueOf(cbZona.getSelectedItem()), mp, um);
+                lblDose.setText("Dose " + mp + ": già pesato " + formatNum(gia) + " / previsto " + formatNum(prev)
+                        + " " + um + " - mancano " + formatNum(Math.max(0, prev - gia)));
+            } else {
+                lblDose.setText("Dose: -");
+            }
+        };
+        DocumentListener infoDl = new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { aggiornaInfo.run(); }
+            @Override public void removeUpdate(DocumentEvent e) { aggiornaInfo.run(); }
+            @Override public void changedUpdate(DocumentEvent e) { aggiornaInfo.run(); }
+        };
+        txtLotto.getDocument().addDocumentListener(infoDl);
+        txtBatch.getDocument().addDocumentListener(infoDl);
+        txtMp.getDocument().addDocumentListener(infoDl);
+        txtPrevista.getDocument().addDocumentListener(infoDl);
+        cbZona.addActionListener(ev -> aggiornaInfo.run());
+        cbUm.addActionListener(ev -> aggiornaInfo.run());
+
         JPanel form = new JPanel(new GridBagLayout());
         GridBagConstraints g = new GridBagConstraints();
         g.insets = new Insets(4, 6, 4, 6);
@@ -414,6 +530,12 @@ public class TracciabilitaManager extends JFrame {
         addField(form, g, row, 0, "UM (previsto/pesato):", cbUm);
         g.gridx = 2; g.gridy = row; g.gridwidth = 2;
         form.add(lblBilancia, g);
+        row++;
+        g.gridx = 0; g.gridy = row; g.gridwidth = 4;
+        form.add(lblLotto, g);
+        row++;
+        g.gridy = row;
+        form.add(lblDose, g);
         g.gridwidth = 1;
 
         // Peso live della bilancia della zona selezionata, aggiornato 3 volte al secondo.
@@ -577,14 +699,33 @@ public class TracciabilitaManager extends JFrame {
                 double tol = toDouble(txtTol.getText());
                 double min = Math.rint(prev * (1 - tol / 100.0));
                 double max = Math.rint(prev * (1 + tol / 100.0));
+                String zonaSel = String.valueOf(cbZona.getSelectedItem());
+                // La tolleranza vale sul TOTALE della dose (pesato in precedenza con altri lotti + questo).
+                double gia = dbAttivo ? giaPesatoDb(batch, zonaSel, l.codiceMp, umPesata)
+                        : giaPesatoMemoria(batch, zonaSel, l.codiceMp, umPesata);
+                double totale = gia + pesata;
                 String esito = "OK";
-                if (prev > 0 && (pesata < min || pesata > max)) {
-                    int c = JOptionPane.showConfirmDialog(this,
-                            "Peso " + formatNum(pesata) + " fuori tolleranza (" + formatNum(min) + " - "
-                                    + formatNum(max) + ").\nRegistrare comunque?",
-                            "Fuori tolleranza", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                    if (c != JOptionPane.YES_OPTION) return;
-                    esito = "FUORI TOL.";
+                if (prev > 0) {
+                    String dettaglio = gia > 0 ? "Totale dose " + formatNum(totale) + " (già pesato "
+                            + formatNum(gia) + " + questo " + formatNum(pesata) + ")" : "Peso " + formatNum(pesata);
+                    if (chkParziale.isSelected()) {
+                        if (totale > max) {
+                            int c = JOptionPane.showConfirmDialog(this,
+                                    dettaglio + " supera il massimo (" + formatNum(max) + ").\nRegistrare comunque?",
+                                    "Fuori tolleranza", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                            if (c != JOptionPane.YES_OPTION) return;
+                            esito = "FUORI TOL.";
+                        } else {
+                            esito = "PARZIALE";
+                        }
+                    } else if (totale < min || totale > max) {
+                        int c = JOptionPane.showConfirmDialog(this,
+                                dettaglio + " fuori tolleranza (" + formatNum(min) + " - " + formatNum(max)
+                                        + ").\nRegistrare comunque?",
+                                "Fuori tolleranza", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                        if (c != JOptionPane.YES_OPTION) return;
+                        esito = "FUORI TOL.";
+                    }
                 }
 
                 if (fefoDeroga) {
@@ -614,12 +755,17 @@ public class TracciabilitaManager extends JFrame {
                 }
                 prelievi.add(p);
                 l.qtaResidua -= pesataInUmLotto;
+                if (l.qtaResidua <= 1e-6) {
+                    l.stato = "ESAURITO";   // nel DB lo imposta salvaPrelievoDb nella stessa transazione
+                }
 
                 addPrelievoRow(p);
                 refreshLottiTable();
                 if (chkStampa.isSelected()) {
                     stampaZpl(p.zona, buildZplDose(p, l));
                 }
+                avvisoResiduo(l, prev, umPesata);
+                chkParziale.setSelected(false);
                 txtLotto.setText("");
                 txtPesata.setText("");
                 pesoLetto[0] = null;
@@ -636,6 +782,7 @@ public class TracciabilitaManager extends JFrame {
         buttons.add(btnLeggi);
         buttons.add(btnSave);
         buttons.add(chkStampa);
+        buttons.add(chkParziale);
         buttons.add(btnLista);
         buttons.add(btnSetup);
 
@@ -748,6 +895,7 @@ public class TracciabilitaManager extends JFrame {
         etichettaLarghMm = (int) toDouble(pr.getProperty("etichetta.larghezzaMm", String.valueOf(etichettaLarghMm)));
         etichettaAltMm = (int) toDouble(pr.getProperty("etichetta.altezzaMm", String.valueOf(etichettaAltMm)));
         stampanteDpi = (int) toDouble(pr.getProperty("stampante.dpi", String.valueOf(stampanteDpi)));
+        avvisoResiduoPct = (int) toDouble(pr.getProperty("avviso.residuoPct", String.valueOf(avvisoResiduoPct)));
     }
 
     private void salvaImpostazioniPostazione() {
@@ -760,6 +908,7 @@ public class TracciabilitaManager extends JFrame {
         pr.setProperty("etichetta.larghezzaMm", String.valueOf(etichettaLarghMm));
         pr.setProperty("etichetta.altezzaMm", String.valueOf(etichettaAltMm));
         pr.setProperty("stampante.dpi", String.valueOf(stampanteDpi));
+        pr.setProperty("avviso.residuoPct", String.valueOf(avvisoResiduoPct));
         try (java.io.OutputStream out = new java.io.FileOutputStream(POSTAZIONE_FILE)) {
             pr.store(out, "Impostazioni di questa postazione - TracciabilitaManager");
         } catch (Exception ex) {
@@ -1010,6 +1159,65 @@ public class TracciabilitaManager extends JFrame {
                     ps.setString(4, trunc(p.operatore, 50));
                     ps.executeUpdate();
                 }
+                if (residuo - qtaInUmLotto <= 1e-6) {
+                    try (PreparedStatement ps = conn.prepareStatement(
+                            "UPDATE dbo.MpLotto SET Stato = 'ESAURITO' WHERE LottoInterno = ?")) {
+                        ps.setString(1, l.lottoInterno);
+                        ps.executeUpdate();
+                    }
+                }
+                conn.commit();
+            } catch (Exception ex) {
+                conn.rollback();
+                throw ex;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    /** Quantita' gia' pesata per la stessa dose (batch + zona + MP), convertita nell'UM indicata. */
+    private double giaPesatoDb(String batch, String zona, String mp, String um) throws Exception {
+        double tot = 0;
+        try (Connection conn = openConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "SELECT QtaPesata, UM FROM dbo.BatchPrelievo WHERE BatchId = ? AND Zona = ? AND CodiceMP = ?")) {
+            ps.setString(1, batch);
+            ps.setString(2, trunc(zona, 30));
+            ps.setString(3, mp);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    try {
+                        tot += convertiUm(rs.getDouble(1), nz(rs.getString(2)), um);
+                    } catch (IllegalStateException ignored) {
+                        // UM non convertibile: non si somma
+                    }
+                }
+            }
+        }
+        return tot;
+    }
+
+    /** Registra il residuo reale: movimento RETTIFICA (differenza) e aggiornamento dello stato del lotto. */
+    private void rettificaResiduoDb(String lotto, double delta, double nuovoResiduo, String operatore) throws Exception {
+        try (Connection conn = openConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "INSERT INTO dbo.MpMovimento (LottoInterno, Tipo, Qta, Rif, Operatore) "
+                                + "VALUES (?, 'RETTIFICA', ?, 'RIPESATURA', ?)")) {
+                    ps.setString(1, lotto);
+                    ps.setDouble(2, delta);
+                    ps.setString(3, trunc(operatore, 50));
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "UPDATE dbo.MpLotto SET Stato = CASE WHEN ? <= 0.000001 THEN 'ESAURITO' "
+                                + "WHEN Stato = 'ESAURITO' THEN 'OK' ELSE Stato END WHERE LottoInterno = ?")) {
+                    ps.setDouble(1, nuovoResiduo);
+                    ps.setString(2, lotto);
+                    ps.executeUpdate();
+                }
                 conn.commit();
             } catch (Exception ex) {
                 conn.rollback();
@@ -1141,6 +1349,9 @@ public class TracciabilitaManager extends JFrame {
         JTextField tPortaBil = new JTextField(String.valueOf(bilancePort), 6);
         pnl.add(new JLabel("Porta TCP bilance:"));
         pnl.add(tPortaBil);
+        JTextField tAvviso = new JTextField(String.valueOf(avvisoResiduoPct), 6);
+        pnl.add(new JLabel("Avviso lotto quasi finito (% residuo):"));
+        pnl.add(tAvviso);
         JTextField tw = new JTextField(String.valueOf(etichettaLarghMm), 5);
         JTextField th = new JTextField(String.valueOf(etichettaAltMm), 5);
         JComboBox<Integer> cbDpi = new JComboBox<>(new Integer[]{203, 300, 600});
@@ -1175,6 +1386,10 @@ public class TracciabilitaManager extends JFrame {
             etichettaAltMm = ah;
         }
         stampanteDpi = (Integer) cbDpi.getSelectedItem();
+        int soglia = (int) toDouble(tAvviso.getText());
+        if (soglia >= 0 && soglia <= 100) {
+            avvisoResiduoPct = soglia;
+        }
         salvaImpostazioniPostazione();
     }
 
@@ -1198,6 +1413,77 @@ public class TracciabilitaManager extends JFrame {
         }
         result.sort((a, b) -> LocalDate.parse(a.scadenza).compareTo(LocalDate.parse(b.scadenza)));
         return result;
+    }
+
+    private double giaPesatoMemoria(String batch, String zona, String mp, String um) {
+        double tot = 0;
+        for (Prelievo p : prelievi) {
+            if (p.batch.equals(batch) && p.zona.equals(zona) && p.codiceMp.equals(mp)) {
+                try {
+                    tot += convertiUm(p.qtaPesata, p.um, um);
+                } catch (IllegalStateException ignored) {
+                    // UM non convertibile: non si somma
+                }
+            }
+        }
+        return tot;
+    }
+
+    /** Lotti della stessa MP ancora utilizzabili (OK, residuo, non scaduti), scadenza piu' vicina per prima. */
+    private List<Lotto> lottiAlternativi(Lotto l) {
+        List<Lotto> result = new ArrayList<>();
+        LocalDate oggi = LocalDate.now();
+        for (Lotto o : lotti.values()) {
+            if (o == l || !o.codiceMp.equals(l.codiceMp) || !"OK".equals(o.stato) || o.qtaResidua <= 1e-6) continue;
+            if (!o.scadenza.isEmpty() && LocalDate.parse(o.scadenza).isBefore(oggi)) continue;
+            result.add(o);
+        }
+        result.sort((a, b) -> {
+            if (a.scadenza.isEmpty() && b.scadenza.isEmpty()) return 0;
+            if (a.scadenza.isEmpty()) return 1;
+            if (b.scadenza.isEmpty()) return -1;
+            return LocalDate.parse(a.scadenza).compareTo(LocalDate.parse(b.scadenza));
+        });
+        return result;
+    }
+
+    /**
+     * Dopo un prelievo avvisa se il lotto e' esaurito o quasi finito: residuo sotto la soglia in % della
+     * quantita' iniziale, oppure meno di 2 dosi come quella prevista. Indica i lotti con cui proseguire.
+     */
+    private void avvisoResiduo(Lotto l, double prevista, String umPrevista) {
+        boolean esaurito = l.qtaResidua <= 1e-6;
+        double pct = l.qtaIniziale > 0 ? 100.0 * l.qtaResidua / l.qtaIniziale : 0;
+        boolean basso = pct <= avvisoResiduoPct;
+        if (prevista > 0) {
+            try {
+                if (l.qtaResidua < 2 * convertiUm(prevista, umPrevista, l.um)) basso = true;
+            } catch (IllegalStateException ignored) {
+                // UM non confrontabili: vale solo la soglia in %
+            }
+        }
+        if (!esaurito && !basso) return;
+        List<Lotto> altri = lottiAlternativi(l);
+        StringBuilder sb = new StringBuilder();
+        sb.append(esaurito ? "LOTTO ESAURITO: " : "Lotto quasi finito: ").append(l.lottoInterno).append(" (")
+                .append(l.codiceMp).append(")\n");
+        if (!esaurito) {
+            sb.append("Residuo ").append(formatNum(l.qtaResidua)).append(' ').append(l.um).append(" (")
+                    .append(Math.round(pct)).append("% dell'iniziale).\n");
+        }
+        sb.append('\n');
+        if (altri.isEmpty()) {
+            sb.append("ATTENZIONE: nessun altro lotto disponibile per ").append(l.codiceMp)
+                    .append(".\nAvvisare subito il magazzino.");
+        } else {
+            sb.append("Lotti con cui proseguire (scadenza più vicina per primo):\n");
+            for (Lotto o : altri) {
+                sb.append("  ").append(o.lottoInterno).append("  residuo ").append(formatNum(o.qtaResidua)).append(' ')
+                        .append(o.um).append("  scad. ").append(o.scadenza.isEmpty() ? "-" : o.scadenza).append('\n');
+            }
+        }
+        JOptionPane.showMessageDialog(this, sb.toString(),
+                esaurito ? "Lotto esaurito" : "Lotto quasi finito", JOptionPane.WARNING_MESSAGE);
     }
 
     private static double convertiUm(double v, String da, String a) {
