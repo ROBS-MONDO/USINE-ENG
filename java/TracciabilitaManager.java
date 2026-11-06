@@ -151,6 +151,7 @@ public class TracciabilitaManager extends JFrame {
         JTextField txtScadenza = new JTextField(10);
         JTextField txtQta = new JTextField(8);
         JTextField txtSilo = new JTextField(8);   // solo per materiale che va in un silo (bolla di carico silo)
+        JTextField txtLottoQuasar = new JTextField(10);   // lotto interno assegnato da Quasar (es. 26/303)
         JComboBox<String> cbUm = new JComboBox<>(new String[]{"KG", "G", "L", "PZ"});
         JComboBox<String> cbStato = new JComboBox<>(new String[]{STATO_DA_VALIDARE, "OK"});
         upper(txtMp);
@@ -170,6 +171,8 @@ public class TracciabilitaManager extends JFrame {
         addField(form, g, row++, 2, "UM:", cbUm);
         addField(form, g, row, 0, "Stato iniziale:", cbStato);
         addField(form, g, row, 2, "Silo di carico (se da silo):", txtSilo);
+        row++;
+        addField(form, g, row, 0, "Lotto interno Quasar (es. 26/303):", txtLottoQuasar);
 
         JButton btnAdd = new JButton("Registra lotto + genera lotto interno");
         JButton btnEtichetta = new JButton("Mostra etichetta ZPL");
@@ -188,7 +191,16 @@ public class TracciabilitaManager extends JFrame {
                     catch (Exception ex) { throw new IllegalStateException("Scadenza non valida (usare AAAA-MM-GG)."); }
                 }
                 Lotto l = new Lotto();
-                l.lottoInterno = dbAttivo ? "" : nextLottoInterno();   // con il DB lo assegna la sequenza
+                // Il lotto interno e' quello assegnato da Quasar nella ricezione merce (BAMP): se indicato
+                // si usa quello (etichetta gia' stampata da Quasar); altrimenti ne genera uno nostro.
+                String lq = txtLottoQuasar.getText().trim().toUpperCase(Locale.ROOT);
+                if (!lq.isEmpty() && !lq.matches("\\d{2}/\\d{1,6}")) {
+                    throw new IllegalStateException("Lotto Quasar non valido: formato AA/NNN (es. 26/303).");
+                }
+                if (!lq.isEmpty() && lotti.containsKey(lq)) {
+                    throw new IllegalStateException("Il lotto " + lq + " è già registrato.");
+                }
+                l.lottoInterno = !lq.isEmpty() ? lq : (dbAttivo ? "" : nextLottoInterno());
                 l.codiceMp = mp;
                 l.descrizione = txtDescr.getText().trim();
                 l.fornitore = txtFornitore.getText().trim();
@@ -211,13 +223,14 @@ public class TracciabilitaManager extends JFrame {
                 txtLottoForn.setText("");
                 txtQta.setText("");
                 txtSilo.setText("");
+                txtLottoQuasar.setText("");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         btnPulisci.addActionListener(e -> {
-            for (JTextField t : new JTextField[]{txtMp, txtDescr, txtFornitore, txtBolla, txtLottoForn, txtScadenza, txtQta, txtSilo}) {
+            for (JTextField t : new JTextField[]{txtMp, txtDescr, txtFornitore, txtBolla, txtLottoForn, txtScadenza, txtQta, txtSilo, txtLottoQuasar}) {
                 t.setText("");
             }
         });
@@ -1011,8 +1024,10 @@ public class TracciabilitaManager extends JFrame {
         try (Connection conn = openConnection()) {
             conn.setAutoCommit(false);
             try {
-                int n = prossimoDaSequenza(conn, "dbo.SeqLottoInterno");
-                l.lottoInterno = String.format(Locale.ROOT, "L%02d-%06d", LocalDate.now().getYear() % 100, n);
+                if (l.lottoInterno.isEmpty()) {   // vuoto = nessun lotto Quasar indicato: genera il nostro
+                    int n = prossimoDaSequenza(conn, "dbo.SeqLottoInterno");
+                    l.lottoInterno = String.format(Locale.ROOT, "L%02d-%06d", LocalDate.now().getYear() % 100, n);
+                }
                 String sql = "INSERT INTO dbo.MpLotto (LottoInterno, CodiceMP, Descrizione, Fornitore, BollaIngresso, "
                         + "LottoFornitore, Scadenza, QtaIniziale, UM, Stato) VALUES (?,?,?,?,?,?,?,?,?,?)";
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -1052,6 +1067,10 @@ public class TracciabilitaManager extends JFrame {
                 conn.commit();
             } catch (Exception ex) {
                 conn.rollback();
+                if (ex instanceof SQLException
+                        && (((SQLException) ex).getErrorCode() == 2627 || ((SQLException) ex).getErrorCode() == 2601)) {
+                    throw new IllegalStateException("Il lotto " + l.lottoInterno + " è già registrato.");
+                }
                 throw ex;
             } finally {
                 conn.setAutoCommit(true);
