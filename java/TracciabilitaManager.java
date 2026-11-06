@@ -724,12 +724,14 @@ public class TracciabilitaManager extends JFrame {
                             + ", non di " + mp + ". Materiale sbagliato!");
                 }
                 if (dbAttivo && STATO_DA_VALIDARE.equals(l.stato) && l.bolla.startsWith("MOMP/")) {
-                    // Validazione fatta nel frattempo in Quasar (LOTVALID): si allinea prima di bloccare.
+                    // Validazione fatta nel frattempo in Quasar (VALID_TES): si allinea prima di bloccare.
                     try {
-                        if (!lottiValidatiQuasar(java.util.Collections.singletonList(lottoId)).isEmpty()) {
-                            validaLottoDb(lottoId, "QUASAR");
+                        ValidazioneQuasar vq = validazioniQuasar(java.util.Collections.singletonList(lottoId)).get(lottoId);
+                        if (vq != null) {
+                            validaLottoDb(lottoId, etichettaValidatore(vq.utente), vq.quando);
                             l.stato = "OK";
-                            l.validatoDa = "QUASAR " + LocalDateTime.now().format(TS);
+                            l.validatoDa = (etichettaValidatore(vq.utente) + " "
+                                    + (vq.quando == null ? "" : vq.quando.toLocalDateTime().format(TS))).trim();
                         }
                     } catch (Exception ex) {
                         System.err.println("Controllo validazione Quasar non riuscito: " + messaggio(ex));
@@ -1104,7 +1106,7 @@ public class TracciabilitaManager extends JFrame {
                 }
                 String sql = "INSERT INTO dbo.MpLotto (LottoInterno, CodiceMP, Descrizione, Fornitore, BollaIngresso, "
                         + "LottoFornitore, Scadenza, QtaIniziale, UM, Stato, ValidatoDa, DataValidazione) "
-                        + "VALUES (?,?,?,?,?,?,?,?,?,?,?, CASE WHEN ? = '' THEN NULL ELSE SYSDATETIME() END)";
+                        + "VALUES (?,?,?,?,?,?,?,?,?,?,?, CASE WHEN ? = '' THEN NULL ELSE COALESCE(?, SYSDATETIME()) END)";
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setString(1, l.lottoInterno);
                     ps.setString(2, l.codiceMp);
@@ -1122,6 +1124,11 @@ public class TracciabilitaManager extends JFrame {
                     ps.setString(10, l.stato);
                     ps.setString(11, trunc(l.validatoDa, 100));
                     ps.setString(12, trunc(l.validatoDa, 100));
+                    if (l.validatoQuando == null) {
+                        ps.setNull(13, java.sql.Types.TIMESTAMP);
+                    } else {
+                        ps.setTimestamp(13, l.validatoQuando);
+                    }
                     ps.executeUpdate();
                 }
                 try (PreparedStatement ps = conn.prepareStatement(
@@ -1171,12 +1178,22 @@ public class TracciabilitaManager extends JFrame {
     }
 
     private void validaLottoDb(String lotto, String chi) throws Exception {
+        validaLottoDb(lotto, chi, null);
+    }
+
+    /** Porta il lotto a OK; "quando" e' la data reale di validazione (se nota), altrimenti l'ora attuale. */
+    private void validaLottoDb(String lotto, String chi, java.sql.Timestamp quando) throws Exception {
         try (Connection conn = openConnection();
              PreparedStatement ps = conn.prepareStatement(
-                     "UPDATE dbo.MpLotto SET Stato = 'OK', ValidatoDa = ?, DataValidazione = SYSDATETIME() "
+                     "UPDATE dbo.MpLotto SET Stato = 'OK', ValidatoDa = ?, DataValidazione = COALESCE(?, SYSDATETIME()) "
                              + "WHERE LottoInterno = ? AND Stato = 'DA VALIDARE'")) {
             ps.setString(1, trunc(chi, 100));
-            ps.setString(2, lotto);
+            if (quando == null) {
+                ps.setNull(2, java.sql.Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(2, quando);
+            }
+            ps.setString(3, lotto);
             if (ps.executeUpdate() != 1) {
                 throw new IllegalStateException("Il lotto " + lotto
                         + " non è più DA VALIDARE: premere \"Aggiorna dal DB\".");
@@ -1266,7 +1283,8 @@ public class TracciabilitaManager extends JFrame {
     // ------------------------------------------------------------------
     // Quasar (Oracle, schema POKER) - SOLA LETTURA
     // Entrate materie prime: POKER.BOLRIG con RB_PROT = 'MOMP' (documento BAMP); il lotto interno
-    // e' RB_LOTTO; LOTTI ha scadenza e origine; un lotto e' VALIDATO se compare in POKER.LOTVALID.
+    // e' RB_LOTTO; LOTTI ha scadenza e origine (LOT_ORIGINE = lotto del fornitore); un lotto e' VALIDATO se in POKER.VALID_TES
+    // (modulo Quasar U6MLU01) ha VALIDAZ = 'SI'.
     // ------------------------------------------------------------------
 
     private static final class LottoQuasar {
@@ -1281,15 +1299,28 @@ public class TracciabilitaManager extends JFrame {
         double qta;
         LocalDate scadenza;
         boolean validato;
+        String validatoDa = "";
+        java.sql.Timestamp validatoQuando;
+    }
+
+    /** Validazione di un lotto in Quasar (modulo U6MLU01, tabella POKER.VALID_TES). */
+    private static final class ValidazioneQuasar {
+        String utente = "";
+        java.sql.Timestamp quando;
+    }
+
+    private static String etichettaValidatore(String utente) {
+        return utente == null || utente.isEmpty() ? "QUASAR" : utente + " (Quasar)";
     }
 
     private List<LottoQuasar> leggiQuasar(int anno, int daNum) throws Exception {
         String sql = "SELECT b.RB_NUM, b.RB_RIGA, TRIM(b.RB_CLFO), TRIM(b.RB_PARTE), TRIM(b.RB_DES), b.RB_QTA, "
                 + "TRIM(b.RB_UM), TRIM(b.RB_LOTTO), TRIM(b.RB_FLOTTO), l.LOT_DTSCAD, TRIM(l.LOT_ORIGINE), "
-                + "CASE WHEN v.LOT IS NULL THEN 0 ELSE 1 END "
+                + "CASE WHEN v.LOTTO IS NULL THEN 0 ELSE 1 END, TRIM(v.UTENTE), v.DATA_VAR "
                 + "FROM POKER.BOLRIG b "
                 + "LEFT JOIN POKER.LOTTI l ON l.LOT_COD = b.RB_LOTTO AND l.LOT_PARTE = b.RB_PARTE "
-                + "LEFT JOIN POKER.LOTVALID v ON v.LOT = b.RB_LOTTO AND v.ARTICLE = b.RB_PARTE "
+                + "LEFT JOIN POKER.VALID_TES v ON TRIM(v.LOTTO) = TRIM(b.RB_LOTTO) "
+                + "AND TRIM(v.ARTICOLO) = TRIM(b.RB_PARTE) AND TRIM(v.VALIDAZ) = 'SI' "
                 + "WHERE b.RB_ESE = ? AND b.RB_PROT = 'MOMP' AND b.RB_NUM >= ? AND b.RB_LOTTO IS NOT NULL "
                 + "ORDER BY b.RB_NUM, b.RB_RIGA";
         List<LottoQuasar> out = new ArrayList<>();
@@ -1316,6 +1347,8 @@ public class TracciabilitaManager extends JFrame {
                         q.scadenza = d.toLocalDate();
                     }
                     q.validato = rs.getInt(12) == 1;
+                    q.validatoDa = nz(rs.getString(13));
+                    q.validatoQuando = rs.getTimestamp(14);
                     out.add(q);
                 }
             }
@@ -1323,39 +1356,43 @@ public class TracciabilitaManager extends JFrame {
         return out;
     }
 
-    /** Dei lotti indicati, quelli presenti in POKER.LOTVALID (cioe' validati in Quasar). */
-    private Set<String> lottiValidatiQuasar(Collection<String> daControllare) throws Exception {
-        Set<String> validati = new HashSet<>();
+    /** Dei lotti indicati, quelli validati in Quasar (POKER.VALID_TES, VALIDAZ = 'SI') con utente e data. */
+    private Map<String, ValidazioneQuasar> validazioniQuasar(Collection<String> daControllare) throws Exception {
+        Map<String, ValidazioneQuasar> out = new LinkedHashMap<>();
         List<String> lista = new ArrayList<>(daControllare);
-        if (lista.isEmpty()) return validati;
+        if (lista.isEmpty()) return out;
         try (Connection cn = DbOracleManager.getConnection()) {
-            for (int i = 0; i < lista.size(); i += 500) {
-                List<String> blocco = lista.subList(i, Math.min(lista.size(), i + 500));
-                StringBuilder sb = new StringBuilder("SELECT LOT FROM POKER.LOTVALID WHERE LOT IN (");
-                for (int j = 0; j < blocco.size(); j++) {
-                    sb.append(j == 0 ? "?" : ",?");
+            for (int i2 = 0; i2 < lista.size(); i2 += 500) {
+                List<String> blocco = lista.subList(i2, Math.min(lista.size(), i2 + 500));
+                StringBuilder sb = new StringBuilder(
+                        "SELECT TRIM(LOTTO), TRIM(UTENTE), DATA_VAR FROM POKER.VALID_TES WHERE TRIM(VALIDAZ) = 'SI' AND TRIM(LOTTO) IN (");
+                for (int j2 = 0; j2 < blocco.size(); j2++) {
+                    sb.append(j2 == 0 ? "?" : ",?");
                 }
                 sb.append(')');
                 try (PreparedStatement ps = cn.prepareStatement(sb.toString())) {
-                    for (int j = 0; j < blocco.size(); j++) {
-                        ps.setString(j + 1, blocco.get(j));
+                    for (int j2 = 0; j2 < blocco.size(); j2++) {
+                        ps.setString(j2 + 1, blocco.get(j2));
                     }
                     ps.setQueryTimeout(30);
                     try (ResultSet rs = ps.executeQuery()) {
                         while (rs.next()) {
-                            validati.add(nz(rs.getString(1)));
+                            ValidazioneQuasar v = new ValidazioneQuasar();
+                            v.utente = nz(rs.getString(2));
+                            v.quando = rs.getTimestamp(3);
+                            out.put(nz(rs.getString(1)), v);
                         }
                     }
                 }
             }
         }
-        return validati;
+        return out;
     }
 
     // ------------------------------------------------------------------
     // Sincronizzazione AUTOMATICA con Quasar (in background, ogni minuto)
     //  - importa i nuovi lotti MOMP dal numero di bolla di partenza dell'anno;
-    //  - porta a OK i lotti importati che nel frattempo risultano in LOTVALID.
+    //  - porta a OK i lotti importati che nel frattempo risultano validati in POKER.VALID_TES.
     // Il numero di partenza e' salvato in dbo.QuasarSync (chiave MOMP_AAAA): al primo avvio in assoluto
     // e' "la prossima bolla" (non si importa lo storico, le cui quantita' residue non sono note); con un
     // nuovo anno riparte da 1. Si puo' forzare con quasar.primoNumero in tracciabilita-postazione.properties.
@@ -1530,7 +1567,8 @@ public class TracciabilitaManager extends JFrame {
             l.qtaResidua = q.qta;
             l.um = q.um.isEmpty() ? "KG" : q.um;
             l.stato = q.validato ? "OK" : STATO_DA_VALIDARE;
-            l.validatoDa = q.validato ? "QUASAR" : "";
+            l.validatoDa = q.validato ? etichettaValidatore(q.validatoDa) : "";
+            l.validatoQuando = q.validato ? q.validatoQuando : null;
             try {
                 salvaLottoDb(l);
                 importati++;
@@ -1541,7 +1579,7 @@ public class TracciabilitaManager extends JFrame {
         return importati;
     }
 
-    /** Porta a OK (leggendo LOTVALID) i lotti importati da Quasar che risultano ancora DA VALIDARE. */
+    /** Porta a OK (leggendo POKER.VALID_TES) i lotti importati da Quasar che risultano ancora DA VALIDARE. */
     private int sincronizzaValidazioniQuasarDb() throws Exception {
         List<String> da = new ArrayList<>();
         try (Connection conn = openConnection();
@@ -1553,9 +1591,9 @@ public class TracciabilitaManager extends JFrame {
             }
         }
         int n = 0;
-        for (String id : lottiValidatiQuasar(da)) {
+        for (Map.Entry<String, ValidazioneQuasar> en : validazioniQuasar(da).entrySet()) {
             try {
-                validaLottoDb(id, "QUASAR");
+                validaLottoDb(en.getKey(), etichettaValidatore(en.getValue().utente), en.getValue().quando);
                 n++;
             } catch (IllegalStateException ex) {
                 // lo stato e' cambiato nel frattempo
@@ -2130,6 +2168,7 @@ public class TracciabilitaManager extends JFrame {
         String um = "KG";
         String stato = "OK";
         String validatoDa = "";
+        java.sql.Timestamp validatoQuando;   // data/ora reale di validazione in Quasar, se importata
         String silo = "";   // silo in cui e' stato caricato il lotto (vuoto = materiale non da silo)
     }
 
