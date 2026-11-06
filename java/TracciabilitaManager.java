@@ -1410,6 +1410,25 @@ public class TracciabilitaManager extends JFrame {
         });
     }
 
+    /** Crea dbo.QuasarSync solo se manca; se l'utente non ha il permesso lo dice chiaramente. */
+    private void creaTabellaQuasarSyncSeManca(Connection conn) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement("SELECT OBJECT_ID('dbo.QuasarSync', 'U')");
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next() && rs.getObject(1) != null) {
+                return;
+            }
+        }
+        try (java.sql.Statement st = conn.createStatement()) {
+            st.execute(SQL_QUASAR_SYNC);
+        } catch (SQLException ex) {
+            if (ex.getErrorCode() == 2714) {
+                return;   // esiste gia' (OBJECT_ID non la vedeva per mancanza di permessi di metadati)
+            }
+            throw new IllegalStateException("Manca la tabella dbo.QuasarSync e l'utente del database non può crearla: "
+                    + "farla creare con lo script sql/tracciabilita_tabelle.sql (sezione QuasarSync).");
+        }
+    }
+
     private Integer leggiIntSync(Connection conn, String chiave) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement("SELECT Valore FROM dbo.QuasarSync WHERE Chiave = ?")) {
             ps.setString(1, chiave);
@@ -1465,9 +1484,7 @@ public class TracciabilitaManager extends JFrame {
         String chiave = "MOMP_" + anno;
         int da;
         try (Connection conn = openConnection()) {
-            try (java.sql.Statement st = conn.createStatement()) {
-                st.execute(SQL_QUASAR_SYNC);
-            }
+            creaTabellaQuasarSyncSeManca(conn);
             Integer salvato = leggiIntSync(conn, chiave);
             if (salvato == null) {
                 boolean primaVolta;
