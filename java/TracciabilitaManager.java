@@ -252,7 +252,7 @@ public class TracciabilitaManager extends JFrame {
 
         btnEtichetta.addActionListener(e -> {
             Lotto l = selectedLotto();
-            if (l != null) stampaZpl("RICEZIONE", buildZplLotto(l, (Integer) spCopie.getValue()));
+            if (l != null) anteprimaEStampaLotto(l, (Integer) spCopie.getValue());
         });
 
         btnStato.addActionListener(e -> {
@@ -440,38 +440,143 @@ public class TracciabilitaManager extends JFrame {
         return lotti.get(String.valueOf(lottiModel.getValueAt(lottiTable.convertRowIndexToModel(viewRow), 0)));
     }
 
-    /**
-     * Etichetta del lotto con QR da attaccare al box: il QR contiene solo il lotto interno
-     * (es. 26/303), cosi' la pistola lo legge direttamente nel campo "Lotto interno".
-     * Misure scalate sul formato e sui dpi impostati; "copie" usa ^PQ.
-     */
-    private String buildZplLotto(Lotto l, int copie) {
+    /** Elemento di testo dell'etichetta (coordinate e altezza in punti stampante). */
+    private static final class RigaEtichetta {
+        final int x;
+        final int y;
+        final int size;
+        final String testo;
+
+        RigaEtichetta(int x, int y, int size, String testo) {
+            this.x = x;
+            this.y = y;
+            this.size = size;
+            this.testo = testo;
+        }
+    }
+
+    /** Disposizione dell'etichetta del lotto: la usano sia lo ZPL sia l'anteprima, cosi' coincidono. */
+    private static final class LayoutEtichetta {
+        int w;
+        int h;
+        int qrX;
+        int qrY;
+        int qrMag;
+        String qrDati = "";
+        final List<RigaEtichetta> righe = new ArrayList<>();
+    }
+
+    private static int aggiungiRiga(LayoutEtichetta lay, int x, int y, int size, String testo, int gap) {
+        lay.righe.add(new RigaEtichetta(x, y, size, testo));
+        return y + size + gap;
+    }
+
+    /** Misure scalate sul formato (mm) e sui dpi impostati. Il QR contiene solo il lotto interno (es. 26/303). */
+    private LayoutEtichetta layoutLotto(Lotto l) {
         double dpmm = stampanteDpi / 25.4;
-        int w = (int) Math.round(etichettaLarghMm * dpmm);
-        int h = (int) Math.round(etichettaAltMm * dpmm);
+        LayoutEtichetta lay = new LayoutEtichetta();
+        lay.w = (int) Math.round(etichettaLarghMm * dpmm);
+        lay.h = (int) Math.round(etichettaAltMm * dpmm);
         int m = (int) Math.round(3 * dpmm);
         int big = (int) Math.round(9 * dpmm);
         int mid = (int) Math.round(5 * dpmm);
         int small = (int) Math.round(3.6 * dpmm);
         int gap = (int) Math.round(1.5 * dpmm);
-        int mag = Math.max(3, (int) Math.round(28 * dpmm / 25));
-        int qrX = Math.max(m, w - m - 25 * mag);
-
-        StringBuilder z = new StringBuilder();
-        z.append("^XA\n^CI28\n^PW").append(w).append("\n^LL").append(h).append('\n');
+        lay.qrMag = Math.max(3, (int) Math.round(28 * dpmm / 25));
+        lay.qrX = Math.max(m, lay.w - m - 25 * lay.qrMag);
+        lay.qrY = m;
+        lay.qrDati = l.lottoInterno;
         int y = m;
-        y = zplLine(z, m, y, big, l.lottoInterno, gap);
-        y = zplLine(z, m, y, mid, l.codiceMp + " " + trunc(l.descrizione, 18), gap);
-        y = zplLine(z, m, y, small, "Forn.: " + trunc(l.fornitore, 22), gap);
-        y = zplLine(z, m, y, small, "Lotto forn.: " + trunc(l.lottoFornitore, 18), gap);
-        y = zplLine(z, m, y, small, "Bolla: " + trunc(l.bolla, 20), gap);
-        y = zplLine(z, m, y, mid, "Qta: " + formatNum(l.qtaIniziale) + " " + l.um, gap);
-        zplLine(z, m, y, small, "Scad.: " + (l.scadenza.isEmpty() ? "-" : l.scadenza)
+        y = aggiungiRiga(lay, m, y, big, l.lottoInterno, gap);
+        y = aggiungiRiga(lay, m, y, mid, l.codiceMp + " " + trunc(l.descrizione, 18), gap);
+        y = aggiungiRiga(lay, m, y, small, "Forn.: " + trunc(l.fornitore, 22), gap);
+        y = aggiungiRiga(lay, m, y, small, "Lotto forn.: " + trunc(l.lottoFornitore, 18), gap);
+        y = aggiungiRiga(lay, m, y, small, "Bolla: " + trunc(l.bolla, 20), gap);
+        y = aggiungiRiga(lay, m, y, mid, "Qta: " + formatNum(l.qtaIniziale) + " " + l.um, gap);
+        aggiungiRiga(lay, m, y, small, "Scad.: " + (l.scadenza.isEmpty() ? "-" : l.scadenza)
                 + (l.silo.isEmpty() ? "" : "  Silo " + l.silo), gap);
-        z.append("^FO").append(qrX).append(',').append(m).append("^BQN,2,").append(mag)
-                .append("^FDQA,").append(zplSafe(l.lottoInterno)).append("^FS\n");
+        return lay;
+    }
+
+    /** ZPL dell'etichetta del lotto con QR da attaccare al box; "copie" usa ^PQ. */
+    private String buildZplLotto(Lotto l, int copie) {
+        LayoutEtichetta lay = layoutLotto(l);
+        StringBuilder z = new StringBuilder();
+        z.append("^XA\n^CI28\n^PW").append(lay.w).append("\n^LL").append(lay.h).append('\n');
+        for (RigaEtichetta r : lay.righe) {
+            z.append("^FO").append(r.x).append(',').append(r.y).append("^A0N,").append(r.size).append(',')
+                    .append(r.size).append("^FD").append(zplSafe(r.testo)).append("^FS\n");
+        }
+        z.append("^FO").append(lay.qrX).append(',').append(lay.qrY).append("^BQN,2,").append(lay.qrMag)
+                .append("^FDQA,").append(zplSafe(lay.qrDati)).append("^FS\n");
         z.append("^PQ").append(Math.max(1, copie)).append("\n^XZ\n");
         return z.toString();
+    }
+
+    /** Disegna l'anteprima dell'etichetta. Il QR e' solo un segnaposto: quello vero lo genera la stampante. */
+    private java.awt.image.BufferedImage anteprimaLotto(LayoutEtichetta lay) {
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(lay.w, lay.h,
+                java.awt.image.BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = img.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, lay.w, lay.h);
+        g.setColor(new Color(170, 170, 170));
+        g.drawRect(0, 0, lay.w - 1, lay.h - 1);
+        g.setColor(Color.BLACK);
+        for (RigaEtichetta r : lay.righe) {
+            g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(8, (int) Math.round(r.size * 0.85))));
+            g.drawString(r.testo, r.x, r.y + (int) Math.round(r.size * 0.8));
+        }
+        int lato = 25 * lay.qrMag;
+        int mod = lay.qrMag;
+        g.setColor(new Color(235, 235, 235));
+        g.fillRect(lay.qrX, lay.qrY, lato, lato);
+        g.setColor(Color.BLACK);
+        int[][] angoli = {{0, 0}, {18, 0}, {0, 18}};
+        for (int[] a : angoli) {   // tre quadrati di riferimento, come in un QR
+            int x0 = lay.qrX + a[0] * mod;
+            int y0 = lay.qrY + a[1] * mod;
+            g.fillRect(x0, y0, 7 * mod, 7 * mod);
+            g.setColor(Color.WHITE);
+            g.fillRect(x0 + mod, y0 + mod, 5 * mod, 5 * mod);
+            g.setColor(Color.BLACK);
+            g.fillRect(x0 + 2 * mod, y0 + 2 * mod, 3 * mod, 3 * mod);
+        }
+        g.setFont(new Font("SansSerif", Font.BOLD, Math.max(10, 3 * mod)));
+        g.drawString("QR", lay.qrX + lato / 2 - 3 * mod, lay.qrY + lato / 2 + mod);
+        g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, 2 * mod)));
+        g.drawString(lay.qrDati, lay.qrX, lay.qrY + lato + 3 * mod);
+        g.dispose();
+        return img;
+    }
+
+    /** Mostra l'anteprima dell'etichetta e stampa solo se l'utente conferma. */
+    private void anteprimaEStampaLotto(Lotto l, int copie) {
+        LayoutEtichetta lay = layoutLotto(l);
+        java.awt.image.BufferedImage img = anteprimaLotto(lay);
+        double scala = Math.min(1.0, 640.0 / lay.w);
+        Image vista = img.getScaledInstance((int) Math.round(lay.w * scala), (int) Math.round(lay.h * scala),
+                Image.SCALE_SMOOTH);
+        JLabel lblImg = new JLabel(new ImageIcon(vista));
+        lblImg.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        String ip = stampantiIp.getOrDefault("RICEZIONE", "").trim();
+        JLabel info = new JLabel("<html>Formato " + etichettaLarghMm + " x " + etichettaAltMm + " mm, " + stampanteDpi
+                + " dpi, copie: " + copie + "<br>"
+                + (ip.isEmpty() ? "Nessuna stampante RICEZIONE impostata: premendo Stampa si vedrà il codice ZPL."
+                        : "Stampante: " + ip)
+                + "<br><i>Anteprima: il codice QR è un segnaposto, quello vero (con il lotto " + l.lottoInterno
+                + ") lo genera la stampante.</i></html>");
+        JPanel pnl = new JPanel(new BorderLayout(8, 8));
+        pnl.add(lblImg, BorderLayout.CENTER);
+        pnl.add(info, BorderLayout.SOUTH);
+        Object[] opzioni = {"Stampa", "Annulla"};
+        int scelta = JOptionPane.showOptionDialog(this, pnl, "Anteprima etichetta " + l.lottoInterno,
+                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, opzioni, opzioni[0]);
+        if (scelta == 0) {
+            stampaZpl("RICEZIONE", buildZplLotto(l, copie));
+        }
     }
 
     private String nextLottoInterno() {
