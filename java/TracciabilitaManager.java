@@ -85,7 +85,7 @@ public class TracciabilitaManager extends JFrame {
 
     private final DefaultTableModel lottiModel = new DefaultTableModel(new String[]{
             "Lotto interno", "Code MP", "Désignation", "Fournisseur", "Bolla", "Lotto fornitore",
-            "Scadenza", "Qté initiale", "Qté résiduelle", "UM", "Stato", "Validato da"}, 0) {
+            "Scadenza", "Qté initiale", "Qté résiduelle", "UM", "Stato", "Silo", "Validato da"}, 0) {
         @Override public boolean isCellEditable(int r, int c) { return false; }
     };
     private final DefaultTableModel prelieviModel = new DefaultTableModel(new String[]{
@@ -150,6 +150,7 @@ public class TracciabilitaManager extends JFrame {
         JTextField txtLottoForn = new JTextField(16);
         JTextField txtScadenza = new JTextField(10);
         JTextField txtQta = new JTextField(8);
+        JTextField txtSilo = new JTextField(8);   // solo per materiale che va in un silo (bolla di carico silo)
         JComboBox<String> cbUm = new JComboBox<>(new String[]{"KG", "G", "L", "PZ"});
         JComboBox<String> cbStato = new JComboBox<>(new String[]{STATO_DA_VALIDARE, "OK"});
         upper(txtMp);
@@ -168,6 +169,7 @@ public class TracciabilitaManager extends JFrame {
         addField(form, g, row, 0, "Quantità:", txtQta);
         addField(form, g, row++, 2, "UM:", cbUm);
         addField(form, g, row, 0, "Stato iniziale:", cbStato);
+        addField(form, g, row, 2, "Silo di carico (se da silo):", txtSilo);
 
         JButton btnAdd = new JButton("Registra lotto + genera lotto interno");
         JButton btnEtichetta = new JButton("Mostra etichetta ZPL");
@@ -197,6 +199,7 @@ public class TracciabilitaManager extends JFrame {
                 l.qtaResidua = qta;
                 l.um = (String) cbUm.getSelectedItem();
                 l.stato = (String) cbStato.getSelectedItem();
+                l.silo = txtSilo.getText().trim().toUpperCase(Locale.ROOT);
                 if (dbAttivo) {
                     salvaLottoDb(l);   // assegna l.lottoInterno e scrive MpLotto + MpMovimento in transazione
                 }
@@ -207,13 +210,14 @@ public class TracciabilitaManager extends JFrame {
                         "Lotto registrato", JOptionPane.INFORMATION_MESSAGE);
                 txtLottoForn.setText("");
                 txtQta.setText("");
+                txtSilo.setText("");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         btnPulisci.addActionListener(e -> {
-            for (JTextField t : new JTextField[]{txtMp, txtDescr, txtFornitore, txtBolla, txtLottoForn, txtScadenza, txtQta}) {
+            for (JTextField t : new JTextField[]{txtMp, txtDescr, txtFornitore, txtBolla, txtLottoForn, txtScadenza, txtQta, txtSilo}) {
                 t.setText("");
             }
         });
@@ -409,7 +413,7 @@ public class TracciabilitaManager extends JFrame {
         lottiModel.setRowCount(0);
         for (Lotto l : lotti.values()) {
             lottiModel.addRow(new Object[]{l.lottoInterno, l.codiceMp, l.descrizione, l.fornitore, l.bolla,
-                    l.lottoFornitore, l.scadenza, formatNum(l.qtaIniziale), formatNum(l.qtaResidua), l.um, l.stato, l.validatoDa});
+                    l.lottoFornitore, l.scadenza, formatNum(l.qtaIniziale), formatNum(l.qtaResidua), l.um, l.stato, l.silo, l.validatoDa});
         }
     }
 
@@ -964,6 +968,8 @@ public class TracciabilitaManager extends JFrame {
         String sql = "SELECT l.LottoInterno, l.CodiceMP, l.Descrizione, l.Fornitore, l.BollaIngresso, "
                 + "l.LottoFornitore, CONVERT(VARCHAR(10), l.Scadenza, 23) AS Scadenza, l.QtaIniziale, l.UM, "
                 + "l.Stato, l.ValidatoDa, CONVERT(VARCHAR(19), l.DataValidazione, 120) AS DataValidazione, "
+                + "COALESCE((SELECT TOP 1 s.Silo FROM dbo.SiloCarichi s WHERE s.LottoInterno = l.LottoInterno "
+                + "ORDER BY s.DataCarico DESC), '') AS Silo, "
                 + "COALESCE((SELECT SUM(m.Qta) FROM dbo.MpMovimento m WHERE m.LottoInterno = l.LottoInterno), 0) AS Residuo "
                 + "FROM dbo.MpLotto l ORDER BY l.DataIngresso, l.LottoInterno";
         Map<String, Lotto> letti = new LinkedHashMap<>();
@@ -981,6 +987,7 @@ public class TracciabilitaManager extends JFrame {
                 l.qtaResidua = rs.getDouble("Residuo");
                 l.um = nz(rs.getString("UM"));
                 l.stato = nz(rs.getString("Stato"));
+                l.silo = nz(rs.getString("Silo"));
                 String chi = nz(rs.getString("ValidatoDa"));
                 String quando = nz(rs.getString("DataValidazione"));
                 l.validatoDa = (chi + " " + quando).trim();
@@ -1031,6 +1038,16 @@ public class TracciabilitaManager extends JFrame {
                     ps.setDouble(2, l.qtaIniziale);
                     ps.setString(3, trunc(l.bolla, 50));
                     ps.executeUpdate();
+                }
+                if (!l.silo.isEmpty()) {
+                    // Carico silo registrato da bolla come gli altri ingressi: il lotto risulta nel silo indicato.
+                    try (PreparedStatement ps = conn.prepareStatement(
+                            "INSERT INTO dbo.SiloCarichi (Silo, LottoInterno, Qta) VALUES (?, ?, ?)")) {
+                        ps.setString(1, trunc(l.silo, 30));
+                        ps.setString(2, l.lottoInterno);
+                        ps.setDouble(3, l.qtaIniziale);
+                        ps.executeUpdate();
+                    }
                 }
                 conn.commit();
             } catch (Exception ex) {
@@ -1702,6 +1719,7 @@ public class TracciabilitaManager extends JFrame {
         String um = "KG";
         String stato = "OK";
         String validatoDa = "";
+        String silo = "";   // silo in cui e' stato caricato il lotto (vuoto = materiale non da silo)
     }
 
     static class Prelievo {
