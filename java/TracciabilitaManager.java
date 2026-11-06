@@ -175,7 +175,10 @@ public class TracciabilitaManager extends JFrame {
         addField(form, g, row, 0, "Lotto interno Quasar (es. 26/303):", txtLottoQuasar);
 
         JButton btnAdd = new JButton("Registra lotto + genera lotto interno");
-        JButton btnEtichetta = new JButton("Mostra etichetta ZPL");
+        JButton btnEtichetta = new JButton("Stampa etichetta lotto (QR)");
+        JCheckBox chkStampaLotto = new JCheckBox("Stampa dopo la registrazione", true);
+        JSpinner spCopie = new JSpinner(new SpinnerNumberModel(1, 1, 50, 1));
+        spCopie.setToolTipText("Numero di copie dell'etichetta");
         JButton btnStato = new JButton("Blocca / sblocca");
         JButton btnPulisci = new JButton("Pulisci campi");
 
@@ -217,6 +220,9 @@ public class TracciabilitaManager extends JFrame {
                 }
                 lotti.put(l.lottoInterno, l);
                 refreshLottiTable();
+                if (chkStampaLotto.isSelected() && !stampantiIp.getOrDefault("RICEZIONE", "").trim().isEmpty()) {
+                    stampaZpl("RICEZIONE", buildZplLotto(l, (Integer) spCopie.getValue()));
+                }
                 JOptionPane.showMessageDialog(this, "Lotto interno creato: " + l.lottoInterno
                         + "\n(stampare l'etichetta e applicarla al sacco/pallet)",
                         "Lotto registrato", JOptionPane.INFORMATION_MESSAGE);
@@ -237,7 +243,7 @@ public class TracciabilitaManager extends JFrame {
 
         btnEtichetta.addActionListener(e -> {
             Lotto l = selectedLotto();
-            if (l != null) showZpl(l);
+            if (l != null) stampaZpl("RICEZIONE", buildZplLotto(l, (Integer) spCopie.getValue()));
         });
 
         btnStato.addActionListener(e -> {
@@ -367,6 +373,9 @@ public class TracciabilitaManager extends JFrame {
         buttons.add(btnAdd);
         buttons.add(btnPulisci);
         buttons.add(btnEtichetta);
+        buttons.add(new JLabel("Copie:"));
+        buttons.add(spCopie);
+        buttons.add(chkStampaLotto);
         buttons.add(btnValida);
         buttons.add(btnStato);
         buttons.add(btnRettifica);
@@ -397,23 +406,38 @@ public class TracciabilitaManager extends JFrame {
         return lotti.get(String.valueOf(lottiModel.getValueAt(lottiTable.convertRowIndexToModel(viewRow), 0)));
     }
 
-    private void showZpl(Lotto l) {
-        String zpl = "^XA\n"
-                + "^CI28\n"
-                + "^FO30,25^A0N,40,40^FD" + l.codiceMp + "^FS\n"
-                + "^FO30,70^A0N,26,26^FD" + trunc(l.descrizione, 34) + "^FS\n"
-                + "^FO30,110^A0N,24,24^FDLotto int.: " + l.lottoInterno + "^FS\n"
-                + "^FO30,140^A0N,24,24^FDLotto forn.: " + l.lottoFornitore + "^FS\n"
-                + "^FO30,170^A0N,24,24^FDBolla: " + l.bolla + "^FS\n"
-                + "^FO30,200^A0N,24,24^FDQta: " + formatNum(l.qtaIniziale) + " " + l.um
-                + "  Scad: " + l.scadenza + "^FS\n"
-                + "^FO380,40^BQN,2,6^FDQA," + l.lottoInterno + "^FS\n"
-                + "^XZ\n";
-        JTextArea area = new JTextArea(zpl, 14, 48);
-        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
-        area.setEditable(false);
-        JOptionPane.showMessageDialog(this, new JScrollPane(area),
-                "Etichetta " + l.lottoInterno + " (ZPL, per stampante Zebra)", JOptionPane.PLAIN_MESSAGE);
+    /**
+     * Etichetta del lotto con QR da attaccare al box: il QR contiene solo il lotto interno
+     * (es. 26/303), cosi' la pistola lo legge direttamente nel campo "Lotto interno".
+     * Misure scalate sul formato e sui dpi impostati; "copie" usa ^PQ.
+     */
+    private String buildZplLotto(Lotto l, int copie) {
+        double dpmm = stampanteDpi / 25.4;
+        int w = (int) Math.round(etichettaLarghMm * dpmm);
+        int h = (int) Math.round(etichettaAltMm * dpmm);
+        int m = (int) Math.round(3 * dpmm);
+        int big = (int) Math.round(9 * dpmm);
+        int mid = (int) Math.round(5 * dpmm);
+        int small = (int) Math.round(3.6 * dpmm);
+        int gap = (int) Math.round(1.5 * dpmm);
+        int mag = Math.max(3, (int) Math.round(28 * dpmm / 25));
+        int qrX = Math.max(m, w - m - 25 * mag);
+
+        StringBuilder z = new StringBuilder();
+        z.append("^XA\n^CI28\n^PW").append(w).append("\n^LL").append(h).append('\n');
+        int y = m;
+        y = zplLine(z, m, y, big, l.lottoInterno, gap);
+        y = zplLine(z, m, y, mid, l.codiceMp + " " + trunc(l.descrizione, 18), gap);
+        y = zplLine(z, m, y, small, "Forn.: " + trunc(l.fornitore, 22), gap);
+        y = zplLine(z, m, y, small, "Lotto forn.: " + trunc(l.lottoFornitore, 18), gap);
+        y = zplLine(z, m, y, small, "Bolla: " + trunc(l.bolla, 20), gap);
+        y = zplLine(z, m, y, mid, "Qta: " + formatNum(l.qtaIniziale) + " " + l.um, gap);
+        zplLine(z, m, y, small, "Scad.: " + (l.scadenza.isEmpty() ? "-" : l.scadenza)
+                + (l.silo.isEmpty() ? "" : "  Silo " + l.silo), gap);
+        z.append("^FO").append(qrX).append(',').append(m).append("^BQN,2,").append(mag)
+                .append("^FDQA,").append(zplSafe(l.lottoInterno)).append("^FS\n");
+        z.append("^PQ").append(Math.max(1, copie)).append("\n^XZ\n");
+        return z.toString();
     }
 
     private String nextLottoInterno() {
@@ -891,6 +915,7 @@ public class TracciabilitaManager extends JFrame {
         etichettaAltMm = (int) toDouble(pr.getProperty("etichetta.altezzaMm", String.valueOf(etichettaAltMm)));
         stampanteDpi = (int) toDouble(pr.getProperty("stampante.dpi", String.valueOf(stampanteDpi)));
         avvisoResiduoPct = (int) toDouble(pr.getProperty("avviso.residuoPct", String.valueOf(avvisoResiduoPct)));
+        stampantiIp.put("RICEZIONE", pr.getProperty("stampante.RICEZIONE", "").trim());
     }
 
     private void salvaImpostazioniPostazione() {
@@ -904,6 +929,7 @@ public class TracciabilitaManager extends JFrame {
         pr.setProperty("etichetta.altezzaMm", String.valueOf(etichettaAltMm));
         pr.setProperty("stampante.dpi", String.valueOf(stampanteDpi));
         pr.setProperty("avviso.residuoPct", String.valueOf(avvisoResiduoPct));
+        pr.setProperty("stampante.RICEZIONE", stampantiIp.getOrDefault("RICEZIONE", ""));
         try (java.io.OutputStream out = new java.io.FileOutputStream(POSTAZIONE_FILE)) {
             pr.store(out, "Impostazioni di questa postazione - TracciabilitaManager");
         } catch (Exception ex) {
@@ -1362,6 +1388,9 @@ public class TracciabilitaManager extends JFrame {
         JTextField tAvviso = new JTextField(String.valueOf(avvisoResiduoPct), 6);
         pnl.add(new JLabel("Avviso lotto quasi finito (% residuo):"));
         pnl.add(tAvviso);
+        JTextField tRicezione = new JTextField(stampantiIp.getOrDefault("RICEZIONE", ""), 14);
+        pnl.add(new JLabel("IP stampante RICEZIONE (etichette lotto):"));
+        pnl.add(tRicezione);
         JTextField tw = new JTextField(String.valueOf(etichettaLarghMm), 5);
         JTextField th = new JTextField(String.valueOf(etichettaAltMm), 5);
         JComboBox<Integer> cbDpi = new JComboBox<>(new Integer[]{203, 300, 600});
@@ -1396,6 +1425,7 @@ public class TracciabilitaManager extends JFrame {
             etichettaAltMm = ah;
         }
         stampanteDpi = (Integer) cbDpi.getSelectedItem();
+        stampantiIp.put("RICEZIONE", tRicezione.getText().trim());
         int soglia = (int) toDouble(tAvviso.getText());
         if (soglia >= 0 && soglia <= 100) {
             avvisoResiduoPct = soglia;
