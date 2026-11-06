@@ -123,7 +123,8 @@ public class TracciabilitaManager extends JFrame {
         avviso.setBorder(new EmptyBorder(4, 4, 4, 4));
         avviso.setBackground(new Color(255, 244, 199));
         avviso.setText("  Modalità manuale: nessun collegamento al database, i dati restano solo in memoria "
-                + "(creare " + CONFIG_FILE + " con db.user e db.password per attivarlo).");
+                + "(per attivarlo creare il file " + new java.io.File(CONFIG_FILE).getAbsolutePath()
+                + " con db.user e db.password).");
         if (dbAttivo) {
             try {
                 caricaDaDb();
