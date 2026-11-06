@@ -1,7 +1,0 @@
-# Copiare in "tracciabilita.properties" (stessa cartella da cui si lancia TracciabilitaManager)
-# e compilare. Il file con le credenziali NON va committato (e' nel .gitignore).
-# In alternativa: variabili d'ambiente TRACC_DB_USER e TRACC_DB_PASSWORD.
-db.user=
-db.password=
-# facoltativo (default: SQL Server Mondo su srv-bambury)
-#db.url=jdbc:sqlserver://srv-bambury:1433;databaseName=Mondo;encrypt=true;trustServerCertificate=true;sslProtocol=TLSv1.2;loginTimeout=5

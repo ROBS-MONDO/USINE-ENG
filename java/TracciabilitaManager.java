@@ -1,5 +1,7 @@
 package MES;
 
+import SVC.DBBamburyReader;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
@@ -30,25 +32,17 @@ import java.util.Map;
  *     interno, quantita' pesata) con controllo di tolleranza e residuo.
  *  3. Tracciabilita' : ricerca per lotto interno / lotto fornitore / batch / MP.
  *
- * DATABASE: se nella cartella di lancio c'e' il file "tracciabilita.properties" (oppure
- * le variabili d'ambiente TRACC_DB_USER / TRACC_DB_PASSWORD) con le credenziali, i dati
- * sono letti/scritti sulle tabelle di sql/tracciabilita_tabelle.sql (SQL Server "Mondo").
- * Senza credenziali il programma parte in modalita' manuale: dati solo in memoria, persi
- * alla chiusura. Le credenziali NON sono nel codice.
+ * DATABASE: usa la connessione condivisa SVC.DBBamburyReader.openSharedConnection() verso
+ * SQL Server "Mondo" (SRV-BAMBURY), sulle tabelle di sql/tracciabilita_tabelle.sql.
+ * Se il database non e' raggiungibile il programma parte in modalita' manuale: dati solo
+ * in memoria, persi alla chiusura. Nessuna credenziale in questo file.
  */
 public class TracciabilitaManager extends JFrame {
 
     private static final String VERSION = "V0.02";
 
-    // Collegamento a SQL Server "Mondo" (stesso server di DistintaBaseManager).
-    private static final String DB_URL =
-            "jdbc:sqlserver://srv-bambury:1433;databaseName=Mondo;encrypt=true;"
-                    + "trustServerCertificate=true;sslProtocol=TLSv1.2;loginTimeout=5";
-    private static final String CONFIG_FILE = "tracciabilita.properties";
-    private String dbUrl = DB_URL;
-    private String dbUser = "";
-    private String dbPassword = "";
-    private boolean dbAttivo = false;
+    /** true = connessione condivisa disponibile; passa a false se il database non risponde. */
+    private boolean dbAttivo = true;
 
     /** Merce arrivata ma non ancora validata (controllo qualita'/accettazione): non utilizzabile. */
     private static final String STATO_DA_VALIDARE = "DA VALIDARE";
@@ -122,13 +116,11 @@ public class TracciabilitaManager extends JFrame {
         avviso.setOpaque(true);
         avviso.setBorder(new EmptyBorder(4, 4, 4, 4));
         avviso.setBackground(new Color(255, 244, 199));
-        avviso.setText("  Modalità manuale: nessun collegamento al database, i dati restano solo in memoria "
-                + "(per attivarlo creare il file " + new java.io.File(CONFIG_FILE).getAbsolutePath()
-                + " con db.user e db.password).");
+        avviso.setText("  Modalità manuale: database non disponibile, i dati restano solo in memoria.");
         if (dbAttivo) {
             try {
                 caricaDaDb();
-                avviso.setText("  Collegato al database Mondo (SRV-BAMBURY) come " + dbUser + ".");
+                avviso.setText("  Collegato al database Mondo (SRV-BAMBURY).");
                 avviso.setBackground(new Color(214, 240, 214));
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -857,21 +849,6 @@ public class TracciabilitaManager extends JFrame {
     // ------------------------------------------------------------------
 
     private void caricaConfigurazione() {
-        java.util.Properties pr = new java.util.Properties();
-        java.io.File f = new java.io.File(CONFIG_FILE);
-        if (f.isFile()) {
-            try (java.io.InputStream in = new java.io.FileInputStream(f)) {
-                pr.load(in);
-            } catch (Exception ex) {
-                System.err.println("Impossibile leggere " + CONFIG_FILE + ": " + ex.getMessage());
-            }
-        }
-        dbUrl = pr.getProperty("db.url", DB_URL).trim();
-        String u = System.getenv("TRACC_DB_USER");
-        String pw = System.getenv("TRACC_DB_PASSWORD");
-        dbUser = (u != null && !u.isEmpty() ? u : pr.getProperty("db.user", "")).trim();
-        dbPassword = pw != null && !pw.isEmpty() ? pw : pr.getProperty("db.password", "");
-        dbAttivo = !dbUser.isEmpty();
         caricaImpostazioniPostazione();
     }
 
@@ -919,11 +896,7 @@ public class TracciabilitaManager extends JFrame {
     }
 
     private Connection openConnection() throws Exception {
-        System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
-        System.setProperty("https.protocols", "TLSv1.2");
-        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        DriverManager.setLoginTimeout(5);
-        return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+        return DBBamburyReader.openSharedConnection();
     }
 
     private static String nz(String s) {
