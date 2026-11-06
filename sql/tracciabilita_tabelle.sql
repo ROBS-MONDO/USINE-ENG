@@ -134,3 +134,15 @@ GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_SiloCarichi_Silo' AND object_id = OBJECT_ID('dbo.SiloCarichi'))
     CREATE INDEX IX_SiloCarichi_Silo ON dbo.SiloCarichi (Silo, DataCarico);
 GO
+
+-- ---------------------------------------------------------------------------
+-- Sincronizzazione con Quasar: numero di bolla MOMP da cui importare, per anno (chiave MOMP_AAAA).
+-- L'applicazione la crea da sola se ha il permesso; in alternativa eseguire questo script.
+-- ---------------------------------------------------------------------------
+IF OBJECT_ID('dbo.QuasarSync', 'U') IS NULL
+CREATE TABLE dbo.QuasarSync (
+    Chiave   NVARCHAR(30) NOT NULL CONSTRAINT PK_QuasarSync PRIMARY KEY,
+    Valore   INT          NOT NULL,
+    DataAgg  DATETIME2    NOT NULL CONSTRAINT DF_QuasarSync_Data DEFAULT SYSDATETIME()
+);
+GO

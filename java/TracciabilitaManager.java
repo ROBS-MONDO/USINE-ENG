@@ -84,6 +84,9 @@ public class TracciabilitaManager extends JFrame {
             s.close();
         }
         bilance.clear();
+        if (sync != null) {
+            sync.shutdownNow();
+        }
         super.dispose();
     }
 
@@ -116,7 +119,7 @@ public class TracciabilitaManager extends JFrame {
         tabs.addTab("Prelievo zona", buildPrelievoPanel());
         tabs.addTab("Tracciabilità", buildRicercaPanel());
 
-        JLabel avviso = new JLabel();
+        JLabel avviso = barraStato;
         avviso.setOpaque(true);
         avviso.setBorder(new EmptyBorder(4, 4, 4, 4));
         avviso.setBackground(new Color(255, 244, 199));
@@ -126,6 +129,8 @@ public class TracciabilitaManager extends JFrame {
                 caricaDaDb();
                 avviso.setText("  Collegato al database Mondo (SRV-BAMBURY).");
                 avviso.setBackground(new Color(214, 240, 214));
+                bannerBase = avviso.getText();
+                avviaSincronizzazioneQuasar();
             } catch (Exception ex) {
                 ex.printStackTrace();
                 dbAttivo = false;
@@ -367,24 +372,16 @@ public class TracciabilitaManager extends JFrame {
         btnAggiorna.setEnabled(dbAttivo);
         btnAggiorna.addActionListener(e -> {
             try {
+                sincronizzaValidazioniQuasarDb();
+            } catch (Throwable ex) {
+                System.err.println("Validazioni Quasar non lette: " + ex);
+            }
+            try {
                 ricaricaLottiDb();
             } catch (Exception ex) {
                 erroreDb(ex);
-                return;
-            }
-            try {
-                if (sincronizzaValidazioniQuasar() > 0) {
-                    refreshLottiTable();
-                }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Validazioni Quasar non lette: " + messaggio(ex),
-                        "Quasar", JOptionPane.WARNING_MESSAGE);
             }
         });
-
-        JButton btnQuasar = new JButton("Importa da Quasar");
-        btnQuasar.setEnabled(dbAttivo);
-        btnQuasar.addActionListener(e -> importaDaQuasar());
 
         JButton btnLottoForn = new JButton("Lotto fornitore...");
         btnLottoForn.setEnabled(dbAttivo);
@@ -416,7 +413,6 @@ public class TracciabilitaManager extends JFrame {
         buttons.add(btnStato);
         buttons.add(btnRettifica);
         buttons.add(btnLottoForn);
-        buttons.add(btnQuasar);
         buttons.add(btnAggiorna);
 
         lottiTable = new JTable(lottiModel);
@@ -966,6 +962,7 @@ public class TracciabilitaManager extends JFrame {
         stampanteDpi = (int) toDouble(pr.getProperty("stampante.dpi", String.valueOf(stampanteDpi)));
         avvisoResiduoPct = (int) toDouble(pr.getProperty("avviso.residuoPct", String.valueOf(avvisoResiduoPct)));
         stampantiIp.put("RICEZIONE", pr.getProperty("stampante.RICEZIONE", "").trim());
+        quasarPrimoNumero = (int) toDouble(pr.getProperty("quasar.primoNumero", "0"));
     }
 
     private void salvaImpostazioniPostazione() {
@@ -980,6 +977,7 @@ public class TracciabilitaManager extends JFrame {
         pr.setProperty("stampante.dpi", String.valueOf(stampanteDpi));
         pr.setProperty("avviso.residuoPct", String.valueOf(avvisoResiduoPct));
         pr.setProperty("stampante.RICEZIONE", stampantiIp.getOrDefault("RICEZIONE", ""));
+        pr.setProperty("quasar.primoNumero", String.valueOf(quasarPrimoNumero));
         try (java.io.OutputStream out = new java.io.FileOutputStream(POSTAZIONE_FILE)) {
             pr.store(out, "Impostazioni di questa postazione - TracciabilitaManager");
         } catch (Exception ex) {
@@ -1299,7 +1297,7 @@ public class TracciabilitaManager extends JFrame {
             ps.setString(1, String.valueOf(anno));
             ps.setInt(2, daNum);
             ps.setQueryTimeout(30);
-            ps.setMaxRows(500);
+            ps.setMaxRows(5000);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     LottoQuasar q = new LottoQuasar();
@@ -1354,123 +1352,199 @@ public class TracciabilitaManager extends JFrame {
         return validati;
     }
 
-    /** Porta a OK i lotti importati da Quasar ancora DA VALIDARE che nel frattempo sono stati validati. */
-    private int sincronizzaValidazioniQuasar() throws Exception {
+    // ------------------------------------------------------------------
+    // Sincronizzazione AUTOMATICA con Quasar (in background, ogni minuto)
+    //  - importa i nuovi lotti MOMP dal numero di bolla di partenza dell'anno;
+    //  - porta a OK i lotti importati che nel frattempo risultano in LOTVALID.
+    // Il numero di partenza e' salvato in dbo.QuasarSync (chiave MOMP_AAAA): al primo avvio in assoluto
+    // e' "la prossima bolla" (non si importa lo storico, le cui quantita' residue non sono note); con un
+    // nuovo anno riparte da 1. Si puo' forzare con quasar.primoNumero in tracciabilita-postazione.properties.
+    // ------------------------------------------------------------------
+
+    private static final long INTERVALLO_SYNC_SEC = 60;
+    private static final String SQL_QUASAR_SYNC =
+            "IF OBJECT_ID('dbo.QuasarSync', 'U') IS NULL CREATE TABLE dbo.QuasarSync ("
+                    + "Chiave NVARCHAR(30) NOT NULL PRIMARY KEY, Valore INT NOT NULL, "
+                    + "DataAgg DATETIME2 NOT NULL DEFAULT SYSDATETIME())";
+    private final JLabel barraStato = new JLabel();
+    private String bannerBase = "";
+    private int quasarPrimoNumero = 0;
+    private java.util.concurrent.ScheduledExecutorService sync;
+
+    private void avviaSincronizzazioneQuasar() {
+        sync = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread th = new Thread(r, "sync-quasar");
+            th.setDaemon(true);
+            return th;
+        });
+        sync.scheduleWithFixedDelay(this::cicloSincronizzazione, 3, INTERVALLO_SYNC_SEC,
+                java.util.concurrent.TimeUnit.SECONDS);
+    }
+
+    /** Un giro di sincronizzazione: lavora fuori dal thread grafico e poi aggiorna schermo e barra di stato. */
+    private void cicloSincronizzazione() {
+        String esito;
+        boolean cambiato = false;
+        try {
+            int nuovi = sincronizzaQuasar();
+            int validati = sincronizzaValidazioniQuasarDb();
+            cambiato = nuovi > 0 || validati > 0;
+            esito = "Quasar sincronizzato alle " + java.time.LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                    + (nuovi > 0 ? " - nuovi lotti: " + nuovi : "")
+                    + (validati > 0 ? " - lotti validati: " + validati : "");
+        } catch (Throwable ex) {   // anche errori di caricamento del driver: il ciclo non deve fermarsi
+            System.err.println("Sincronizzazione Quasar non riuscita: " + ex);
+            esito = "Quasar: sincronizzazione non riuscita (" + (ex.getMessage() == null ? ex.getClass().getSimpleName() : ex.getMessage()) + ")";
+        }
+        final String testo = bannerBase + "  " + esito;
+        final boolean aggiorna = cambiato;
+        SwingUtilities.invokeLater(() -> {
+            if (aggiorna) {
+                try {
+                    ricaricaLottiDb();
+                } catch (Exception ex) {
+                    System.err.println("Aggiornamento elenco lotti non riuscito: " + ex);
+                }
+            }
+            barraStato.setText(testo);
+        });
+    }
+
+    private Integer leggiIntSync(Connection conn, String chiave) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement("SELECT Valore FROM dbo.QuasarSync WHERE Chiave = ?")) {
+            ps.setString(1, chiave);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Integer.valueOf(rs.getInt(1)) : null;
+            }
+        }
+    }
+
+    private int massimoNumeroMompQuasar(int anno) throws Exception {
+        try (Connection cn = DbOracleManager.getConnection();
+             PreparedStatement ps = cn.prepareStatement(
+                     "SELECT NVL(MAX(RB_NUM), 0) FROM POKER.BOLRIG WHERE RB_ESE = ? AND RB_PROT = 'MOMP'")) {
+            ps.setString(1, String.valueOf(anno));
+            ps.setQueryTimeout(30);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
+    /** Lotti, tra quelli indicati, gia' presenti nel nostro database. */
+    private Set<String> lottiPresentiDb(Collection<String> ids) throws Exception {
+        Set<String> presenti = new HashSet<>();
+        List<String> lista = new ArrayList<>(ids);
+        if (lista.isEmpty()) return presenti;
+        try (Connection conn = openConnection()) {
+            for (int i = 0; i < lista.size(); i += 500) {
+                List<String> blocco = lista.subList(i, Math.min(lista.size(), i + 500));
+                StringBuilder sb = new StringBuilder("SELECT LottoInterno FROM dbo.MpLotto WHERE LottoInterno IN (");
+                for (int j = 0; j < blocco.size(); j++) {
+                    sb.append(j == 0 ? "?" : ",?");
+                }
+                sb.append(')');
+                try (PreparedStatement ps = conn.prepareStatement(sb.toString())) {
+                    for (int j = 0; j < blocco.size(); j++) {
+                        ps.setString(j + 1, blocco.get(j));
+                    }
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            presenti.add(nz(rs.getString(1)));
+                        }
+                    }
+                }
+            }
+        }
+        return presenti;
+    }
+
+    /** Importa da Quasar i lotti MOMP nuovi; ritorna quanti ne ha creati. */
+    private int sincronizzaQuasar() throws Exception {
+        int anno = LocalDate.now().getYear();
+        String chiave = "MOMP_" + anno;
+        int da;
+        try (Connection conn = openConnection()) {
+            try (java.sql.Statement st = conn.createStatement()) {
+                st.execute(SQL_QUASAR_SYNC);
+            }
+            Integer salvato = leggiIntSync(conn, chiave);
+            if (salvato == null) {
+                boolean primaVolta;
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "SELECT COUNT(*) FROM dbo.QuasarSync WHERE Chiave LIKE 'MOMP[_]%'");
+                     ResultSet rs = ps.executeQuery()) {
+                    rs.next();
+                    primaVolta = rs.getInt(1) == 0;
+                }
+                int iniziale = 1;
+                if (primaVolta) {
+                    iniziale = quasarPrimoNumero > 0 ? quasarPrimoNumero : massimoNumeroMompQuasar(anno) + 1;
+                }
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "INSERT INTO dbo.QuasarSync (Chiave, Valore) VALUES (?, ?)")) {
+                    ps.setString(1, chiave);
+                    ps.setInt(2, iniziale);
+                    ps.executeUpdate();
+                }
+                salvato = iniziale;
+            }
+            da = salvato;
+        }
+
+        List<LottoQuasar> trovati = leggiQuasar(anno, da);
+        List<String> ids = new ArrayList<>();
+        for (LottoQuasar q : trovati) {
+            if (!q.lotto.isEmpty()) ids.add(q.lotto);
+        }
+        Set<String> presenti = lottiPresentiDb(ids);
+        int importati = 0;
+        for (LottoQuasar q : trovati) {
+            if (q.lotto.isEmpty() || q.qta <= 0 || !presenti.add(q.lotto)) continue;
+            Lotto l = new Lotto();
+            l.lottoInterno = q.lotto;
+            l.codiceMp = q.articolo;
+            l.descrizione = q.descr;
+            l.fornitore = q.fornitore;
+            l.bolla = "MOMP/" + anno + "/" + q.num + "/" + q.riga;
+            l.lottoFornitore = q.lottoForn;
+            l.scadenza = q.scadenza == null ? "" : q.scadenza.toString();
+            l.qtaIniziale = q.qta;
+            l.qtaResidua = q.qta;
+            l.um = q.um.isEmpty() ? "KG" : q.um;
+            l.stato = q.validato ? "OK" : STATO_DA_VALIDARE;
+            l.validatoDa = q.validato ? "QUASAR" : "";
+            try {
+                salvaLottoDb(l);
+                importati++;
+            } catch (IllegalStateException ex) {
+                // inserito nel frattempo da un'altra postazione
+            }
+        }
+        return importati;
+    }
+
+    /** Porta a OK (leggendo LOTVALID) i lotti importati da Quasar che risultano ancora DA VALIDARE. */
+    private int sincronizzaValidazioniQuasarDb() throws Exception {
         List<String> da = new ArrayList<>();
-        for (Lotto l : lotti.values()) {
-            if (STATO_DA_VALIDARE.equals(l.stato) && l.bolla.startsWith("MOMP/")) {
-                da.add(l.lottoInterno);
+        try (Connection conn = openConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "SELECT LottoInterno FROM dbo.MpLotto WHERE Stato = 'DA VALIDARE' AND BollaIngresso LIKE 'MOMP/%'");
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                da.add(nz(rs.getString(1)));
             }
         }
         int n = 0;
         for (String id : lottiValidatiQuasar(da)) {
-            Lotto l = lotti.get(id);
-            if (l == null) continue;
             try {
                 validaLottoDb(id, "QUASAR");
-                l.stato = "OK";
-                l.validatoDa = "QUASAR " + LocalDateTime.now().format(TS);
                 n++;
             } catch (IllegalStateException ex) {
-                // lo stato e' cambiato nel frattempo: lo aggiornera' "Aggiorna dal DB"
+                // lo stato e' cambiato nel frattempo
             }
         }
         return n;
-    }
-
-    /** Ultimo numero di bolla MOMP dell'anno gia' importato (0 se nessuno): le bolle sono "MOMP/AAAA/NUM/RIGA". */
-    private int ultimoNumeroMompImportato(int anno) {
-        int max = 0;
-        for (Lotto l : lotti.values()) {
-            String[] p = l.bolla.split("/");
-            if (p.length == 4 && "MOMP".equals(p[0]) && String.valueOf(anno).equals(p[1])) {
-                try {
-                    max = Math.max(max, Integer.parseInt(p[2]));
-                } catch (NumberFormatException ignored) {
-                    // bolla con formato diverso
-                }
-            }
-        }
-        return max;
-    }
-
-    private void importaDaQuasar() {
-        try {
-            int anno = LocalDate.now().getYear();
-            int ultimo = ultimoNumeroMompImportato(anno);
-            String in = JOptionPane.showInputDialog(this,
-                    "Importare le entrate di materie prime di Quasar (MOMP " + anno + ")\ndal numero di bolla:",
-                    ultimo > 0 ? String.valueOf(ultimo + 1) : "");
-            if (in == null || in.trim().isEmpty()) return;
-            int da;
-            try {
-                da = Integer.parseInt(in.trim());
-            } catch (NumberFormatException ex) {
-                throw new IllegalStateException("Numero di bolla non valido.");
-            }
-            ricaricaLottiDb();
-            List<LottoQuasar> nuovi = new ArrayList<>();
-            Set<String> visti = new HashSet<>();
-            for (LottoQuasar q : leggiQuasar(anno, da)) {
-                if (!q.lotto.isEmpty() && !lotti.containsKey(q.lotto) && q.qta > 0 && visti.add(q.lotto)) {
-                    nuovi.add(q);
-                }
-            }
-            if (nuovi.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                        "Nessun lotto nuovo da importare dalla bolla MOMP " + da + " in poi.\n"
-                                + "(Se la bolla è appena stata registrata, verificare che sia confermata in Quasar.)",
-                        "Importa da Quasar", JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-            StringBuilder sb = new StringBuilder();
-            int max = Math.min(nuovi.size(), 15);
-            for (int i = 0; i < max; i++) {
-                LottoQuasar q = nuovi.get(i);
-                sb.append("  ").append(q.lotto).append("  ").append(q.articolo).append("  ").append(trunc(q.descr, 24))
-                        .append("  ").append(formatNum(q.qta)).append(' ').append(q.um)
-                        .append(q.validato ? "  (validato)" : "  (da validare)").append('\n');
-            }
-            if (nuovi.size() > max) {
-                sb.append("  ... e altri ").append(nuovi.size() - max).append('\n');
-            }
-            if (JOptionPane.showConfirmDialog(this,
-                    "Trovati " + nuovi.size() + " lotti nuovi:\n\n" + sb
-                            + "\nLe quantità iniziali sono quelle ricevute: se parte del materiale è già stato usato,\n"
-                            + "conviene partire dal numero di bolla da cui si inizia a lavorare con questo programma.\n\nImportare?",
-                    "Importa da Quasar", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
-                return;
-            }
-            int importati = 0;
-            int saltati = 0;
-            for (LottoQuasar q : nuovi) {
-                Lotto l = new Lotto();
-                l.lottoInterno = q.lotto;
-                l.codiceMp = q.articolo;
-                l.descrizione = q.descr;
-                l.fornitore = q.fornitore;
-                l.bolla = "MOMP/" + anno + "/" + q.num + "/" + q.riga;
-                l.lottoFornitore = q.lottoForn;
-                l.scadenza = q.scadenza == null ? "" : q.scadenza.toString();
-                l.qtaIniziale = q.qta;
-                l.qtaResidua = q.qta;
-                l.um = q.um.isEmpty() ? "KG" : q.um;
-                l.stato = q.validato ? "OK" : STATO_DA_VALIDARE;
-                l.validatoDa = q.validato ? "QUASAR" : "";
-                try {
-                    salvaLottoDb(l);
-                    importati++;
-                } catch (IllegalStateException ex) {
-                    saltati++;   // gia' presente (inserito da un'altra postazione)
-                }
-            }
-            ricaricaLottiDb();
-            JOptionPane.showMessageDialog(this, "Importati " + importati + " lotti"
-                    + (saltati > 0 ? " (" + saltati + " già presenti)" : "") + ".",
-                    "Importa da Quasar", JOptionPane.INFORMATION_MESSAGE);
-        } catch (Exception ex) {
-            erroreDb(ex);
-        }
     }
 
     private void aggiornaLottoFornitoreDb(String lotto, String lottoFornitore) throws Exception {
