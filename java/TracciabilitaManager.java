@@ -513,7 +513,300 @@ public class TracciabilitaManager extends JFrame {
         return z.toString();
     }
 
-    /** Disegna l'anteprima dell'etichetta. Il QR e' solo un segnaposto: quello vero lo genera la stampante. */
+    // ------------------------------------------------------------------
+    // Generatore di codici QR (modalita' byte, correzione errori Q come nello ZPL "QA", versioni 1-10).
+    // Serve solo per l'ANTEPRIMA dell'etichetta; la stampante genera da sola il QR vero dallo ZPL.
+    // Algoritmo standard ISO/IEC 18004 (stessa struttura del generatore pubblico di Nayuki).
+    // ------------------------------------------------------------------
+
+    private static final int[] QR_ECC_PER_BLOCK_Q = {-1, 13, 22, 18, 26, 18, 24, 18, 22, 20, 24};
+    private static final int[] QR_BLOCKS_Q = {-1, 1, 1, 2, 2, 4, 4, 6, 6, 8, 8};
+
+    private static final class QrCode {
+        final int version;
+        final int size;
+        final boolean[][] modules;
+        private final boolean[][] isFunction;
+
+        QrCode(String testo) {
+            byte[] dati = testo.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            int ver = 1;
+            for (; ver <= 10; ver++) {
+                int countBits = ver < 10 ? 8 : 16;
+                int capacita = (numRawModules(ver) / 8 - QR_ECC_PER_BLOCK_Q[ver] * QR_BLOCKS_Q[ver]) * 8;
+                if (4 + countBits + dati.length * 8 <= capacita) break;
+            }
+            if (ver > 10) throw new IllegalArgumentException("Testo troppo lungo per l'anteprima QR");
+            version = ver;
+            size = ver * 4 + 17;
+            modules = new boolean[size][size];
+            isFunction = new boolean[size][size];
+
+            // bit di dati: modo byte, lunghezza, byte, terminatore e riempimento
+            java.util.List<Integer> bits = new ArrayList<>();
+            appendBits(bits, 0x4, 4);
+            appendBits(bits, dati.length, ver < 10 ? 8 : 16);
+            for (byte b : dati) appendBits(bits, b & 0xFF, 8);
+            int capacitaBit = (numRawModules(ver) / 8 - QR_ECC_PER_BLOCK_Q[ver] * QR_BLOCKS_Q[ver]) * 8;
+            appendBits(bits, 0, Math.min(4, capacitaBit - bits.size()));
+            appendBits(bits, 0, (8 - bits.size() % 8) % 8);
+            for (int pad = 0xEC; bits.size() < capacitaBit; pad ^= 0xEC ^ 0x11) appendBits(bits, pad, 8);
+            byte[] codeword = new byte[bits.size() / 8];
+            for (int i = 0; i < bits.size(); i++) codeword[i >>> 3] |= bits.get(i) << (7 - (i & 7));
+
+            disegnaFunzioni();
+            disegnaCodeword(aggiungiEccEInterleave(codeword));
+            int migliore = 0;
+            long penMin = Long.MAX_VALUE;
+            for (int m = 0; m < 8; m++) {
+                applicaMaschera(m);
+                disegnaFormato(m);
+                long pen = penalita();
+                if (pen < penMin) {
+                    migliore = m;
+                    penMin = pen;
+                }
+                applicaMaschera(m);   // annulla (lo XOR e' reversibile)
+            }
+            applicaMaschera(migliore);
+            disegnaFormato(migliore);
+        }
+
+        private static void appendBits(java.util.List<Integer> bb, int val, int len) {
+            for (int i = len - 1; i >= 0; i--) bb.add((val >>> i) & 1);
+        }
+
+        private static int numRawModules(int ver) {
+            int size = ver * 4 + 17;
+            int result = size * size - 8 * 8 * 3 - 15 * 2 - 1 - (size - 16) * 2;   // meno quadrati e temporizzazione
+            if (ver >= 2) {
+                int numAlign = ver / 7 + 2;
+                result -= (25 * numAlign - 10) * numAlign - 55;
+                if (ver >= 7) result -= 36;
+            }
+            return result;
+        }
+
+        private static int[] posizioniAllineamento(int ver) {
+            if (ver == 1) return new int[0];
+            int numAlign = ver / 7 + 2;
+            int step = (ver * 4 + numAlign * 2 + 1) / (numAlign * 2 - 2) * 2;
+            int[] res = new int[numAlign];
+            res[0] = 6;
+            for (int i = numAlign - 1, pos = ver * 4 + 17 - 7; i >= 1; i--, pos -= step) res[i] = pos;
+            return res;
+        }
+
+        private void setFunzione(int x, int y, boolean dark) {
+            modules[y][x] = dark;
+            isFunction[y][x] = true;
+        }
+
+        private void disegnaFunzioni() {
+            for (int i = 0; i < size; i++) {
+                setFunzione(6, i, i % 2 == 0);
+                setFunzione(i, 6, i % 2 == 0);
+            }
+            disegnaFinder(3, 3);
+            disegnaFinder(size - 4, 3);
+            disegnaFinder(3, size - 4);
+            int[] pos = posizioniAllineamento(version);
+            int n = pos.length;
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if ((i == 0 && j == 0) || (i == 0 && j == n - 1) || (i == n - 1 && j == 0)) continue;
+                    disegnaAllineamento(pos[i], pos[j]);
+                }
+            }
+            disegnaFormato(0);   // riservato; viene riscritto con la maschera scelta
+            disegnaVersione();
+        }
+
+        private void disegnaFinder(int x, int y) {
+            for (int dy = -4; dy <= 4; dy++) {
+                for (int dx = -4; dx <= 4; dx++) {
+                    int dist = Math.max(Math.abs(dx), Math.abs(dy));
+                    int xx = x + dx;
+                    int yy = y + dy;
+                    if (xx >= 0 && xx < size && yy >= 0 && yy < size) setFunzione(xx, yy, dist != 2 && dist != 4);
+                }
+            }
+        }
+
+        private void disegnaAllineamento(int x, int y) {
+            for (int dy = -2; dy <= 2; dy++) {
+                for (int dx = -2; dx <= 2; dx++) {
+                    setFunzione(x + dx, y + dy, Math.max(Math.abs(dx), Math.abs(dy)) != 1);
+                }
+            }
+        }
+
+        private void disegnaFormato(int mask) {
+            int data = 3 << 3 | mask;   // livello Q = 3
+            int rem = data;
+            for (int i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+            int bits = (data << 10 | rem) ^ 0x5412;
+            for (int i = 0; i <= 5; i++) setFunzione(8, i, bit(bits, i));
+            setFunzione(8, 7, bit(bits, 6));
+            setFunzione(8, 8, bit(bits, 7));
+            setFunzione(7, 8, bit(bits, 8));
+            for (int i = 9; i < 15; i++) setFunzione(14 - i, 8, bit(bits, i));
+            for (int i = 0; i < 8; i++) setFunzione(size - 1 - i, 8, bit(bits, i));
+            for (int i = 8; i < 15; i++) setFunzione(8, size - 15 + i, bit(bits, i));
+            setFunzione(8, size - 8, true);
+        }
+
+        private void disegnaVersione() {
+            if (version < 7) return;
+            int rem = version;
+            for (int i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+            long bits = (long) version << 12 | rem;
+            for (int i = 0; i < 18; i++) {
+                boolean b = ((bits >>> i) & 1) != 0;
+                int a = size - 11 + i % 3;
+                int c = i / 3;
+                setFunzione(a, c, b);
+                setFunzione(c, a, b);
+            }
+        }
+
+        private static boolean bit(int x, int i) {
+            return ((x >>> i) & 1) != 0;
+        }
+
+        private byte[] aggiungiEccEInterleave(byte[] data) {
+            int numBlocks = QR_BLOCKS_Q[version];
+            int blockEccLen = QR_ECC_PER_BLOCK_Q[version];
+            int rawCodewords = numRawModules(version) / 8;
+            int numShortBlocks = numBlocks - rawCodewords % numBlocks;
+            int shortBlockLen = rawCodewords / numBlocks;
+            byte[][] blocks = new byte[numBlocks][];
+            byte[] rsDiv = rsDivisore(blockEccLen);
+            for (int i = 0, k = 0; i < numBlocks; i++) {
+                byte[] dat = java.util.Arrays.copyOfRange(data, k, k + shortBlockLen - blockEccLen + (i < numShortBlocks ? 0 : 1));
+                k += dat.length;
+                byte[] block = java.util.Arrays.copyOf(dat, shortBlockLen + 1);
+                byte[] ecc = rsResto(dat, rsDiv);
+                System.arraycopy(ecc, 0, block, block.length - blockEccLen, ecc.length);
+                blocks[i] = block;
+            }
+            byte[] result = new byte[rawCodewords];
+            for (int i = 0, k = 0; i < blocks[0].length; i++) {
+                for (int j = 0; j < blocks.length; j++) {
+                    if (i != shortBlockLen - blockEccLen || j >= numShortBlocks) {
+                        result[k++] = blocks[j][i];
+                    }
+                }
+            }
+            return result;
+        }
+
+        private static byte[] rsDivisore(int degree) {
+            byte[] result = new byte[degree];
+            result[degree - 1] = 1;
+            int root = 1;
+            for (int i = 0; i < degree; i++) {
+                for (int j = 0; j < result.length; j++) {
+                    result[j] = (byte) rsMoltiplica(result[j] & 0xFF, root);
+                    if (j + 1 < result.length) result[j] ^= result[j + 1];
+                }
+                root = rsMoltiplica(root, 0x02);
+            }
+            return result;
+        }
+
+        private static byte[] rsResto(byte[] data, byte[] divisor) {
+            byte[] result = new byte[divisor.length];
+            for (byte b : data) {
+                int factor = (b ^ result[0]) & 0xFF;
+                System.arraycopy(result, 1, result, 0, result.length - 1);
+                result[result.length - 1] = 0;
+                for (int i = 0; i < result.length; i++) result[i] ^= rsMoltiplica(divisor[i] & 0xFF, factor);
+            }
+            return result;
+        }
+
+        private static int rsMoltiplica(int x, int y) {
+            int z = 0;
+            for (int i = 7; i >= 0; i--) {
+                z = (z << 1) ^ ((z >>> 7) * 0x11D);
+                z ^= ((y >>> i) & 1) * x;
+            }
+            return z;
+        }
+
+        private void disegnaCodeword(byte[] data) {
+            int i = 0;
+            for (int right = size - 1; right >= 1; right -= 2) {
+                if (right == 6) right = 5;
+                for (int vert = 0; vert < size; vert++) {
+                    for (int j = 0; j < 2; j++) {
+                        int x = right - j;
+                        boolean upward = ((right + 1) & 2) == 0;
+                        int y = upward ? size - 1 - vert : vert;
+                        if (!isFunction[y][x] && i < data.length * 8) {
+                            modules[y][x] = bit(data[i >>> 3], 7 - (i & 7));
+                            i++;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void applicaMaschera(int mask) {
+            for (int y = 0; y < size; y++) {
+                for (int x = 0; x < size; x++) {
+                    boolean inverti;
+                    switch (mask) {
+                        case 0: inverti = (x + y) % 2 == 0; break;
+                        case 1: inverti = y % 2 == 0; break;
+                        case 2: inverti = x % 3 == 0; break;
+                        case 3: inverti = (x + y) % 3 == 0; break;
+                        case 4: inverti = (x / 3 + y / 2) % 2 == 0; break;
+                        case 5: inverti = x * y % 2 + x * y % 3 == 0; break;
+                        case 6: inverti = (x * y % 2 + x * y % 3) % 2 == 0; break;
+                        default: inverti = ((x + y) % 2 + x * y % 3) % 2 == 0; break;
+                    }
+                    if (inverti && !isFunction[y][x]) modules[y][x] = !modules[y][x];
+                }
+            }
+        }
+
+        /** Penalita' semplificata (serie lunghe, blocchi 2x2, equilibrio chiaro/scuro) per scegliere la maschera. */
+        private long penalita() {
+            long result = 0;
+            for (int pass = 0; pass < 2; pass++) {
+                for (int a = 0; a < size; a++) {
+                    int run = 1;
+                    for (int b = 1; b < size; b++) {
+                        boolean cur = pass == 0 ? modules[a][b] : modules[b][a];
+                        boolean prev = pass == 0 ? modules[a][b - 1] : modules[b - 1][a];
+                        if (cur == prev) {
+                            run++;
+                            if (run == 5) result += 3;
+                            else if (run > 5) result++;
+                        } else {
+                            run = 1;
+                        }
+                    }
+                }
+            }
+            for (int y = 0; y < size - 1; y++) {
+                for (int x = 0; x < size - 1; x++) {
+                    boolean c = modules[y][x];
+                    if (c == modules[y][x + 1] && c == modules[y + 1][x] && c == modules[y + 1][x + 1]) result += 3;
+                }
+            }
+            int dark = 0;
+            for (boolean[] row : modules) for (boolean m : row) if (m) dark++;
+            int total = size * size;
+            int k = (int) ((Math.abs(dark * 20L - total * 10L) + total - 1) / total) - 1;
+            result += k * 10L;
+            return result;
+        }
+    }
+
+    /** Disegna l'anteprima dell'etichetta, con un QR reale (il dato e' lo stesso che la stampante codifica). */
     private java.awt.image.BufferedImage anteprimaLotto(LayoutEtichetta lay) {
         java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(lay.w, lay.h,
                 java.awt.image.BufferedImage.TYPE_INT_RGB);
@@ -529,25 +822,17 @@ public class TracciabilitaManager extends JFrame {
             g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(8, (int) Math.round(r.size * 0.85))));
             g.drawString(r.testo, r.x, r.y + (int) Math.round(r.size * 0.8));
         }
-        int lato = 25 * lay.qrMag;
         int mod = lay.qrMag;
-        g.setColor(new Color(235, 235, 235));
-        g.fillRect(lay.qrX, lay.qrY, lato, lato);
+        QrCode qr = new QrCode(lay.qrDati);
+        int quiet = 0;
         g.setColor(Color.BLACK);
-        int[][] angoli = {{0, 0}, {18, 0}, {0, 18}};
-        for (int[] a : angoli) {   // tre quadrati di riferimento, come in un QR
-            int x0 = lay.qrX + a[0] * mod;
-            int y0 = lay.qrY + a[1] * mod;
-            g.fillRect(x0, y0, 7 * mod, 7 * mod);
-            g.setColor(Color.WHITE);
-            g.fillRect(x0 + mod, y0 + mod, 5 * mod, 5 * mod);
-            g.setColor(Color.BLACK);
-            g.fillRect(x0 + 2 * mod, y0 + 2 * mod, 3 * mod, 3 * mod);
+        for (int y = 0; y < qr.size; y++) {
+            for (int x = 0; x < qr.size; x++) {
+                if (qr.modules[y][x]) g.fillRect(lay.qrX + (quiet + x) * mod, lay.qrY + (quiet + y) * mod, mod, mod);
+            }
         }
-        g.setFont(new Font("SansSerif", Font.BOLD, Math.max(10, 3 * mod)));
-        g.drawString("QR", lay.qrX + lato / 2 - 3 * mod, lay.qrY + lato / 2 + mod);
         g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, 2 * mod)));
-        g.drawString(lay.qrDati, lay.qrX, lay.qrY + lato + 3 * mod);
+        g.drawString(lay.qrDati, lay.qrX, lay.qrY + qr.size * mod + 3 * mod);
         g.dispose();
         return img;
     }
@@ -566,8 +851,7 @@ public class TracciabilitaManager extends JFrame {
                 + " dpi, copie: " + copie + "<br>"
                 + (ip.isEmpty() ? "Nessuna stampante RICEZIONE impostata: premendo Stampa si vedrà il codice ZPL."
                         : "Stampante: " + ip)
-                + "<br><i>Anteprima: il codice QR è un segnaposto, quello vero (con il lotto " + l.lottoInterno
-                + ") lo genera la stampante.</i></html>");
+                + "<br><i>Il QR contiene il lotto " + l.lottoInterno + ". Quello stampato lo genera la stampante dallo stesso dato.</i></html>");
         JPanel pnl = new JPanel(new BorderLayout(8, 8));
         pnl.add(lblImg, BorderLayout.CENTER);
         pnl.add(info, BorderLayout.SOUTH);
