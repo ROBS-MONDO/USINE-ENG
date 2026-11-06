@@ -891,8 +891,32 @@ public class TracciabilitaManager extends JFrame {
         upper(txtCerca);
         JButton btnCerca = new JButton("Cerca");
 
+        // Lotti trovati (ingresso: bolla, fornitore, scadenza, stato, residuo) - sopra ai prelievi.
+        DefaultTableModel ricercaLottiModel = new DefaultTableModel(new String[]{
+                "Lotto interno", "Code MP", "Désignation", "Fournisseur", "Bolla", "Lotto fornitore",
+                "Scadenza", "Qté initiale", "Qté résiduelle", "UM", "Stato", "Validato da"}, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+
         Runnable cerca = () -> {
             String q = txtCerca.getText().trim().toUpperCase(Locale.ROOT);
+            if (dbAttivo) {
+                try {
+                    ricaricaLottiDb();   // stato e residui aggiornati
+                } catch (Exception ex) {
+                    erroreDb(ex);
+                }
+            }
+            ricercaLottiModel.setRowCount(0);
+            for (Lotto l : lotti.values()) {
+                String chiave = (l.lottoInterno + " " + l.codiceMp + " " + l.descrizione + " " + l.fornitore + " "
+                        + l.bolla + " " + l.lottoFornitore).toUpperCase(Locale.ROOT);
+                if (q.isEmpty() || chiave.contains(q)) {
+                    ricercaLottiModel.addRow(new Object[]{l.lottoInterno, l.codiceMp, l.descrizione, l.fornitore,
+                            l.bolla, l.lottoFornitore, l.scadenza, formatNum(l.qtaIniziale), formatNum(l.qtaResidua),
+                            l.um, l.stato, l.validatoDa});
+                }
+            }
             ricercaModel.setRowCount(0);
             if (dbAttivo) {
                 try {
@@ -923,13 +947,23 @@ public class TracciabilitaManager extends JFrame {
         top.add(txtCerca);
         top.add(btnCerca);
 
+        JTable tLotti = new JTable(ricercaLottiModel);
+        styleTable(tLotti);
+        JScrollPane spLotti = new JScrollPane(tLotti);
+        spLotti.setBorder(BorderFactory.createTitledBorder("Lotti trovati (ingresso)"));
+
         JTable t = new JTable(ricercaModel);
         styleTable(t);
+        JScrollPane spPrelievi = new JScrollPane(t);
+        spPrelievi.setBorder(BorderFactory.createTitledBorder("Utilizzo nei batch (prelievi)"));
+
+        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, spLotti, spPrelievi);
+        split.setResizeWeight(0.4);
 
         JPanel p = new JPanel(new BorderLayout(8, 8));
         p.setBorder(new EmptyBorder(10, 10, 10, 10));
         p.add(top, BorderLayout.NORTH);
-        p.add(new JScrollPane(t), BorderLayout.CENTER);
+        p.add(split, BorderLayout.CENTER);
         return p;
     }
 
