@@ -7,6 +7,9 @@
 <meta name="description" content="«Звёздный час» — международный трансформационный фестиваль в Люксембурге, 12 декабря 2026: психология, личностный рост, трансформационные игры, мастер-классы, нетворкинг.">
 <meta name="keywords" content="психология, психологическое развитие, личностный рост, саморазвитие, трансформация личности, психология успеха, развитие личности, личностное развитие, психологические практики, самопознание, духовное развитие, раскрытие потенциала, фестиваль психологии, психологический фестиваль, фестиваль личностного роста, фестиваль саморазвития, трансформационный фестиваль, фестиваль трансформационных практик, фестиваль осознанности, фестиваль развития личности, фестиваль экспертов, международный фестиваль, фестиваль практик, мероприятия по психологии, психологические мероприятия, мероприятия для саморазвития, фестиваль в Люксембурге, мероприятия в Люксембурге, нетворкинг в Люксембурге, мероприятия для предпринимателей, бизнес-мероприятия в Люксембурге, бизнес-фестиваль, деловые знакомства, нетворкинг мероприятия, поиск бизнес-партнёров, международный нетворкинг, бизнес-сообщество, мероприятия для экспертов, коллаборации и партнёрства, развитие личного бренда, продвижение эксперта, встречи предпринимателей, конференции и форумы в Люксембурге, психологические мастер-классы, мастер-классы по саморазвитию, трансформационные игры, бизнес-игры, психологические игры, тренинги личностного роста, тренинги по саморазвитию, практики самопознания, групповые психологические практики, консультации психолога, творческие мастер-классы, ярмарка авторских товаров, маркет локальных брендов, выставка авторских проектов, festival in Luxembourg, events in Luxembourg, psychology festival Luxembourg, workshops in Luxembourg, networking Luxembourg, business events Luxembourg, festival au Luxembourg, événements au Luxembourg, festival de psychologie Luxembourg, ateliers au Luxembourg, networking au Luxembourg, événements professionnels Luxembourg, психология общения, международные знакомства, презентация проектов, поиск партнёров, мастер-классы, консультации, творческий маркет">
 <link rel="canonical" href="https://www.luxembourgfestival.com/">
+<link rel="alternate" hreflang="ru" href="https://www.luxembourgfestival.com/">
+<link rel="alternate" hreflang="fr" href="https://www.luxembourgfestival.com/fr/">
+<link rel="alternate" hreflang="x-default" href="https://www.luxembourgfestival.com/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Luxembourg Festival">
@@ -413,9 +416,20 @@
   .modal-status.err { color: #a02020; }
   .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
   @media (max-width: 520px) { .modal-box { padding: 40px 22px 26px; } }
+
+  /* Selettore della lingua (bandiere + codice) */
+  .langs { position: absolute; top: 14px; right: 14px; z-index: 60; display: flex; gap: 4px; padding: 4px; background: rgba(20, 6, 13, .6); border: 1px solid rgba(233, 201, 135, .4); border-radius: 999px; font: 700 12px/1 Arial, sans-serif; }
+  .langs .lang { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border-radius: 999px; color: #efe3e6; text-decoration: none; letter-spacing: .04em; }
+  .langs .lang:hover, .langs .lang:focus-visible { background: rgba(233, 201, 135, .22); }
+  .langs .lang.active { background: #d2a864; color: #2b0d1d; }
+  .langs .fl { display: inline-block; width: 18px; height: 12px; border-radius: 2px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .3); }
+  .fl-ru { background: linear-gradient(#fff 33.3%, #0039a6 33.3% 66.6%, #d52b1e 66.6%); }
+  .fl-fr { background: linear-gradient(90deg, #0055a4 33.3%, #fff 33.3% 66.6%, #ef4135 66.6%); }
+  .fl-de { background: linear-gradient(#000 33.3%, #dd0000 33.3% 66.6%, #ffce00 66.6%); }
 </style>
 </head>
 <body>
+<div class="langs" role="navigation" aria-label="Language"><a href="/" class="lang active" hreflang="ru" lang="ru"><i class="fl fl-ru"></i>RU</a><a href="/fr/" class="lang" hreflang="fr" lang="fr"><i class="fl fl-fr"></i>FR</a></div>
 
 <section class="hero">
   <video autoplay muted loop playsinline webkit-playsinline disablepictureinpicture disableremoteplayback preload="auto" poster="poster.webp">

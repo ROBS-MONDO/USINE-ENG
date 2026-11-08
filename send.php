@@ -47,7 +47,10 @@ if ($turnstileSecret !== '') {
     if (empty($j['success'])) fail(403);
 }
 
-// Modulo "Второй день": basta l'email; il messaggio e l'oggetto sono fissi
+// lingua della pagina da cui arriva il modulo (default: russo)
+$lang = preg_match('/^(ru|en|fr|de)$/', (string)($_POST['lang'] ?? '')) ? $_POST['lang'] : 'ru';
+
+// Modulo "Второй день": basta uno tra email e telefono; il messaggio e l'oggetto sono fissi (nella lingua della pagina)
 if (($_POST['form'] ?? '') === 'second_day') {
     // basta uno dei due contatti: email oppure telefono (prefisso + numero); possono esserci entrambi
     $email  = clean($_POST['email'] ?? '', 200);
@@ -64,10 +67,21 @@ if (($_POST['form'] ?? '') === 'second_day') {
         $phoneFull = ($prefix[0] === '+' ? $prefix : '+' . $prefix) . ' ' . $phone;
     }
     $contact = implode(', ', array_filter([$hasEmail ? $email : '', $phoneFull]));
-    $body  = "Здравствуйте! Хочу узнать об участии во втором дне фестиваля «Звёздный час» в Люксембурге — «Сила объединения». Пришлите, пожалуйста, дату, место, стоимость и условия регистрации.\n\n";
-    $body .= "Мой контакт: $contact\n";
+    $texts = [
+        'ru' => ['subject' => 'Заявка на участие', 'contact' => 'Мой контакт:',
+                 'hello' => "Здравствуйте! Хочу узнать об участии во втором дне фестиваля «Звёздный час» в Люксембурге — «Сила объединения». Пришлите, пожалуйста, дату, место, стоимость и условия регистрации."],
+        'fr' => ['subject' => 'Demande de participation', 'contact' => 'Mon contact :',
+                 'hello' => "Bonjour ! Je souhaite me renseigner sur la participation au deuxième jour du festival « Star Hour » au Luxembourg — « La force de l'union ». Pourriez-vous m'envoyer la date, le lieu, le prix et les conditions d'inscription ?"],
+        'en' => ['subject' => 'Participation request', 'contact' => 'My contact:',
+                 'hello' => "Hello! I would like to find out about taking part in the second day of the “Star Hour” festival in Luxembourg — “The Power of Unity”. Please send me the date, venue, price and registration terms."],
+        'de' => ['subject' => 'Teilnahmeanfrage', 'contact' => 'Mein Kontakt:',
+                 'hello' => "Guten Tag! Ich möchte mich über die Teilnahme am zweiten Tag des Festivals „Star Hour“ in Luxemburg — „Die Kraft der Verbindung“ informieren. Bitte senden Sie mir Datum, Ort, Preis und Anmeldebedingungen."],
+    ];
+    $t = $texts[$lang];
+    $body  = $t['hello'] . "\n\n";
+    $body .= $t['contact'] . " $contact\n";
     $body .= "\nIP: " . ($_SERVER['REMOTE_ADDR'] ?? '') . "\nДата: " . date('Y-m-d H:i:s') . "\n";
-    $subject = '=?UTF-8?B?' . base64_encode('Заявка на участие') . '?=';
+    $subject = '=?UTF-8?B?' . base64_encode($t['subject']) . '?=';
     $headers = "From: Luxembourg Festival <$from>\r\n"
              . ($hasEmail ? "Reply-To: $email\r\n" : '')
              . "MIME-Version: 1.0\r\n"
@@ -93,6 +107,7 @@ $body .= "Телефон: $phone\n";
 $body .= "Instagram: " . ($insta !== '' ? $insta : '—') . "\n";
 $body .= "Специализация / продукт: $product\n";
 $body .= "Согласие на обработку данных: да\n";
+$body .= "Язык сайта: " . strtoupper($lang) . "\n";
 $body .= "\nIP: " . ($_SERVER['REMOTE_ADDR'] ?? '') . "\nДата: " . date('Y-m-d H:i:s') . "\n";
 
 $subject = '=?UTF-8?B?' . base64_encode('Заявка тренера — Luxembourg Festival') . '?=';

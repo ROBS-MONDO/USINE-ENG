@@ -6,6 +6,9 @@
 <title>Политика конфиденциальности — Luxembourg Festival</title>
 <meta name="description" content="Политика конфиденциальности сайта luxembourgfestival.com: какие данные мы собираем, зачем и какие у вас права по GDPR.">
 <link rel="canonical" href="https://www.luxembourgfestival.com/privacy.html">
+<link rel="alternate" hreflang="ru" href="https://www.luxembourgfestival.com/privacy.html">
+<link rel="alternate" hreflang="fr" href="https://www.luxembourgfestival.com/fr/privacy.html">
+<link rel="alternate" hreflang="x-default" href="https://www.luxembourgfestival.com/privacy.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Unbounded:wght@800&display=swap&subset=cyrillic" rel="stylesheet">
@@ -23,9 +26,20 @@
   .btn { display: inline-block; margin-top: 36px; padding: 16px 32px; border: 2px solid #d2a864; border-radius: 6px; background: #d2a864; color: #2b0d1d; font: 700 .95rem/1.2 "Montserrat", Arial, sans-serif; letter-spacing: .04em; text-transform: uppercase; text-decoration: none; transition: background .2s, color .2s; }
   .btn:hover, .btn:focus-visible { background: transparent; }
   @media (max-width: 600px) { .wrap { padding: 36px 20px 56px; } .btn { display: block; text-align: center; } }
+
+  /* Selettore della lingua (bandiere + codice) */
+  .langs { position: absolute; top: 14px; right: 14px; z-index: 60; display: flex; gap: 4px; padding: 4px; background: rgba(20, 6, 13, .6); border: 1px solid rgba(233, 201, 135, .4); border-radius: 999px; font: 700 12px/1 Arial, sans-serif; }
+  .langs .lang { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border-radius: 999px; color: #efe3e6; text-decoration: none; letter-spacing: .04em; }
+  .langs .lang:hover, .langs .lang:focus-visible { background: rgba(233, 201, 135, .22); }
+  .langs .lang.active { background: #d2a864; color: #2b0d1d; }
+  .langs .fl { display: inline-block; width: 18px; height: 12px; border-radius: 2px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .3); }
+  .fl-ru { background: linear-gradient(#fff 33.3%, #0039a6 33.3% 66.6%, #d52b1e 66.6%); }
+  .fl-fr { background: linear-gradient(90deg, #0055a4 33.3%, #fff 33.3% 66.6%, #ef4135 66.6%); }
+  .fl-de { background: linear-gradient(#000 33.3%, #dd0000 33.3% 66.6%, #ffce00 66.6%); }
 </style>
 </head>
 <body>
+<div class="langs" role="navigation" aria-label="Language"><a href="/privacy.html" class="lang active" hreflang="ru" lang="ru"><i class="fl fl-ru"></i>RU</a><a href="/fr/privacy.html" class="lang" hreflang="fr" lang="fr"><i class="fl fl-fr"></i>FR</a></div>
 <main class="wrap">
   <h1>Политика конфиденциальности</h1>
   <p class="upd">Последнее обновление: 20 октября 2026 г.</p>
