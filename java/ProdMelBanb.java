@@ -8708,13 +8708,8 @@ return cols;
                 this.table = table;
                 setClickCountToStart(1);
                 installEnterKeyOnEditorField(table, field);
-                field.addFocusListener(new FocusAdapter() {
-                    @Override public void focusLost(FocusEvent e) {
-                        if (table.isEditing() && table.getCellEditor() == ProductionTimeCellEditor.this) {
-                            ProductionTimeCellEditor.this.stopCellEditing();
-                        }
-                    }
-                });
+                // La cella si conferma solo con INVIO/TAB: niente chiusura automatica
+                // alla perdita del focus, altrimenti non si riesce a digitare.
             }
 
             @Override
