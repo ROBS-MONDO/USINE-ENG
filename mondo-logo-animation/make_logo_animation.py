@@ -13,7 +13,7 @@ BOX = (8, 244, 256, 286)
 SPLIT = 48
 K = 3                      # fattore di upscale di lavoro
 FPS = 25
-W, H = 260 * K, 84 * K     # canvas
+W, H = 250 * K, 54 * K     # canvas
 BG = (255, 255, 255)
 
 def ease_out(t): return 1 - (1 - t) ** 3
@@ -40,7 +40,7 @@ icon = logo.crop((0, 0, sp, logo.height))
 text = logo.crop((sp, 0, logo.width, logo.height))
 icon = icon.crop(icon.getbbox()); gap = (logo.width - text.width - icon.width)
 LW, LH = logo.size
-fx = (W - LW) // 2                 # posizione finale logo
+fx = 0                 # posizione finale logo
 fy = (H - LH) // 2
 
 def persp_coeffs(dst, src):
@@ -77,8 +77,8 @@ def shine(layer, t):
     arr[..., :3] = arr[..., :3] * (1 - band[..., None] * m) + 255 * band[..., None] * m
     return Image.fromarray(arr.astype(np.uint8), "RGBA")
 
-big_scale = 1.5
-ccx, ccy = W / 2, H / 2
+big_scale = 1.3
+ccx, ccy = W * 0.42, H / 2
 fin_icon_cx = fx + icon.width / 2
 fin_icon_cy = fy + LH / 2
 
@@ -127,12 +127,11 @@ for i in range(N4):
 final = frames[-1]
 for _ in range(HOLD): frames.append(final)
 
-# output: dimensione display 2x (520px) -> usare width=260 in HTML
-out = [f.resize((W * 2 // K, H * 2 // K), Image.LANCZOS) for f in frames]
+# output a dimensione reale (1x): inserire senza ridimensionare
+frames = [frames[-1]] + frames   # primo fotogramma = logo completo (Outlook classico)
+out = [f.resize((W // K, H // K), Image.LANCZOS) for f in frames]
 pal = [f.quantize(colors=96, method=Image.MEDIANCUT, dither=Image.NONE) for f in out]
-dur = [int(1000 / FPS)] * len(pal)
-dur[-1] = 3000
 # collassa i frame finali identici in uno solo con durata lunga
-pal = pal[: len(pal) - HOLD + 1]; dur = dur[: len(pal)]; dur[-1] = 3500
+pal = pal[: len(pal) - HOLD + 1]; dur = [int(1000 / FPS)] * len(pal); dur[-1] = 3500
 pal[0].save(OUT, save_all=True, append_images=pal[1:], duration=dur, loop=0, optimize=True, disposal=1)
 print(OUT, len(pal), "frame", out[0].size)
