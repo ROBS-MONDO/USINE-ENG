@@ -146,3 +146,10 @@ CREATE TABLE dbo.QuasarSync (
     DataAgg  DATETIME2    NOT NULL CONSTRAINT DF_QuasarSync_Data DEFAULT SYSDATETIME()
 );
 GO
+
+-- ---------------------------------------------------------------------------
+-- Indice per trovare subito il silo di un lotto (usato dall'elenco lotti).
+-- ---------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_SiloCarichi_Lotto' AND object_id = OBJECT_ID('dbo.SiloCarichi'))
+    CREATE INDEX IX_SiloCarichi_Lotto ON dbo.SiloCarichi (LottoInterno, DataCarico);
+GO

@@ -87,6 +87,8 @@ public class TracciabilitaManager extends JFrame {
         if (sync != null) {
             sync.shutdownNow();
         }
+        poolSql.svuota();
+        poolOracle.svuota();
         super.dispose();
     }
 
@@ -125,18 +127,19 @@ public class TracciabilitaManager extends JFrame {
         avviso.setBackground(new Color(255, 244, 199));
         avviso.setText("  Modalità manuale: database non disponibile, i dati restano solo in memoria.");
         if (dbAttivo) {
-            try {
-                caricaDaDb();
+            avviso.setText("  Connessione al database in corso...");
+            inBackground(this::leggiDatiDb, dati -> {
+                applicaDatiDb(dati);
                 avviso.setText("  Collegato al database Mondo (SRV-BAMBURY).");
                 avviso.setBackground(new Color(214, 240, 214));
                 bannerBase = avviso.getText();
                 avviaSincronizzazioneQuasar();
-            } catch (Exception ex) {
+            }, ex -> {
                 ex.printStackTrace();
                 dbAttivo = false;
                 avviso.setText("  Database non raggiungibile (" + messaggio(ex)
                         + "): modalità manuale, i dati restano solo in memoria.");
-            }
+            });
         }
 
         JPanel root = new JPanel(new BorderLayout());
@@ -371,16 +374,21 @@ public class TracciabilitaManager extends JFrame {
         JButton btnAggiorna = new JButton("Aggiorna dal DB");
         btnAggiorna.setEnabled(dbAttivo);
         btnAggiorna.addActionListener(e -> {
-            try {
-                sincronizzaValidazioniQuasarDb();
-            } catch (Throwable ex) {
-                System.err.println("Validazioni Quasar non lette: " + ex);
-            }
-            try {
-                ricaricaLottiDb();
-            } catch (Exception ex) {
+            btnAggiorna.setEnabled(false);
+            inBackground(() -> {
+                try {
+                    sincronizzaValidazioniQuasarDb();
+                } catch (Throwable ex) {
+                    System.err.println("Validazioni Quasar non lette: " + ex);
+                }
+                return leggiLottiDb();
+            }, letti -> {
+                btnAggiorna.setEnabled(dbAttivo);
+                applicaLotti(letti);
+            }, ex -> {
+                btnAggiorna.setEnabled(dbAttivo);
                 erroreDb(ex);
-            }
+            });
         });
 
         JButton btnLottoForn = new JButton("Lotto fornitore...");
@@ -1287,46 +1295,41 @@ public class TracciabilitaManager extends JFrame {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
 
+        JLabel lblRicerca = new JLabel(" ");
+        lblRicerca.setForeground(new Color(120, 80, 0));
+
         Runnable cerca = () -> {
             String q = txtCerca.getText().trim().toUpperCase(Locale.ROOT);
-            if (dbAttivo) {
-                try {
-                    ricaricaLottiDb();   // stato e residui aggiornati
-                } catch (Exception ex) {
-                    erroreDb(ex);
-                }
-            }
-            ricercaLottiModel.setRowCount(0);
-            for (Lotto l : lotti.values()) {
-                String chiave = (l.lottoInterno + " " + l.codiceMp + " " + l.descrizione + " " + l.fornitore + " "
-                        + l.bolla + " " + l.lottoFornitore).toUpperCase(Locale.ROOT);
-                if (q.isEmpty() || chiave.contains(q)) {
-                    ricercaLottiModel.addRow(new Object[]{l.lottoInterno, l.codiceMp, l.descrizione, l.fornitore,
-                            l.bolla, l.lottoFornitore, l.scadenza, formatNum(l.qtaIniziale), formatNum(l.qtaResidua),
-                            l.um, l.stato, l.validatoDa});
-                }
-            }
-            ricercaModel.setRowCount(0);
-            if (dbAttivo) {
-                try {
-                    cercaDb(q);
-                } catch (Exception ex) {
-                    erroreDb(ex);
+            if (!dbAttivo) {   // modalita' manuale: tutto in memoria, e' immediato
+                riempiRicercaLotti(ricercaLottiModel, lotti.values(), q);
+                ricercaModel.setRowCount(0);
+                for (Object[] riga : ricercaPrelieviMemoria(q)) {
+                    ricercaModel.addRow(riga);
                 }
                 return;
             }
-            for (Prelievo p : prelievi) {
-                Lotto l = lotti.get(p.lottoInterno);
-                String lf = l == null ? "" : l.lottoFornitore;
-                String bolla = l == null ? "" : l.bolla;
-                boolean match = q.isEmpty()
-                        || p.batch.contains(q) || p.lottoInterno.contains(q) || p.codiceMp.contains(q)
-                        || lf.toUpperCase(Locale.ROOT).contains(q) || bolla.toUpperCase(Locale.ROOT).contains(q);
-                if (match) {
-                    ricercaModel.addRow(new Object[]{p.dataOra, p.batch, p.zona, p.codiceMp, p.lottoInterno,
-                            lf, bolla, formatNum(p.qtaPesata) + " " + p.um, p.esito, p.operatore});
+            // Con il database la ricerca lavora in background: l'interfaccia resta libera.
+            btnCerca.setEnabled(false);
+            lblRicerca.setText("Ricerca in corso...");
+            inBackground(() -> {
+                RisultatoRicerca r = new RisultatoRicerca();
+                r.lotti = leggiLottiDb();
+                r.righe = cercaDbRighe(q);
+                return r;
+            }, r -> {
+                btnCerca.setEnabled(true);
+                applicaLotti(r.lotti);
+                riempiRicercaLotti(ricercaLottiModel, r.lotti.values(), q);
+                ricercaModel.setRowCount(0);
+                for (Object[] riga : r.righe) {
+                    ricercaModel.addRow(riga);
                 }
-            }
+                lblRicerca.setText(r.righe.size() >= 1000 ? "Mostrati i primi 1000 prelievi" : " ");
+            }, ex -> {
+                btnCerca.setEnabled(true);
+                lblRicerca.setText(" ");
+                erroreDb(ex);
+            });
         };
         btnCerca.addActionListener(e -> cerca.run());
         txtCerca.addActionListener(e -> cerca.run());
@@ -1335,6 +1338,7 @@ public class TracciabilitaManager extends JFrame {
         top.add(new JLabel("Batch / lotto interno / lotto fornitore / bolla / Code MP:"));
         top.add(txtCerca);
         top.add(btnCerca);
+        top.add(lblRicerca);
 
         JTable tLotti = new JTable(ricercaLottiModel);
         styleTable(tLotti);
@@ -1411,8 +1415,152 @@ public class TracciabilitaManager extends JFrame {
         }
     }
 
+    // ------------------------------------------------------------------
+    // Pool di connessioni (riuso): aprire ogni volta una connessione nuova costa da centinaia di
+    // millisecondi a diversi secondi (SQL Server con TLS, Oracle); qui le connessioni tornano al
+    // pool quando il codice chiama close() e vengono controllate prima del riuso.
+    // ------------------------------------------------------------------
+
+    private interface ApriConnessione {
+        Connection apri() throws Exception;
+    }
+
+    private static final class PoolConnessioni {
+        private static final int MAX_LIBERE = 3;
+        private static final long MAX_INATTIVA_MS = 4 * 60 * 1000L;
+
+        private static final class Libera {
+            final Connection c;
+            final long t = System.currentTimeMillis();
+
+            Libera(Connection c) {
+                this.c = c;
+            }
+        }
+
+        private final ApriConnessione factory;
+        private final java.util.ArrayDeque<Libera> libere = new java.util.ArrayDeque<>();
+
+        PoolConnessioni(ApriConnessione factory) {
+            this.factory = factory;
+        }
+
+        Connection prendi() throws Exception {
+            while (true) {
+                Libera l;
+                synchronized (this) {
+                    l = libere.pollFirst();
+                }
+                if (l == null) break;
+                if (System.currentTimeMillis() - l.t > MAX_INATTIVA_MS) {
+                    chiudi(l.c);
+                    continue;
+                }
+                try {
+                    if (!l.c.isClosed() && l.c.isValid(2)) {
+                        return avvolgi(l.c);
+                    }
+                } catch (SQLException ex) {
+                    // connessione non piu' valida: si scarta
+                }
+                chiudi(l.c);
+            }
+            return avvolgi(factory.apri());
+        }
+
+        private Connection avvolgi(Connection reale) {
+            final boolean[] restituita = {false};
+            return (Connection) java.lang.reflect.Proxy.newProxyInstance(Connection.class.getClassLoader(),
+                    new Class<?>[]{Connection.class}, (proxy, metodo, args) -> {
+                        String nome = metodo.getName();
+                        if ("close".equals(nome)) {
+                            if (!restituita[0]) {
+                                restituita[0] = true;
+                                restituisci(reale);
+                            }
+                            return null;
+                        }
+                        if ("isClosed".equals(nome)) {
+                            return restituita[0] || reale.isClosed();
+                        }
+                        try {
+                            return metodo.invoke(reale, args);
+                        } catch (java.lang.reflect.InvocationTargetException ex) {
+                            throw ex.getCause();
+                        }
+                    });
+        }
+
+        private void restituisci(Connection reale) {
+            try {
+                if (reale.isClosed()) return;
+                if (!reale.getAutoCommit()) {
+                    reale.rollback();
+                    reale.setAutoCommit(true);
+                }
+                synchronized (this) {
+                    if (libere.size() < MAX_LIBERE) {
+                        libere.addFirst(new Libera(reale));
+                        return;
+                    }
+                }
+            } catch (SQLException ex) {
+                // connessione rovinata: si chiude
+            }
+            chiudi(reale);
+        }
+
+        /** Chiude tutte le connessioni inattive (dopo un errore di rete, per ripartire da connessioni nuove). */
+        void svuota() {
+            List<Libera> da;
+            synchronized (this) {
+                da = new ArrayList<>(libere);
+                libere.clear();
+            }
+            for (Libera l : da) chiudi(l.c);
+        }
+
+        private static void chiudi(Connection c) {
+            try {
+                c.close();
+            } catch (Exception ignored) {
+                // gia' chiusa
+            }
+        }
+    }
+
+    private final PoolConnessioni poolSql = new PoolConnessioni(DBBamburyReader::openSharedConnection);
+    private final PoolConnessioni poolOracle = new PoolConnessioni(DbOracleManager::getConnection);
+
+    /** Esegue un lavoro lento fuori dal thread grafico e ne applica il risultato sul thread grafico. */
+    private <T> void inBackground(java.util.concurrent.Callable<T> lavoro, java.util.function.Consumer<T> alTermine,
+                                  java.util.function.Consumer<Exception> inErrore) {
+        new SwingWorker<T, Void>() {
+            @Override
+            protected T doInBackground() throws Exception {
+                return lavoro.call();
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    alTermine.accept(get());
+                } catch (java.util.concurrent.ExecutionException ex) {
+                    Throwable causa = ex.getCause();
+                    inErrore.accept(causa instanceof Exception ? (Exception) causa : new Exception(causa));
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }.execute();
+    }
+
     private Connection openConnection() throws Exception {
-        return DBBamburyReader.openSharedConnection();
+        return poolSql.prendi();
+    }
+
+    private Connection openOracle() throws Exception {
+        return poolOracle.prendi();
     }
 
     private static String nz(String s) {
@@ -1430,12 +1578,16 @@ public class TracciabilitaManager extends JFrame {
         JOptionPane.showMessageDialog(this, messaggio(ex), "Erreur", JOptionPane.ERROR_MESSAGE);
     }
 
-    /** Carica lotti e ultimi prelievi dal database all'avvio. */
-    private void caricaDaDb() throws Exception {
+    /** Lotti e ultimi prelievi letti dal database (lettura: da fare fuori dal thread grafico). */
+    private static final class DatiDb {
+        Map<String, Lotto> lotti = new LinkedHashMap<>();
+        final List<Prelievo> prelievi = new ArrayList<>();
+    }
+
+    private DatiDb leggiDatiDb() throws Exception {
+        DatiDb d = new DatiDb();
         try (Connection conn = openConnection()) {
-            leggiLotti(conn);
-            prelievi.clear();
-            prelieviModel.setRowCount(0);
+            d.lotti = leggiLotti(conn);
             String sql = "SELECT TOP 1000 IdPrelievo, BatchId, Zona, CodiceMP, LottoInterno, QtaPrevista, PesoMin, "
                     + "PesoMax, QtaPesata, UM, Esito, PesoManuale, Operatore, "
                     + "CONVERT(VARCHAR(19), DataOra, 120) AS DataOra FROM dbo.BatchPrelievo ORDER BY Id DESC";
@@ -1461,29 +1613,53 @@ public class TracciabilitaManager extends JFrame {
                 }
             }
             for (int i = recenti.size() - 1; i >= 0; i--) {   // dal piu' vecchio al piu' recente
-                prelievi.add(recenti.get(i));
-                addPrelievoRow(recenti.get(i));
+                d.prelievi.add(recenti.get(i));
             }
         }
+        return d;
+    }
+
+    /** Applica i dati letti: da chiamare sul thread grafico. */
+    private void applicaDatiDb(DatiDb d) {
+        prelievi.clear();
+        prelieviModel.setRowCount(0);
+        for (Prelievo p : d.prelievi) {
+            prelievi.add(p);
+            addPrelievoRow(p);
+        }
+        applicaLotti(d.lotti);
+    }
+
+    private Map<String, Lotto> leggiLottiDb() throws Exception {
+        try (Connection conn = openConnection()) {
+            return leggiLotti(conn);
+        }
+    }
+
+    /** Sostituisce l'elenco dei lotti in memoria e aggiorna la tabella: da chiamare sul thread grafico. */
+    private void applicaLotti(Map<String, Lotto> letti) {
+        lotti.clear();
+        lotti.putAll(letti);
         refreshLottiTable();
     }
 
+    /** Lettura veloce (connessione dal pool) usata dove serve il dato fresco sul thread grafico. */
     private void ricaricaLottiDb() throws Exception {
-        try (Connection conn = openConnection()) {
-            leggiLotti(conn);
-        }
-        refreshLottiTable();
+        applicaLotti(leggiLottiDb());
     }
 
     /** Legge tutti i lotti; il residuo e' la somma dei movimenti (MpMovimento). */
-    private void leggiLotti(Connection conn) throws SQLException {
+    private Map<String, Lotto> leggiLotti(Connection conn) throws SQLException {
         String sql = "SELECT l.LottoInterno, l.CodiceMP, l.Descrizione, l.Fornitore, l.BollaIngresso, "
                 + "l.LottoFornitore, CONVERT(VARCHAR(10), l.Scadenza, 23) AS Scadenza, l.QtaIniziale, l.UM, "
                 + "l.Stato, l.ValidatoDa, CONVERT(VARCHAR(19), l.DataValidazione, 120) AS DataValidazione, "
-                + "COALESCE((SELECT TOP 1 s.Silo FROM dbo.SiloCarichi s WHERE s.LottoInterno = l.LottoInterno "
-                + "ORDER BY s.DataCarico DESC), '') AS Silo, "
-                + "COALESCE((SELECT SUM(m.Qta) FROM dbo.MpMovimento m WHERE m.LottoInterno = l.LottoInterno), 0) AS Residuo "
-                + "FROM dbo.MpLotto l ORDER BY l.DataIngresso, l.LottoInterno";
+                + "COALESCE(s.Silo, '') AS Silo, COALESCE(m.Residuo, 0) AS Residuo "
+                + "FROM dbo.MpLotto l "
+                + "LEFT JOIN (SELECT LottoInterno, SUM(Qta) AS Residuo FROM dbo.MpMovimento GROUP BY LottoInterno) m "
+                + "  ON m.LottoInterno = l.LottoInterno "
+                + "OUTER APPLY (SELECT TOP 1 x.Silo FROM dbo.SiloCarichi x WHERE x.LottoInterno = l.LottoInterno "
+                + "             ORDER BY x.DataCarico DESC) s "
+                + "ORDER BY l.DataIngresso, l.LottoInterno";
         Map<String, Lotto> letti = new LinkedHashMap<>();
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -1506,8 +1682,7 @@ public class TracciabilitaManager extends JFrame {
                 letti.put(l.lottoInterno, l);
             }
         }
-        lotti.clear();
-        lotti.putAll(letti);
+        return letti;
     }
 
     private int prossimoDaSequenza(Connection conn, String sequenza) throws SQLException {
@@ -1747,7 +1922,7 @@ public class TracciabilitaManager extends JFrame {
                 + "WHERE b.RB_ESE = ? AND b.RB_PROT = 'MOMP' AND b.RB_NUM >= ? AND b.RB_LOTTO IS NOT NULL "
                 + "ORDER BY b.RB_NUM, b.RB_RIGA";
         List<LottoQuasar> out = new ArrayList<>();
-        try (Connection cn = DbOracleManager.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
+        try (Connection cn = openOracle(); PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, String.valueOf(anno));
             ps.setInt(2, daNum);
             ps.setQueryTimeout(30);
@@ -1784,7 +1959,7 @@ public class TracciabilitaManager extends JFrame {
         Map<String, ValidazioneQuasar> out = new LinkedHashMap<>();
         List<String> lista = new ArrayList<>(daControllare);
         if (lista.isEmpty()) return out;
-        try (Connection cn = DbOracleManager.getConnection()) {
+        try (Connection cn = openOracle()) {
             for (int i2 = 0; i2 < lista.size(); i2 += 500) {
                 List<String> blocco = lista.subList(i2, Math.min(lista.size(), i2 + 500));
                 StringBuilder sb = new StringBuilder(
@@ -1843,28 +2018,30 @@ public class TracciabilitaManager extends JFrame {
 
     /** Un giro di sincronizzazione: lavora fuori dal thread grafico e poi aggiorna schermo e barra di stato. */
     private void cicloSincronizzazione() {
+        Thread.interrupted();   // azzera un'eventuale interruzione pendente (altrimenti il driver Oracle fallisce subito)
         String esito;
-        boolean cambiato = false;
+        Map<String, Lotto> letti = null;
         try {
             int nuovi = sincronizzaQuasar();
             int validati = sincronizzaValidazioniQuasarDb();
-            cambiato = nuovi > 0 || validati > 0;
+            if (nuovi > 0 || validati > 0) {
+                letti = leggiLottiDb();   // letti qui, fuori dal thread grafico
+            }
             esito = "Quasar sincronizzato alle " + java.time.LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
                     + (nuovi > 0 ? " - nuovi lotti: " + nuovi : "")
                     + (validati > 0 ? " - lotti validati: " + validati : "");
         } catch (Throwable ex) {   // anche errori di caricamento del driver: il ciclo non deve fermarsi
+            if (sync == null || sync.isShutdown()) return;   // programma in chiusura: nessun messaggio
             System.err.println("Sincronizzazione Quasar non riuscita: " + ex);
+            poolOracle.svuota();   // al prossimo giro si riparte da connessioni nuove
+            poolSql.svuota();
             esito = "Quasar: sincronizzazione non riuscita (" + (ex.getMessage() == null ? ex.getClass().getSimpleName() : ex.getMessage()) + ")";
         }
         final String testo = bannerBase + "  " + esito;
-        final boolean aggiorna = cambiato;
+        final Map<String, Lotto> daApplicare = letti;
         SwingUtilities.invokeLater(() -> {
-            if (aggiorna) {
-                try {
-                    ricaricaLottiDb();
-                } catch (Exception ex) {
-                    System.err.println("Aggiornamento elenco lotti non riuscito: " + ex);
-                }
+            if (daApplicare != null) {
+                applicaLotti(daApplicare);
             }
             barraStato.setText(testo);
         });
@@ -1899,7 +2076,7 @@ public class TracciabilitaManager extends JFrame {
     }
 
     private int massimoNumeroMompQuasar(int anno) throws Exception {
-        try (Connection cn = DbOracleManager.getConnection();
+        try (Connection cn = openOracle();
              PreparedStatement ps = cn.prepareStatement(
                      "SELECT NVL(MAX(RB_NUM), 0) FROM POKER.BOLRIG WHERE RB_ESE = ? AND RB_PROT = 'MOMP'")) {
             ps.setString(1, String.valueOf(anno));
@@ -2087,8 +2264,45 @@ public class TracciabilitaManager extends JFrame {
         }
     }
 
-    /** Ricerca di tracciabilita' sul database (ultimi 1000 risultati). */
-    private void cercaDb(String q) throws Exception {
+    private static final class RisultatoRicerca {
+        Map<String, Lotto> lotti = new LinkedHashMap<>();
+        List<Object[]> righe = new ArrayList<>();
+    }
+
+    private void riempiRicercaLotti(DefaultTableModel model, Collection<Lotto> elenco, String q) {
+        model.setRowCount(0);
+        for (Lotto l : elenco) {
+            String chiave = (l.lottoInterno + " " + l.codiceMp + " " + l.descrizione + " " + l.fornitore + " "
+                    + l.bolla + " " + l.lottoFornitore).toUpperCase(Locale.ROOT);
+            if (q.isEmpty() || chiave.contains(q)) {
+                model.addRow(new Object[]{l.lottoInterno, l.codiceMp, l.descrizione, l.fornitore,
+                        l.bolla, l.lottoFornitore, l.scadenza, formatNum(l.qtaIniziale), formatNum(l.qtaResidua),
+                        l.um, l.stato, l.validatoDa});
+            }
+        }
+    }
+
+    /** Prelievi in memoria che corrispondono alla ricerca (modalita' manuale). */
+    private List<Object[]> ricercaPrelieviMemoria(String q) {
+        List<Object[]> out = new ArrayList<>();
+        for (Prelievo p : prelievi) {
+            Lotto l = lotti.get(p.lottoInterno);
+            String lf = l == null ? "" : l.lottoFornitore;
+            String bolla = l == null ? "" : l.bolla;
+            boolean match = q.isEmpty()
+                    || p.batch.contains(q) || p.lottoInterno.contains(q) || p.codiceMp.contains(q)
+                    || lf.toUpperCase(Locale.ROOT).contains(q) || bolla.toUpperCase(Locale.ROOT).contains(q);
+            if (match) {
+                out.add(new Object[]{p.dataOra, p.batch, p.zona, p.codiceMp, p.lottoInterno,
+                        lf, bolla, formatNum(p.qtaPesata) + " " + p.um, p.esito, p.operatore});
+            }
+        }
+        return out;
+    }
+
+    /** Ricerca di tracciabilita' sul database (ultimi 1000 risultati): da chiamare fuori dal thread grafico. */
+    private List<Object[]> cercaDbRighe(String q) throws Exception {
+        List<Object[]> out = new ArrayList<>();
         String sql = "SELECT TOP 1000 CONVERT(VARCHAR(19), p.DataOra, 120) AS DataOra, p.BatchId, p.Zona, p.CodiceMP, "
                 + "p.LottoInterno, l.LottoFornitore, l.BollaIngresso, p.QtaPesata, p.UM, p.Esito, p.Operatore "
                 + "FROM dbo.BatchPrelievo p LEFT JOIN dbo.MpLotto l ON l.LottoInterno = p.LottoInterno "
@@ -2102,7 +2316,7 @@ public class TracciabilitaManager extends JFrame {
             }
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    ricercaModel.addRow(new Object[]{nz(rs.getString("DataOra")), nz(rs.getString("BatchId")),
+                    out.add(new Object[]{nz(rs.getString("DataOra")), nz(rs.getString("BatchId")),
                             nz(rs.getString("Zona")), nz(rs.getString("CodiceMP")), nz(rs.getString("LottoInterno")),
                             nz(rs.getString("LottoFornitore")), nz(rs.getString("BollaIngresso")),
                             formatNum(rs.getDouble("QtaPesata")) + " " + nz(rs.getString("UM")),
@@ -2110,6 +2324,7 @@ public class TracciabilitaManager extends JFrame {
                 }
             }
         }
+        return out;
     }
 
     private void addPrelievoRow(Prelievo p) {
