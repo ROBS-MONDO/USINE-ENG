@@ -1,6 +1,7 @@
 package Banbury1;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -56,6 +57,8 @@ public class B1RawViewer extends JFrame {
     private final Map<String, Long> lastChange = new HashMap<>();
     private final JLabel status = new JLabel(" ");
     private final JTable table = new JTable(model);
+    private final Map<Integer, byte[]> captureA = new HashMap<>();
+    private long captureATime;
 
     private B1RawViewer(B1Source src, B1Tags tags) {
         super("Valori PLC B1 (sola lettura)");
@@ -67,7 +70,15 @@ public class B1RawViewer extends JFrame {
         top.add(cmbDb);
         top.add(chkNonZero);
         top.add(chkUsed);
-        top.add(new JLabel("   righe gialle = cambiate negli ultimi 5 s"));
+        top.add(new JLabel("   righe gialle = cambiate negli ultimi 5 s   "));
+        JButton btnA = new JButton("Cattura A");
+        btnA.setToolTipText("Memorizza lo stato attuale di DB110, DB150 e DB201 (es. pistone in alto, porte chiuse)");
+        btnA.addActionListener(e -> capture());
+        JButton btnB = new JButton("Cattura B + differenze");
+        btnB.setToolTipText("Confronta lo stato attuale con la cattura A: elenca i bit cambiati");
+        btnB.addActionListener(e -> compare());
+        top.add(btnA);
+        top.add(btnB);
         add(top, BorderLayout.NORTH);
         table.setFont(new Font("Monospaced", Font.PLAIN, 12));
         table.setRowHeight(20);
@@ -101,6 +112,72 @@ public class B1RawViewer extends JFrame {
         chkUsed.addActionListener(e -> refresh());
         new Timer(500, e -> refresh()).start();
         refresh();
+    }
+
+    /** Memorizza lo stato attuale dei DB di B1 (cattura A). */
+    private void capture() {
+        captureA.clear();
+        for (int db : DBS) {
+            byte[] d = src.dbImage(db);
+            if (d != null) {
+                captureA.put(db, d.clone());
+            }
+        }
+        captureATime = System.currentTimeMillis();
+        status.setText(captureA.isEmpty() ? "Cattura A non riuscita: PLC non letto"
+                : "Cattura A memorizzata alle " + java.time.LocalTime.now().withNano(0)
+                + ". Ora cambiate lo stato della macchina e premete 'Cattura B + differenze'.");
+    }
+
+    /** Confronta lo stato attuale con la cattura A e mostra i bit cambiati con le etichette del WinCC. */
+    private void compare() {
+        if (captureA.isEmpty()) {
+            status.setText("Prima premere 'Cattura A'");
+            return;
+        }
+        List<String> stable = new ArrayList<>();
+        List<String> noisy = new ArrayList<>();
+        for (int db : DBS) {
+            byte[] b = src.dbImage(db);
+            for (B1BitDiff.Change c : B1BitDiff.diff(db, captureA.get(db), b)) {
+                String line = c.describe();
+                String syn = usedBySynoptic(db, c.off);
+                String wc = index.usageOfWord(db, c.off);
+                if (!syn.isEmpty()) {
+                    line += "\n      sinottico B1: " + syn;
+                }
+                if (!wc.isEmpty()) {
+                    line += "\n      WinCC: " + wc;
+                }
+                int n = changes.getOrDefault("DB" + db + "." + c.off, new int[1])[0];
+                if (n >= 10) {
+                    noisy.add(line + "\n      (cambia di continuo: contatore o valore analogico, probabilmente non e' una lampada)");
+                } else {
+                    stable.add(line);
+                }
+            }
+        }
+        StringBuilder sb = new StringBuilder("Cattura A: " + new java.text.SimpleDateFormat("HH:mm:ss").format(
+                new java.util.Date(captureATime)) + "   ->   adesso: "
+                + java.time.LocalTime.now().withNano(0) + "\n\n");
+        sb.append(stable.isEmpty() ? "Nessun bit di stato cambiato.\n" : "BIT CAMBIATI (candidati lampade):\n\n");
+        for (String l : stable) {
+            sb.append("  ").append(l).append("\n\n");
+        }
+        if (!noisy.isEmpty()) {
+            sb.append("\nVALORI CHE CAMBIANO DI CONTINUO (da ignorare per le lampade):\n\n");
+            for (String l : noisy) {
+                sb.append("  ").append(l).append("\n\n");
+            }
+        }
+        sb.append("\nPer assegnare una lampada: nel sinottico originale annotate quale lampada si e' accesa/spenta "
+                + "tra A e B e scrivete in b1_tags.properties, ad es.  piston_low = DB110.W22.B6");
+        javax.swing.JTextArea area = new javax.swing.JTextArea(sb.toString(), 26, 100);
+        area.setEditable(false);
+        area.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        area.setCaretPosition(0);
+        javax.swing.JOptionPane.showMessageDialog(this, new JScrollPane(area), "Differenze tra A e B",
+                javax.swing.JOptionPane.PLAIN_MESSAGE);
     }
 
     private void refresh() {
