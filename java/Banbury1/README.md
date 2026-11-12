@@ -9,6 +9,10 @@ direttamente i DB **110**, **150**, **201** (e `Cmd_HMI` = DB3).
 |---|---|
 | `S7ReadClient.java` | client ISO-on-TCP/S7 minimale, **solo lettura** (nessun metodo di scrittura) |
 | `B1DbDump.java` | stampa i DB e poi le variazioni, per associare ogni indirizzo a un valore del sinottico |
+| `B1_Main.java` | **sinottico** B1 (replica di `001_Synoptic`), SOLA LETTURA |
+| `B1Tags.java`, `b1_tags.properties` | mappa chiave -> indirizzo S7 (modificabile senza ricompilare) |
+| `B1Source.java`, `B1PlcSource.java`, `B1DemoSource.java` | sorgente dati: PLC reale o demo |
+| `DB_MAP.md` | ipotesi sulla mappa dei DB |
 
 ## Uso
 ```bash
@@ -45,3 +49,15 @@ maschere su DBW6 (0x0002, 0x1000, 0x2000). **Ipotesi da verificare**, nessuna e'
    temperatura (93), velocita' (33), corrente, lotto (9004), sequenza, cicli.
 2. Compilare la tabella di mappa e solo dopo costruire `B1_Main`.
 3. Scrittura/comandi: solo dopo la mappa, uno alla volta, mai su blocchi F.
+
+## Sinottico
+```bash
+java -cp out Banbury1.B1_Main 192.168.10.100            # PLC reale (sola lettura)
+java -cp out Banbury1.B1_Main --demo                    # valori dello screenshot WinCC
+java -cp out Banbury1.B1_Main --tags C:\_tools\Banbury1\b1_tags.properties
+java -cp out Banbury1.B1_Main --snapshot out.png --demo # salva un'immagine
+```
+* **F2** mostra, sopra ogni campo, la chiave e l'indirizzo (rosso = non collegato).
+* Il file `b1_tags.properties` si cerca in `C:\_tools\Banbury1\` oppure nella cartella corrente.
+* Campi senza indirizzo mostrano `--`; le lampade non collegate hanno una barra diagonale.
+* I pulsanti di comando sono disegnati ma **non scrivono nel PLC**.

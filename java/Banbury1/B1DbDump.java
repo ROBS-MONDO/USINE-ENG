@@ -121,40 +121,8 @@ public class B1DbDump {
         }
     }
 
-    /** Lunghezza massima leggibile del DB (pari), 0 se non leggibile. */
     private static int detectSize(S7ReadClient plc, int db) throws IOException {
-        if (canRead(plc, db, MAX_DB_SIZE)) {
-            return MAX_DB_SIZE;
-        }
-        if (!canRead(plc, db, 2)) {
-            return 0;
-        }
-        int lo = 2, hi = MAX_DB_SIZE; // lo leggibile, hi no
-        while (hi - lo > 2) {
-            int mid = ((lo + hi) / 2) & ~1;
-            if (mid <= lo) {
-                mid = lo + 2;
-            }
-            if (canRead(plc, db, mid)) {
-                lo = mid;
-            } else {
-                hi = mid;
-            }
-        }
-        return lo;
-    }
-
-    private static boolean canRead(S7ReadClient plc, int db, int size) throws IOException {
-        try {
-            plc.readDb(db, 0, size);
-            return true;
-        } catch (IOException e) {
-            String m = e.getMessage();
-            if (m != null && m.startsWith("Lettura DB")) {
-                return false;
-            }
-            throw e;
-        }
+        return plc.detectDbSize(db, MAX_DB_SIZE);
     }
 
     private static void startNoteReader() {

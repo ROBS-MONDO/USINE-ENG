@@ -113,6 +113,46 @@ public class S7ReadClient implements Closeable {
         return result;
     }
 
+    /**
+     * Lunghezza massima leggibile del DB (multiplo di 2), 0 se il DB non e'
+     * leggibile (assente o protetto). Errori di rete vengono rilanciati.
+     */
+    public synchronized int detectDbSize(int db, int max) throws IOException {
+        if (canRead(db, max)) {
+            return max;
+        }
+        if (!canRead(db, 2)) {
+            return 0;
+        }
+        int lo = 2;
+        int hi = max;
+        while (hi - lo > 2) {
+            int mid = ((lo + hi) / 2) & ~1;
+            if (mid <= lo) {
+                mid = lo + 2;
+            }
+            if (canRead(db, mid)) {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        return lo;
+    }
+
+    private boolean canRead(int db, int size) throws IOException {
+        try {
+            readDb(db, 0, size);
+            return true;
+        } catch (IOException e) {
+            String m = e.getMessage();
+            if (m != null && m.startsWith("Lettura DB")) {
+                return false;
+            }
+            throw e;
+        }
+    }
+
     private byte[] readChunk(int db, int start, int len) throws IOException {
         int ref = ++pduRef & 0xFFFF;
         int bitAddr = start * 8;
