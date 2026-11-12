@@ -164,8 +164,9 @@ public class B1RecipeEditor extends JFrame {
         B1Recipe r = B1Recipe.blank(layout);
         r.name = "gomma2";
         r.recipeNo = 24;
-        int[][] ph = {{18, 36, 900, 1, 80, 2}, {18, 33, 900, 1, 90, 2}, {18, 33, 700, 1, 105, 10}, {0, 33, 0, 8, 0, 0}};
-        String[] keys = {"p0", "rpm", "p4", "p10", "temp", "p22"};
+        // fase: rotor, timeout, temp, press (+ operazioni): dati del dump 12/11/2026
+        int[][] ph = {{36, 900, 80, 2}, {33, 900, 90, 2}, {33, 700, 105, 10}, {33, 0, 0, 0}};
+        String[] keys = {"rpm", "timeout", "temp", "press"};
         int[] ops = {0x3000, 0x3000, 0x8000, 0};
         for (int i = 0; i < ph.length; i++) {
             for (int k = 0; k < keys.length; k++) {
@@ -358,7 +359,7 @@ public class B1RecipeEditor extends JFrame {
                 @Override
                 public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int row, int c2) {
                     Component comp = super.getTableCellRendererComponent(t, v, sel, foc, row, c2);
-                    setHorizontalAlignment(c2 == 0 || c2 == model.getColumnCount() - 1 ? LEFT : RIGHT);
+                    setHorizontalAlignment(c2 == 0 || c2 == 3 ? LEFT : RIGHT);
                     boolean residue = current != null && model.isResidue(row);
                     boolean empty = current != null && current.phases.get(row).isEmpty();
                     comp.setForeground(residue || empty ? new Color(0x909090) : Color.BLACK);
@@ -371,10 +372,9 @@ public class B1RecipeEditor extends JFrame {
             table.setDefaultRenderer(Object.class, r);
             table.setDefaultRenderer(String.class, r);
             table.setDefaultRenderer(Integer.class, r);
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             for (int ci = 0; ci < model.getColumnCount(); ci++) {
-                int w = ci == 0 ? 44 : (ci <= layout.phase.size() ? 128 : (ci == layout.phase.size() + 1 ? 70
-                        : (ci == layout.phase.size() + 2 ? 130 : 220)));
+                int w = ci == 0 ? 44 : (ci == 1 ? 64 : (ci == 2 ? 110 : (ci == 3 ? 230 : 120)));
                 table.getColumnModel().getColumn(ci).setPreferredWidth(w);
                 table.getColumnModel().getColumn(ci).setMinWidth(ci == 0 ? 40 : 60);
             }
@@ -752,6 +752,9 @@ public class B1RecipeEditor extends JFrame {
 
         // ---------------- modello tabella fasi ----------------
         private final class PhaseModel extends AbstractTableModel {
+            // colonne: 0 Fase | 1 Scarico | 2 Operazioni (hex) | 3 Operazioni (nomi) | 4.. parametri
+            private static final int FIXED = 4;
+
             private int nParams() {
                 return layout.phase.size();
             }
@@ -763,29 +766,28 @@ public class B1RecipeEditor extends JFrame {
 
             @Override
             public int getColumnCount() {
-                return 1 + nParams() + 3;
+                return FIXED + nParams();
             }
 
             @Override
             public String getColumnName(int c) {
-                if (c == 0) {
-                    return "Fase";
+                switch (c) {
+                    case 0: return "Fase";
+                    case 1: return "Scarico";
+                    case 2: return "Operazioni (hex)";
+                    case 3: return "Operazioni";
+                    default: return layout.phase.get(c - FIXED).title();
                 }
-                if (c <= nParams()) {
-                    return layout.phase.get(c - 1).title();
-                }
-                int k = c - nParams() - 1;
-                return k == 0 ? "Scarico" : (k == 1 ? "Operazioni (hex)" : "Operazioni");
             }
 
             @Override
             public Class<?> getColumnClass(int c) {
-                return c == nParams() + 1 ? Boolean.class : String.class;
+                return c == 1 ? Boolean.class : String.class;
             }
 
             @Override
             public boolean isCellEditable(int r, int c) {
-                return c != 0 && c != getColumnCount() - 1;
+                return c != 0 && c != 3;
             }
 
             boolean isResidue(int row) {
@@ -801,51 +803,48 @@ public class B1RecipeEditor extends JFrame {
             @Override
             public Object getValueAt(int r, int c) {
                 B1Recipe.Phase p = current.phases.get(r);
-                if (c == 0) {
-                    return String.valueOf(r + 1);
-                }
-                if (c <= nParams()) {
-                    B1RecipeLayout.Field f = layout.phase.get(c - 1);
-                    return fmt(p.values.getOrDefault(f.key, 0), f);
-                }
-                int k = c - nParams() - 1;
-                if (k == 0) {
-                    return (p.ops & (1 << layout.dischargeBit)) != 0;
-                }
-                if (k == 1) {
-                    return String.format("0x%04X", p.ops & 0xFFFF);
-                }
-                StringBuilder s = new StringBuilder();
-                for (int b = 0; b < 16; b++) {
-                    if ((p.ops & (1 << b)) != 0) {
-                        if (s.length() > 0) {
-                            s.append(", ");
+                switch (c) {
+                    case 0:
+                        return String.valueOf(r + 1);
+                    case 1:
+                        return (p.ops & (1 << layout.dischargeBit)) != 0;
+                    case 2:
+                        return String.format("0x%04X", p.ops & 0xFFFF);
+                    case 3: {
+                        StringBuilder sb = new StringBuilder();
+                        for (int bit = 0; bit < 16; bit++) {
+                            if ((p.ops & (1 << bit)) != 0) {
+                                if (sb.length() > 0) {
+                                    sb.append(", ");
+                                }
+                                sb.append(layout.opNames.getOrDefault(bit, "bit" + bit));
+                            }
                         }
-                        s.append(layout.opNames.getOrDefault(b, "bit" + b));
+                        return sb.toString();
+                    }
+                    default: {
+                        B1RecipeLayout.Field f = layout.phase.get(c - FIXED);
+                        return fmt(p.values.getOrDefault(f.key, 0), f);
                     }
                 }
-                return s.toString();
             }
 
             @Override
             public void setValueAt(Object v, int r, int c) {
                 B1Recipe.Phase p = current.phases.get(r);
-                if (c <= nParams()) {
-                    B1RecipeLayout.Field f = layout.phase.get(c - 1);
+                if (c >= FIXED) {
+                    B1RecipeLayout.Field f = layout.phase.get(c - FIXED);
                     p.values.put(f.key, toRaw(String.valueOf(v), f));
-                } else {
-                    int k = c - nParams() - 1;
-                    if (k == 0) {
-                        int bit = 1 << layout.dischargeBit;
-                        p.ops = Boolean.TRUE.equals(v) ? (p.ops | bit) : (p.ops & ~bit);
-                    } else if (k == 1) {
-                        String s = String.valueOf(v).trim().toLowerCase(Locale.ROOT);
-                        try {
-                            p.ops = (s.startsWith("0x") ? Integer.parseInt(s.substring(2), 16)
-                                    : Integer.parseInt(s)) & 0xFFFF;
-                        } catch (NumberFormatException e) {
-                            return;
-                        }
+                } else if (c == 1) {
+                    int bit = 1 << layout.dischargeBit;
+                    p.ops = Boolean.TRUE.equals(v) ? (p.ops | bit) : (p.ops & ~bit);
+                } else if (c == 2) {
+                    String s = String.valueOf(v).trim().toLowerCase(Locale.ROOT);
+                    try {
+                        p.ops = (s.startsWith("0x") ? Integer.parseInt(s.substring(2), 16)
+                                : Integer.parseInt(s)) & 0xFFFF;
+                    } catch (NumberFormatException e) {
+                        return;
                     }
                 }
                 dirty = true;
