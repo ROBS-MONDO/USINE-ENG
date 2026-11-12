@@ -38,6 +38,11 @@ public final class B1TrendSelfTest {
                 B1TrendChart.downsample(pts, 2_000_000L, 3_000_000L, 10).isEmpty());
         check("downsample: lista vuota", B1TrendChart.downsample(new ArrayList<>(), 0, 10, 5).isEmpty());
 
+        check("niceCeil: 298 -> 300, 11,55 -> 15, 0,9 -> 1, 284 -> 300",
+                B1TrendChart.niceCeil(298) == 300 && B1TrendChart.niceCeil(11.55) == 15
+                        && B1TrendChart.niceCeil(0.9) == 1 && B1TrendChart.niceCeil(284) == 300);
+        check("niceCeil: valori limite", B1TrendChart.niceCeil(0) == 1 && B1TrendChart.niceCeil(500) == 500
+                && B1TrendChart.niceCeil(501) == 600);
         check("griglia 20 min = 2 min", B1TrendChart.niceTimeStep(20 * 60_000L) == 120_000L);
         check("griglia 2 giorni = 6 ore o 12 ore", B1TrendChart.niceTimeStep(2 * 86_400_000L) >= 21_600_000L);
         check("griglia 30 s = 5 s", B1TrendChart.niceTimeStep(30_000L) == 5000L);

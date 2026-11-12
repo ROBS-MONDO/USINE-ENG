@@ -85,6 +85,13 @@ public class B1TrendWindow extends JFrame {
         top.add(cmbSource);
         top.add(new JLabel("Intervallo:"));
         top.add(cmbRange);
+        JCheckBox auto = new JCheckBox("Scala automatica", true);
+        auto.setToolTipText("Corrente, giri e pressione si adattano ai valori; la temperatura resta 0-200 come nel WinCC");
+        auto.addActionListener(e -> {
+            chart.autoScale = auto.isSelected();
+            chart.repaint();
+        });
+        top.add(auto);
         for (B1TrendChart.Series s : series) {
             JCheckBox cb = new JCheckBox(s.label + " [" + s.unit + "]", true);
             cb.setForeground(s.color.darker());

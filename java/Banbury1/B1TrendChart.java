@@ -34,8 +34,10 @@ public final class B1TrendChart extends JComponent {
         final String label;
         final String unit;
         final Color color;
-        final double min;
-        final double max;
+        double min;
+        double max;
+        final double defMin;
+        final double defMax;
         final String liveKey;     // chiave del sinottico (B1Source.num) per il LIVE
         final String sqlColumn;   // colonna di Datas_B1 per lo STORICO (null = non disponibile)
         boolean visible = true;
@@ -49,6 +51,8 @@ public final class B1TrendChart extends JComponent {
             this.color = color;
             this.min = min;
             this.max = max;
+            this.defMin = min;
+            this.defMax = max;
             this.liveKey = liveKey;
             this.sqlColumn = sqlColumn;
         }
@@ -58,9 +62,9 @@ public final class B1TrendChart extends JComponent {
     static List<Series> defaultSeries() {
         List<Series> l = new ArrayList<>();
         l.add(new Series("temp", "Temperatura", "\u00b0C", new Color(0xFF, 0x00, 0x00), 0, 200, "temp", "Temperature"));
-        l.add(new Series("amp", "Corrente", "A", new Color(0x20, 0x60, 0xD0), 0, 100, "current", "Amperage"));
+        l.add(new Series("amp", "Corrente", "A", new Color(0x20, 0x60, 0xD0), 0, 400, "current", "Amperage"));
         l.add(new Series("rpm", "Velocit\u00e0 rotori", "rpm", new Color(0x20, 0x9A, 0x20), 0, 100, "rpm_act", "Vitesse"));
-        l.add(new Series("press", "Pressione", "bar", new Color(0xE0, 0x80, 0x00), 0, 10, "press_act", null));
+        l.add(new Series("press", "Pressione", "bar", new Color(0xE0, 0x80, 0x00), 0, 16, "press_act", null));
         return l;
     }
 
@@ -113,6 +117,21 @@ public final class B1TrendChart extends JComponent {
         }
     }
 
+    /** Primo valore "tondo" (1, 1.5, 2, 3, 4, 5, 6, 8 x 10^k) maggiore o uguale a x. */
+    static double niceCeil(double x) {
+        if (x <= 0) {
+            return 1;
+        }
+        double[] m = {1, 1.5, 2, 3, 4, 5, 6, 8, 10};
+        double p = Math.pow(10, Math.floor(Math.log10(x)));
+        for (double f : m) {
+            if (f * p >= x - 1e-9) {
+                return f * p;
+            }
+        }
+        return 10 * p;
+    }
+
     /** Passo "tondo" della griglia del tempo (ms) per avere circa 6-10 divisioni. */
     static long niceTimeStep(long spanMs) {
         long[] steps = {1000, 2000, 5000, 10000, 15000, 30000, 60000, 120000, 300000, 600000, 900000,
@@ -126,12 +145,13 @@ public final class B1TrendChart extends JComponent {
     }
 
     final List<Series> series;
+    volatile boolean autoScale = true;
     volatile List<long[]> modeSpans = new ArrayList<>(); // {inizio, fine, 1=Auto/0=Manu}
     volatile long rangeMs = 20 * 60_000L;
 
 
         private static final int ML = 64;
-        private static final int MR = 16;
+        private static final int MR = 56;
         private static final int MT = 12;
         private static final int MB = 34;
         private int hoverX = -1;
@@ -200,7 +220,19 @@ public final class B1TrendChart extends JComponent {
                 g.setColor(Color.DARK_GRAY);
                 g.drawString(s, x - fm.stringWidth(s) / 2, MT + ph + 16);
             }
-            // asse valori: scala della prima serie visibile
+            applyScales(from, to);
+            // asse valori: sinistra = prima serie visibile, destra = seconda serie visibile
+            Series axis2 = null;
+            boolean firstSeen = false;
+            for (Series sx : series) {
+                if (sx.visible) {
+                    if (firstSeen) {
+                        axis2 = sx;
+                        break;
+                    }
+                    firstSeen = true;
+                }
+            }
             Series axis = null;
             for (Series s : series) {
                 if (s.visible) {
@@ -222,6 +254,17 @@ public final class B1TrendChart extends JComponent {
             if (axis != null) {
                 g.setColor(axis.color.darker());
                 g.drawString(axis.unit, 6, MT + 10);
+            }
+            if (axis2 != null) {
+                for (int i = 0; i <= 4; i++) {
+                    int y = MT + ph - ph * i / 4;
+                    double v = axis2.min + (axis2.max - axis2.min) * i / 4.0;
+                    String sv = String.format(Locale.ITALY, "%.0f", v);
+                    g.setColor(axis2.color.darker());
+                    g.drawString(sv, ML + pw + 6, y + 4);
+                }
+                g.setColor(axis2.color.darker());
+                g.drawString(axis2.unit, ML + pw + 6, MT + 10);
             }
             g.setColor(new Color(0x70, 0x70, 0x70));
             g.drawRect(ML, MT, pw, ph);
@@ -294,6 +337,27 @@ public final class B1TrendChart extends JComponent {
             g.dispose();
         }
     
+    /** Con la scala automatica ogni serie (tranne la temperatura, fissa 0-200 come nel WinCC) usa 0 .. massimo tondo. */
+    private void applyScales(long from, long to) {
+        for (Series s : series) {
+            if (!autoScale || "temp".equals(s.id)) {
+                s.min = s.defMin;
+                s.max = s.defMax;
+                continue;
+            }
+            double max = Double.NEGATIVE_INFINITY;
+            synchronized (s.pts) {
+                for (double[] p : s.pts) {
+                    if (p[0] >= from && p[0] <= to && p[1] > max) {
+                        max = p[1];
+                    }
+                }
+            }
+            s.min = 0;
+            s.max = max == Double.NEGATIVE_INFINITY ? s.defMax : niceCeil(Math.max(max * 1.05, 1));
+        }
+    }
+
     private static Double valueAt(Series s, long t) {
         double[] best = null;
         synchronized (s.pts) {
