@@ -23,7 +23,7 @@ def page_url(lang, page):
 def fix_paths(html):
     """Le pagine in /fr/ stanno una cartella sotto: i file (foto, video, send.php) vanno cercati in ../"""
     def rel(v):
-        if not v or v[0] in '#/' or re.match(r'(https?:|mailto:|tel:|data:|javascript:)', v):
+        if not v or v == './' or v[0] in '#/' or re.match(r'(https?:|mailto:|tel:|data:|javascript:)', v):
             return v
         if v.split('#')[0].split('?')[0] in PAGES:
             return v

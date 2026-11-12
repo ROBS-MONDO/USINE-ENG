@@ -8,6 +8,10 @@
   RewriteCond %{HTTP:X-Forwarded-Proto} !=https
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+  # /index.html, /fr/index.html ecc. portano all'indirizzo senza "index.html" (un solo indirizzo per pagina, per i motori di ricerca)
+  RewriteCond %{THE_REQUEST} \s/+((?:(?:en|fr|de)/)?)index\.html[\s?]
+  RewriteRule ^((?:(?:en|fr|de)/)?)index\.html$ /$1 [R=301,L]
+
   # Blocca file nascosti (tranne .well-known) e file di backup/sorgenti
   RewriteRule ^\.(?!well-known/) - [F,L]
   RewriteRule \.(bak|old|orig|swp|sql|log|ini|sh|md|oldphp)$ - [F,L,NC]
