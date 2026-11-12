@@ -66,11 +66,11 @@ public final class B1RecipeLayout {
     public final Map<Integer, String> opNames = new LinkedHashMap<>();
 
     private static final String[] DEFAULT_LINES = {
-        "header.safety_temp  = W28 ; Temp. sicurezza ; °C ; 1 ; 0 ; 200",
+        "header.safety_temp  = W28 ; Temp. sicurezza ; \u00b0C ; 1 ; 0 ; 200",
         "header.drop_door    = W30 ; Porte de dechargement ; s ; 1 ; 0 ; 3600",
         "header.safety_time  = W32 ; Tempo sicurezza ; s ; 1 ; 0 ; 3600",
         "header.max_energy   = W34 ; Energia max ; kWh ; 0.1 ; 0 ; 999.9",
-        "header.restart_temp = W38 ; Temp. riavvio ; °C ; 1 ; 0 ; 200",
+        "header.restart_temp = W38 ; Temp. riavvio ; \u00b0C ; 1 ; 0 ; 200",
         "header.h42          = W42 ; Parametro testata +42 (?) ;  ; 1 ; ; ",
         "header.h44          = W44 ; Parametro testata +44 (?) ;  ; 1 ; ; ",
         // blocco fase = 3 gruppi da 10 byte (parola a bit + 4 INT). Confermato dal WinCC: operazioni (parola a bit)
@@ -82,7 +82,7 @@ public final class B1RecipeLayout {
         "phase.p8       = W8   ; Param. +8 (?) ;  ; 1 ; ; ",
         "phase.ctrl_bits = UW10 ; Controllo: et=bit0, ou=bit1, skip=bit15 (?) ;  ; 1 ; ; ",
         "phase.p12      = W12  ; Param. +12 (?) ;  ; 1 ; ; ",
-        "phase.temp     = W14  ; Temp. (?) ; °C ; 1 ; 0 ; 200",
+        "phase.temp     = W14  ; Temp. (?) ; \u00b0C ; 1 ; 0 ; 200",
         "phase.p16      = W16  ; Param. +16 (?) ;  ; 1 ; ; ",
         "phase.p18      = W18  ; Param. +18 (?) ;  ; 1 ; ; ",
         "phase.press    = W22  ; Press. (?) ; bar ; 1 ; ; ",
@@ -106,7 +106,7 @@ public final class B1RecipeLayout {
         }
         l.opNames.put(13, "Degas");
         l.opNames.put(14, "Net.");
-        l.opNames.put(15, "Déch. (scarico)");
+        l.opNames.put(15, "D\u00e9ch. (scarico)");
         return l;
     }
 

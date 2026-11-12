@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Sinottico Banbury 1 (MCC-240 T) – replica della schermata WinCC "001_Synoptic".
+ * Sinottico Banbury 1 (MCC-240 T) \u2013 replica della schermata WinCC "001_Synoptic".
  *
  * MODALITA' SOLA LETTURA: i pulsanti di comando sono disegnati ma NON scrivono nel PLC
  * (CPU di sicurezza; gli indirizzi dei comandi non sono ancora confermati).
@@ -521,13 +521,13 @@ public class B1_Main extends JFrame {
                 String line = conn ? st.text : src.status();
                 g.setColor(dot);
                 g.fillOval(276, 74, 10, 10);
-                text(g, line.length() > 34 ? line.substring(0, 34) + "…" : line, 290, 70, 190, 18,
+                text(g, line.length() > 34 ? line.substring(0, 34) + "\u2026" : line, 290, 70, 190, 18,
                         new Font("Arial", Font.PLAIN, 12), DARK, -1);
                 final String openName = rn;
                 hits.add(new Hit(276, 55, 205, 33, "Ricetta", () -> bridge.openEditor(openName)));
             } else {
                 String st = src.status();
-                text(g, st.length() > 38 ? st.substring(0, 38) + "…" : st, 276, 72, 205, 14, fSmall, DARK, -1);
+                text(g, st.length() > 38 ? st.substring(0, 38) + "\u2026" : st, 276, 72, 205, 14, fSmall, DARK, -1);
             }
 
             label(g, "Pression", 488, 40, 70, 22);
@@ -535,7 +535,7 @@ public class B1_Main extends JFrame {
             unit(g, "bar", 622, 40, 38, 22);
             label(g, "Temp.", 488, 64, 70, 22);
             field(g, 558, 64, 62, 22, "temp", num("temp", 0), false, fBig);
-            unit(g, "°C", 622, 64, 38, 22);
+            unit(g, "\u00b0C", 622, 64, 38, 22);
             label(g, "Vitesse", 663, 40, 70, 22);
             field(g, 733, 40, 70, 22, "speed_top", num("speed_top", 0), false, fBig);
             unit(g, "rpm", 805, 40, 48, 22);
@@ -543,10 +543,10 @@ public class B1_Main extends JFrame {
             field(g, 733, 64, 70, 22, "cycle_time", mmss("cycle_time"), false, fBig);
             unit(g, "mm:ss", 805, 64, 48, 22);
 
-            text(g, "Mélanges", 905, 36, 110, 12, fSmall, DARK, 0);
+            text(g, "M\u00e9langes", 905, 36, 110, 12, fSmall, DARK, 0);
             text(g, "total", 862, 47, 44, 12, fSmall, DARK, 0);
             text(g, "fait", 914, 47, 44, 12, fSmall, DARK, 0);
-            text(g, "à faire", 966, 47, 44, 12, fSmall, DARK, 0);
+            text(g, "\u00e0 faire", 966, 47, 44, 12, fSmall, DARK, 0);
             String todo = num("mix_todo", 0);
             if (todo == null && src.num("mix_total") != null && src.num("mix_done") != null) {
                 todo = String.format(LOC, "%.0f", src.num("mix_total") - src.num("mix_done"));
@@ -562,7 +562,7 @@ public class B1_Main extends JFrame {
             lampRow(g, 13, 143, 42, 160, "piston_high", LampKind.GREEN, "Position haute");
             lampRow(g, 13, 173, 42, 160, "piston_float", LampKind.GREEN, "Flottant");
             lampRow(g, 13, 203, 42, 160, "piston_low", LampKind.GREEN, "Position basse");
-            lampRow(g, 13, 233, 42, 160, "piston_blocked", LampKind.GREEN, "Bloqué");
+            lampRow(g, 13, 233, 42, 160, "piston_blocked", LampKind.GREEN, "Bloqu\u00e9");
             bigArrow(g, 218, 143, true);
             bigArrow(g, 218, 196, false);
             arrowButton(g, 12, 263, 38, 26, false, "Pistone consegna -");
@@ -602,7 +602,7 @@ public class B1_Main extends JFrame {
         private void drawTemperature(Graphics2D g) {
             title(g, "TEMPERATURE", 262, 398, 140, 26);
             field(g, 265, 430, 98, 28, "temp", num("temp", 0), false, fBig);
-            unit(g, "°C", 365, 430, 36, 28);
+            unit(g, "\u00b0C", 365, 430, 36, 28);
         }
 
         private void drawLotBar(Graphics2D g) {
@@ -751,11 +751,11 @@ public class B1_Main extends JFrame {
             title(g, "SILOS", 572, 98, 102, 24);
             box(g, 573, 124, 102, 70, new Color(0xD0D0D0), new Color(0x909090));
             lampRow(g, 578, 130, 606, 66, "silos_open", LampKind.GREEN, "Ouvert");
-            lampRow(g, 578, 162, 606, 66, "silos_closed", LampKind.RED, "Fermé");
+            lampRow(g, 578, 162, 606, 66, "silos_closed", LampKind.RED, "Ferm\u00e9");
             title(g, "PORTE DE CHARGEMENT", 678, 98, 250, 24);
             box(g, 678, 124, 152, 70, new Color(0xD0D0D0), new Color(0x909090));
             lampRow(g, 683, 130, 711, 116, "door_load_open", LampKind.GREEN, "Ouverte");
-            lampRow(g, 683, 162, 711, 116, "door_load_closed", LampKind.RED, "Fermée");
+            lampRow(g, 683, 162, 711, 116, "door_load_closed", LampKind.RED, "Ferm\u00e9e");
         }
 
         private void drawLotInfo(Graphics2D g) {
@@ -796,12 +796,12 @@ public class B1_Main extends JFrame {
             title(g, "POIDS PRESSEUR", 567, 384, 250, 26);
             lampRow(g, 572, 418, 600, 162, "weight_open", LampKind.GREEN, "Ouvert");
             valveIcon(g, 768, 424, Boolean.TRUE.equals(src.bool("weight_open")));
-            lampRow(g, 572, 448, 600, 162, "weight_closed", LampKind.RED, "Fermé");
+            lampRow(g, 572, 448, 600, 162, "weight_closed", LampKind.RED, "Ferm\u00e9");
             valveIcon(g, 768, 454, Boolean.TRUE.equals(src.bool("weight_closed")));
             title(g, "PORTE DE DECHARGEMENT", 567, 486, 250, 26);
             lampRow(g, 572, 520, 600, 162, "door_dis_open", LampKind.GREEN, "Ouverte");
             valveIcon(g, 768, 526, Boolean.TRUE.equals(src.bool("door_dis_open")));
-            lampRow(g, 572, 550, 600, 162, "door_dis_closed", LampKind.RED, "Fermée");
+            lampRow(g, 572, 550, 600, 162, "door_dis_closed", LampKind.RED, "Ferm\u00e9e");
             valveIcon(g, 768, 556, Boolean.TRUE.equals(src.bool("door_dis_closed")));
         }
 
@@ -819,9 +819,9 @@ public class B1_Main extends JFrame {
         private void drawMalaxeurPret(Graphics2D g) {
             title(g, "MALAXEUR PRET", 838, 173, 185, 26);
             String[][] rows = {
-                    {"rdy_temp", "Temp. Min. OK démarrage"}, {"rdy_discharge", "Déchargement OK"},
-                    {"rdy_motor", "Moteur principal OK"}, {"rdy_door", "Porte déch. fermée"},
-                    {"rdy_mintime", "Temps min. entre cycles"}, {"rdy_cycles", "Nr. Cycles pas effectués"}};
+                    {"rdy_temp", "Temp. Min. OK d\u00e9marrage"}, {"rdy_discharge", "D\u00e9chargement OK"},
+                    {"rdy_motor", "Moteur principal OK"}, {"rdy_door", "Porte d\u00e9ch. ferm\u00e9e"},
+                    {"rdy_mintime", "Temps min. entre cycles"}, {"rdy_cycles", "Nr. Cycles pas effectu\u00e9s"}};
             box(g, 822, 200, 201, 190, new Color(0xD0D0D0), new Color(0x909090));
             for (int i = 0; i < rows.length; i++) {
                 lampRow(g, 826, 206 + i * 30, 856, 163, rows[i][0], LampKind.GREEN, rows[i][1]);
@@ -842,18 +842,18 @@ public class B1_Main extends JFrame {
         private void drawPositions(Graphics2D g) {
             box(g, 362, 553, 202, 118, new Color(0xD0D0D0), new Color(0x909090));
             lampRow(g, 366, 558, 396, 165, "pos_load", LampKind.GREEN, "Position chargement");
-            lampRow(g, 366, 587, 396, 165, "decel_load", LampKind.GREEN, "décélération charg.");
-            lampRow(g, 366, 616, 396, 165, "decel_dis", LampKind.GREEN, "Décélération déch.");
-            lampRow(g, 366, 645, 396, 165, "pos_dis", LampKind.GREEN, "Postion déch.");
+            lampRow(g, 366, 587, 396, 165, "decel_load", LampKind.GREEN, "d\u00e9c\u00e9l\u00e9ration charg.");
+            lampRow(g, 366, 616, 396, 165, "decel_dis", LampKind.GREEN, "D\u00e9c\u00e9l\u00e9ration d\u00e9ch.");
+            lampRow(g, 366, 645, 396, 165, "pos_dis", LampKind.GREEN, "Postion d\u00e9ch.");
         }
 
         private void drawProduction(Graphics2D g) {
             box(g, 617, 583, 407, 92, new Color(0xD0D0D0), new Color(0x909090));
-            lampRow(g, 622, 588, 652, 168, "prod_ready", LampKind.GREEN, "Prêt pour production");
+            lampRow(g, 622, 588, 652, 168, "prod_ready", LampKind.GREEN, "Pr\u00eat pour production");
             lampRow(g, 622, 618, 652, 168, "prod_auto_on", LampKind.GREEN, "Cycle auto ON");
             lampRow(g, 622, 646, 652, 168, "new_load", LampKind.ORANGE, "Chargement nouvelle");
             lampRow(g, 828, 588, 858, 160, "prod_auto", LampKind.GREEN, "Fonct. production auto");
-            lampRow(g, 828, 618, 858, 160, "cycle_stopped", LampKind.RED, "cycle arrêté");
+            lampRow(g, 828, 618, 858, 160, "cycle_stopped", LampKind.RED, "cycle arr\u00eat\u00e9");
             lampRow(g, 828, 646, 858, 160, "recipe_ok", LampKind.GREEN, "Recette valide");
         }
 

@@ -38,11 +38,11 @@ public final class B1LabelParser {
         String decoded = decodeMondoQr2(scanned, years);
         if (!decoded.trim().toUpperCase(Locale.ROOT).startsWith("MQR2")
                 && !decoded.toUpperCase(Locale.ROOT).contains("RECIPEUID=")) {
-            throw new IllegalArgumentException("Ancien QR sans RecipeUID : réimprimer le ticket.");
+            throw new IllegalArgumentException("Ancien QR sans RecipeUID : r\u00e9imprimer le ticket.");
         }
         B1Label l = parseBarcodeRecipe(decoded, years);
         if (l.recipeUid == null || l.recipeUid.trim().isEmpty()) {
-            throw new IllegalArgumentException("RecipeUID absent : réimprimer le ticket.");
+            throw new IllegalArgumentException("RecipeUID absent : r\u00e9imprimer le ticket.");
         }
         return l;
     }
@@ -57,7 +57,7 @@ public final class B1LabelParser {
             return input;
         }
         if (!compact.matches("MQR2[A-Z2-7]+")) {
-            throw new IllegalArgumentException("caractères QR incorrects : vérifier le lecteur");
+            throw new IllegalArgumentException("caract\u00e8res QR incorrects : v\u00e9rifier le lecteur");
         }
         String data = compact.substring(4);
         if (data.isEmpty()) {
@@ -85,7 +85,7 @@ public final class B1LabelParser {
             yearOk |= payload.contains(";" + y + "/");
         }
         if (!payload.contains(";RECIPEUID=") || !yearOk) {
-            throw new IllegalArgumentException("données ou identifiant manquants");
+            throw new IllegalArgumentException("donn\u00e9es ou identifiant manquants");
         }
         return payload;
     }
@@ -264,7 +264,7 @@ public final class B1LabelParser {
             }
         }
         if (annee.isEmpty() || lot.isEmpty()) {
-            throw new IllegalArgumentException("Données manquantes dans le code-barres");
+            throw new IllegalArgumentException("Donn\u00e9es manquantes dans le code-barres");
         }
         B1Label l = new B1Label(recipeName, annee, lot, suffixe, serie, nombre, passage, couche, premast, couleur);
         l.recipeUid = uid;
@@ -373,16 +373,16 @@ public final class B1LabelParser {
         String n = value.trim().replace('\n', ';').replace('\r', ';');
         n = fixAccentedTicketKeywords(n);
         n = translateFrenchUnshiftKeyboard(n);
-        n = n.replace('§', '/').replace('!', '/');
+        n = n.replace('\u00a7', '/').replace('!', '/');
         return n.toUpperCase(Locale.ROOT);
     }
 
     static String fixAccentedTicketKeywords(String value) {
         return value == null ? "" : value
-                .replaceAll("(?iu)FONC[ÉÈÊ]", "FONCE")
-                .replaceAll("(?iu)1[ÉÈÊ]RE", "1ERE")
-                .replaceAll("(?iu)([2-4])[ÉÈÊ]ME", "$1EME")
-                .replaceAll("(?iu)M[ÉÈÊ]DIUM", "MEDIUM");
+                .replaceAll("(?iu)FONC[\u00c9\u00c8\u00ca]", "FONCE")
+                .replaceAll("(?iu)1[\u00c9\u00c8\u00ca]RE", "1ERE")
+                .replaceAll("(?iu)([2-4])[\u00c9\u00c8\u00ca]ME", "$1EME")
+                .replaceAll("(?iu)M[\u00c9\u00c8\u00ca]DIUM", "MEDIUM");
     }
 
     static String translateFrenchUnshiftKeyboard(String value) {
@@ -394,15 +394,15 @@ public final class B1LabelParser {
             char c = value.charAt(i);
             switch (c) {
                 case '&': out.append('1'); break;
-                case 'é': case 'É': out.append('2'); break;
+                case '\u00e9': case '\u00c9': out.append('2'); break;
                 case '"': out.append('3'); break;
                 case '\'': out.append('4'); break;
                 case '(': out.append('5'); break;
                 case '-': out.append('6'); break;
-                case 'è': case 'È': out.append('7'); break;
+                case '\u00e8': case '\u00c8': out.append('7'); break;
                 case '_': out.append('8'); break;
-                case 'ç': case 'Ç': out.append('9'); break;
-                case 'à': case 'À': out.append('0'); break;
+                case '\u00e7': case '\u00c7': out.append('9'); break;
+                case '\u00e0': case '\u00c0': out.append('0'); break;
                 case '!': out.append('/'); break;
                 default: out.append(c);
             }
@@ -438,7 +438,7 @@ public final class B1LabelParser {
             return "";
         }
         String n = value.trim().toUpperCase(Locale.ROOT);
-        n = n.replace('\n', ';').replace('\r', ';').replace('§', '/').replace('!', '/');
+        n = n.replace('\n', ';').replace('\r', ';').replace('\u00a7', '/').replace('!', '/');
         // Lettore FR: "26/0366;1;;4;1ER;SUP;CLAIR" puo arrivare come "26/0366M1MM4M1ERMSUPMCLQIR"
         if (n.indexOf(';') < 0 && n.indexOf('M') >= 0) {
             n = n.replace("MEL.MERE", "__MEL_DOT_MERE__").replace("MEL MERE", "__MEL_SPACE_MERE__")
@@ -479,7 +479,7 @@ public final class B1LabelParser {
     }
 
     static String normalizeBarcodeToken(String text) {
-        return clean(text).replace("É", "E").replace("È", "E").replace("Ê", "E").replace("À", "A").replace("Ç", "C");
+        return clean(text).replace("\u00c9", "E").replace("\u00c8", "E").replace("\u00ca", "E").replace("\u00c0", "A").replace("\u00c7", "C");
     }
 
     static boolean containsInEither(String value, String fixed, String expected) {

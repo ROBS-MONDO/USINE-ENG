@@ -57,9 +57,9 @@ public final class B1TrendChart extends JComponent {
     /** Serie predefinite. Temperatura come nel WinCC (rosso, 0-200). */
     static List<Series> defaultSeries() {
         List<Series> l = new ArrayList<>();
-        l.add(new Series("temp", "Temperatura", "°C", new Color(0xFF, 0x00, 0x00), 0, 200, "temp", "Temperature"));
+        l.add(new Series("temp", "Temperatura", "\u00b0C", new Color(0xFF, 0x00, 0x00), 0, 200, "temp", "Temperature"));
         l.add(new Series("amp", "Corrente", "A", new Color(0x20, 0x60, 0xD0), 0, 100, "current", "Amperage"));
-        l.add(new Series("rpm", "Velocità rotori", "rpm", new Color(0x20, 0x9A, 0x20), 0, 100, "rpm_act", "Vitesse"));
+        l.add(new Series("rpm", "Velocit\u00e0 rotori", "rpm", new Color(0x20, 0x9A, 0x20), 0, 100, "rpm_act", "Vitesse"));
         l.add(new Series("press", "Pressione", "bar", new Color(0xE0, 0x80, 0x00), 0, 10, "press_act", null));
         return l;
     }

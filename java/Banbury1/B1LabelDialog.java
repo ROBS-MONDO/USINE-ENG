@@ -364,7 +364,7 @@ public final class B1LabelDialog {
                     } catch (Exception ex) {
                         Throwable t = ex.getCause() != null ? ex.getCause() : ex;
                         log(l, "ERRORE", String.valueOf(t.getMessage()));
-                        error("Erreur écriture : " + t.getMessage());
+                        error("Erreur \u00e9criture : " + t.getMessage());
                         confirm.setEnabled(true);
                     }
                 }

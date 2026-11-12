@@ -35,7 +35,7 @@ public final class B1SqlLabelStore implements B1LabelStore {
         {"nombre", "Numero di miscele"},
         {"passage", "Passaggio come testo WinCC (1er, 2eme...)"},
         {"couche", "Type (SUP, INF, STS, NET, MEL.MERE, PREMAST)"},
-        {"couleur", "Couleur (---, Clair, Foncé, Medium)"},
+        {"couleur", "Couleur (---, Clair, Fonc\u00e9, Medium)"},
         {"recipe_name", "Nome ricetta"},
         {"recipe_uid", "RecipeUID"},
         {"date", "Data (colonna data)"},

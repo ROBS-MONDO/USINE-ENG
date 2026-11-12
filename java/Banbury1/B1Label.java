@@ -37,10 +37,10 @@ public final class B1Label {
         this.couleur = couleur;
     }
 
-    // Testi come nei campi del WinCC e nella colonna dei log SQL (Datas_B2: "1er"; Datas_B1: "4ème").
-    public static final String[] PASSAGE_SQL = {"", "1er", "2ème", "3ème", "4ème"}; // come in Datas_B1 (es. "4ème"): da confermare per 2ème/3ème
+    // Testi come nei campi del WinCC e nella colonna dei log SQL (Datas_B2: "1er"; Datas_B1: "4\u00e8me").
+    public static final String[] PASSAGE_SQL = {"", "1er", "2\u00e8me", "3\u00e8me", "4\u00e8me"}; // come in Datas_B1 (es. "4\u00e8me"): da confermare per 2\u00e8me/3\u00e8me
     public static final String[] COUCHE_SQL = {"", "SUP", "INF", "STS", "NET", "MEL.MERE"};
-    public static final String[] COULEUR_SQL = {"", "---", "Clair", "Foncé", "Medium"};
+    public static final String[] COULEUR_SQL = {"", "---", "Clair", "Fonc\u00e9", "Medium"};
 
     public String passageSql() {
         return passage >= 1 && passage < PASSAGE_SQL.length ? PASSAGE_SQL[passage] : String.valueOf(passage);

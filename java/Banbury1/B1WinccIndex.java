@@ -41,7 +41,7 @@ public final class B1WinccIndex {
         }
     }
 
-    /** Per i campi di valore: "SEZIONE · etichetta [unita']"; per le lampade l'etichetta vicina. */
+    /** Per i campi di valore: "SEZIONE \u00b7 etichetta [unita']"; per le lampade l'etichetta vicina. */
     private static String nearestLabel(B1Screen sc, B1Screen.Obj o) {
         if (!o.kind.equals("IO")) {
             return lampLabel(sc, o);

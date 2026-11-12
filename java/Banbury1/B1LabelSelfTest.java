@@ -65,8 +65,8 @@ public final class B1LabelSelfTest {
                         && b.nombreMelanges == 12);
         check("QR MQR2: 2eme passaggio, INF, FONCE", b.passage == 2 && b.couche == 2 && b.couleur == 3);
         check("ticket 2 = secondo passaggio", b.ticketKind().startsWith("Ticket 2"));
-        check("testi SQL come Datas_B1 (2ème, INF, Foncé)",
-                "2ème".equals(b.passageSql()) && "INF".equals(b.coucheSql()) && "Foncé".equals(b.couleurSql()));
+        check("testi SQL come Datas_B1 (2\u00e8me, INF, Fonc\u00e9)",
+                "2\u00e8me".equals(b.passageSql()) && "INF".equals(b.coucheSql()) && "Fonc\u00e9".equals(b.couleurSql()));
 
         B1Label c = B1LabelParser.parse("RFL8 V05 +14%*;26/0394L1;1;A1;3;;;1ER;SUP;;RECIPEUID=" + uid, y26);
         check("lotto con lettere (0394L1) e nome con % e *",
@@ -107,8 +107,8 @@ public final class B1LabelSelfTest {
         String sql = st.buildSql(b, LocalDateTime.now(), params);
         check("INSERT parametrico", ("INSERT INTO dbo.Datas_B1 (Num_lot, Suffixe, Num_melange, Num_passage, "
                 + "Type_melange, Couleur) VALUES (?, ?, ?, ?, ?, ?)").equals(sql));
-        check("parametri: 26/0410, 1, A, 2ème, INF, Foncé",
-                params.equals(Arrays.<Object>asList("26/0410", "1", "A", "2ème", "INF", "Foncé")));
+        check("parametri: 26/0410, 1, A, 2\u00e8me, INF, Fonc\u00e9",
+                params.equals(Arrays.<Object>asList("26/0410", "1", "A", "2\u00e8me", "INF", "Fonc\u00e9")));
         check("store() rifiutato in modalita' prova", fails(() -> {
             try {
                 st.store(b);
