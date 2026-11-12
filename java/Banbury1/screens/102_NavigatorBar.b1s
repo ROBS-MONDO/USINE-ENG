@@ -1,0 +1,38 @@
+screen|102_NavigatorBar|1024|768
+obj|TEXT|ST_title0|0|0|1024|60|Line speed||-1||||
+obj|PIC|GO_logo1|5|5|55|55|||-1||||home.jpg
+obj|TEXT|ST_menu1|5|5|55|55|Line speed||-1||||
+obj|PIC|GO_logo2|60|5|130|55|||-1||||Synoptic.jpg
+obj|TEXT|ST_menu2|60|5|130|55|Line speed||-1||||
+obj|PIC|GO_logo3|135|5|185|55|||-1||||Trend.jpg
+obj|TEXT|ST_menu3|135|5|185|55|Line speed||-1||||
+obj|PIC|GO_logo4|190|5|240|55|||-1||||Alarms.jpg
+obj|TEXT|ST_menu4|190|5|240|55|Line speed||-1||||
+obj|PIC|GO_logo5|245|5|295|55|||-1||||Display.jpg
+obj|TEXT|ST_menu5|245|5|295|55|Line speed||-1||||
+obj|PIC|GO_logo6|300|5|350|55|||-1||||Progr.jpg
+obj|TEXT|ST_menu6|300|5|350|55|Line speed||-1||||
+obj|PIC|GO_logo7|355|5|405|55|||-1||||recipes1.jpg
+obj|TEXT|ST_menu7|355|5|405|55|Line speed||-1||||
+obj|PIC|GO_logo8|410|5|460|55|||-1||||Tools.jpg
+obj|TEXT|ST_menu8|410|5|460|55|Line speed||-1||||
+obj|TEXT|ST_msg9_0|465|5|515|55|Recipe name not valid||-1||||
+obj|TEXT|ST_menu9|465|5|515|55|Line speed||-1||||
+obj|PIC|GO_logo9|475|5|510|55||termo.jpeg|-1||||
+obj|PIC|GO_logo10|520|5|570|55|||-1||||online.jpg
+obj|TEXT|ST_menu10|520|5|570|55|Line speed||-1||||
+obj|BUTTON|Bouton3|575|5|625|55|Govoni||-1||000000||
+obj|BUTTON|Bouton1|630|5|680|55|B2||-1||000000||
+obj|BUTTON|Bouton2|690|5|740|55|B2 main||-1||000000||
+obj|PIC|GO_logo0|930|5|1015|55|||-1||||exit1.jpg
+obj|TEXT|ST_menu0|930|5|1015|55|Line speed||-1||||
+obj|TEXT|ST_msg1|5|45|40|55|Synoptique||-1||||
+obj|TEXT|ST_msg2|60|45|95|55|Process||-1||||
+obj|TEXT|ST_msg3|135|45|170|55|Courbes||-1||||
+obj|TEXT|ST_msg4|190|45|225|55|Alarmes||-1||||
+obj|TEXT|ST_msg5|245|45|280|55|Vue large||-1||||
+obj|TEXT|ST_msg6|300|45|335|55|Recettes||-1||||
+obj|TEXT|ST_msg7|355|45|390|55|Production||-1||||
+obj|TEXT|ST_msg8|410|45|445|55|Parametres||-1||||
+obj|TEXT|ST_msg9|465|45|500|55|Températures||-1||||
+obj|TEXT|ST_msg10|520|45|555|55|Recettes en-ligne||-1||||

@@ -66,11 +66,11 @@ public final class B1RecipeLayout {
     public final Map<Integer, String> opNames = new LinkedHashMap<>();
 
     private static final String[] DEFAULT_LINES = {
-        "header.safety_temp  = W28 ; Temp. sicurezza (?) ; °C ; 1 ; 0 ; 200",
-        "header.restart_temp = W30 ; Temp. riavvio (?) ; °C ; 1 ; 0 ; 200",
-        "header.safety_time  = W32 ; Tempo sicurezza (?) ; s ; 1 ; 0 ; 3600",
-        "header.max_energy   = W34 ; Energia max (?) ; kWh ; 1 ; 0 ; 9999",
-        "header.h38          = W38 ; Parametro testata +38 (?) ;  ; 1 ; ; ",
+        "header.safety_temp  = W28 ; Temp. sicurezza ; °C ; 1 ; 0 ; 200",
+        "header.drop_door    = W30 ; Porte de dechargement ; s ; 1 ; 0 ; 3600",
+        "header.safety_time  = W32 ; Tempo sicurezza ; s ; 1 ; 0 ; 3600",
+        "header.max_energy   = W34 ; Energia max ; kWh ; 0.1 ; 0 ; 999.9",
+        "header.restart_temp = W38 ; Temp. riavvio ; °C ; 1 ; 0 ; 200",
         "header.h42          = W42 ; Parametro testata +42 (?) ;  ; 1 ; ; ",
         "header.h44          = W44 ; Parametro testata +44 (?) ;  ; 1 ; ; ",
         "phase.p0   = W0  ; Param. +0 (?) ;  ; 1 ; ; ",
@@ -183,6 +183,9 @@ public final class B1RecipeLayout {
         try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(out, StandardCharsets.UTF_8))) {
             w.println("# Layout ricetta Banbury 1 (DB201). I campi con (?) sono IPOTESI da confermare");
             w.println("# confrontando l'editor con la schermata 'Vue recette' del WinCC.");
+            w.println("# Etichette confermate dal WinCC (002_Process): safety_temp, drop_door, safety_time, max_energy, restart_temp.");
+            w.println("# Colonne WinCC (006_Recipes): Operazione = Gomme, Add., All Black, Plastif., Cerac., Silano, Half Black, Degas, Net., Dech.;");
+            w.println("#   Set = Timeout, Rotor (rpm), Press. (bar), Porte, Piston; Controllo = Skip, Temps (s), Temp. (C), Ener. (kWh), et, ou.");
             w.println("# Campo: chiave = W<offset>|UW<offset> ; Etichetta ; Unita' ; Scala ; Min ; Max");
             w.println("# header.* = offset assoluto nel DB; phase.* = offset dall'inizio del blocco fase.");
             w.println("db = " + db);

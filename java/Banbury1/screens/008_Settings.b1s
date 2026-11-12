@@ -1,0 +1,112 @@
+screen|008_Settings|1024|768
+obj|PIC|GO_logo2|0|60|1024|648|||-1||||background5.jpg
+obj|TEXT|ST_title0|0|60|1024|648|Line speed||-1||||
+obj|TEXT|ST_title500|5|65|1015|90|Paramètres||-1||FFFFFF||
+obj|TEXT|ST_title1|5|95|365|120|Vitesse min. rotor||-1||FFFFFF||
+obj|IO|IO_value1|370|95|465|120||P000|-1|99999|||
+obj|TEXT|ST_unit1|465|95|505|120|rpm||-1||||
+obj|TEXT|ST_title19|515|95|875|120|Tolérance température ||-1||FFFFFF||
+obj|IO|IO_value19|880|95|975|120||P037|-1|99999|||
+obj|TEXT|ST_unit19|975|95|1015|120|°C||-1||||
+obj|TEXT|ST_title2|5|125|365|150|Vitesse max. rotor||-1||FFFFFF||
+obj|IO|IO_value2|370|125|465|150||P002|-1|99999|||
+obj|TEXT|ST_unit2|465|125|505|150|rpm||-1||||
+obj|TEXT|ST_title20|515|125|875|150|Gradient de température piston||-1||FFFFFF||
+obj|IO|IO_value20|880|125|975|150||P040|-1|99999|||
+obj|TEXT|ST_unit20|975|125|1015|150|°C/min. ||-1||||
+obj|TEXT|ST_title3|5|155|365|180|Vitesse min. rotor pour chargement||-1||FFFFFF||
+obj|IO|IO_value3|370|155|465|180||P003|-1|99999|||
+obj|TEXT|ST_unit3|465|155|505|180|rpm||-1||||
+obj|TEXT|ST_title21|515|155|875|180|Max. température piston||-1||FFFFFF||
+obj|IO|IO_value21|880|155|975|180||P041|-1|99999|||
+obj|TEXT|ST_unit21|975|155|1015|180|°C||-1||||
+obj|TEXT|ST_title4|5|185|365|210|Vitesse sécurité rotor pour suspension cycle||-1||FFFFFF||
+obj|IO|IO_value4|370|185|465|210||P004|-1|99999|||
+obj|TEXT|ST_unit4|465|185|505|210|rpm||-1||||
+obj|TEXT|ST_title22|515|185|875|210|Tolérance température piston||-1||FFFFFF||
+obj|IO|IO_value22|880|185|975|210||P042|-1|99999|||
+obj|TEXT|ST_unit22|975|185|1015|210|°C||-1||||
+obj|TEXT|ST_title5|5|215|365|240|Tolérance vitesse rotors||-1||FFFFFF||
+obj|IO|IO_value5|370|215|465|240||P005|-1|99999|||
+obj|TEXT|ST_unit5|465|215|505|240|rpm||-1||||
+obj|TEXT|ST_title23|515|215|875|240|Bearing A réglage échelle température min||-1||FFFFFF||
+obj|IO|IO_value23|880|215|975|240||P065|-1|99999|||
+obj|TEXT|ST_unit23|975|215|1015|240|°C||-1||||
+obj|TEXT|ST_title6|5|245|365|270|Min. pression piston||-1||FFFFFF||
+obj|IO|IO_value6|370|245|465|270||P006|-1|99.9|||
+obj|TEXT|ST_unit6|465|245|505|270|bar||-1||||
+obj|TEXT|ST_title24|515|245|875|270|Bearing A réglage échelle température max||-1||FFFFFF||
+obj|IO|IO_value24|880|245|975|270||P066|-1|99999|||
+obj|TEXT|ST_unit24|975|245|1015|270|°C||-1||||
+obj|TEXT|ST_title7|5|275|365|300|Max. pression piston||-1||FFFFFF||
+obj|IO|IO_value7|370|275|465|300||P007|-1|99.9|||
+obj|TEXT|ST_unit7|465|275|505|300|bar||-1||||
+obj|TEXT|ST_title25|515|275|875|300|Bearing A réglage alarme température ||-1||FFFFFF||
+obj|IO|IO_value25|880|275|975|300||P067|-1|99999|||
+obj|TEXT|ST_unit25|975|275|1015|300|°C||-1||||
+obj|TEXT|ST_title8|5|305|365|330|Tolérance pression piston||-1||FFFFFF||
+obj|IO|IO_value8|370|305|465|330||P008|-1|99.9|||
+obj|TEXT|ST_unit8|465|305|505|330|bar||-1||||
+obj|TEXT|ST_title26|515|305|875|330|Bearing A réglage défaut température||-1||FFFFFF||
+obj|IO|IO_value26|880|305|975|330||P068|-1|99999|||
+obj|TEXT|ST_unit26|975|305|1015|330|°C||-1||||
+obj|TEXT|ST_title9|5|335|365|360|Seuil courant moteur pour poids flottant||-1||FFFFFF||
+obj|IO|IO_value9|370|335|465|360||P010|-1|99999|||
+obj|TEXT|ST_unit9|465|335|505|360|A||-1||||
+obj|TEXT|ST_title27|515|335|875|360|Bearing B réglage échelle température min||-1||FFFFFF||
+obj|IO|IO_value27|880|335|975|360||P071|-1|99999|||
+obj|TEXT|ST_unit27|975|335|1015|360|°C||-1||||
+obj|TEXT|ST_title10|5|365|365|390|DELTA MELT température pour alarme||-1||FFFFFF||
+obj|IO|IO_value10|370|365|465|390||P013|-1|99999|||
+obj|TEXT|ST_unit10|465|365|505|390|°C||-1||||
+obj|TEXT|ST_title28|515|365|875|390|Bearing B réglage échelle température max||-1||FFFFFF||
+obj|IO|IO_value28|880|365|975|390||P072|-1|99999|||
+obj|TEXT|ST_unit28|975|365|1015|390|°C||-1||||
+obj|TEXT|ST_title11|5|395|365|420|Température très élevée pour déchargement||-1||FFFFFF||
+obj|IO|IO_value11|370|395|465|420||P014|-1|99999|||
+obj|TEXT|ST_unit11|465|395|505|420|°C||-1||||
+obj|TEXT|ST_title29|515|395|875|420|Bearing B réglage alarme température ||-1||FFFFFF||
+obj|IO|IO_value29|880|395|975|420||P073|-1|99999|||
+obj|TEXT|ST_unit29|975|395|1015|420|°C||-1||||
+obj|TEXT|ST_title12|5|425|365|450|Numéro cycle graissage||-1||FFFFFF||
+obj|IO|IO_value12|370|425|465|450||P020|-1|99999|||
+obj|TEXT|ST_unit12|465|425|505|450|nr||-1||||
+obj|TEXT|ST_title30|515|425|875|450|Bearing B réglage défaut température||-1||FFFFFF||
+obj|IO|IO_value30|880|425|975|450||P074|-1|99999|||
+obj|TEXT|ST_unit30|975|425|1015|450|°C||-1||||
+obj|TEXT|ST_title13|5|455|365|480|Porte de déchargement ouverte à fin production (1=vrai)||-1||FFFFFF||
+obj|IO|IO_value13|370|455|465|480||P023|-1|99999|||
+obj|TEXT|ST_unit13|465|455|505|480|bit||-1||||
+obj|TEXT|ST_title31|515|455|875|480|Bearing C réglage échelle température min||-1||FFFFFF||
+obj|IO|IO_value31|880|455|975|480||P077|-1|99999|||
+obj|TEXT|ST_unit31|975|455|1015|480|°C||-1||||
+obj|TEXT|ST_title14|5|485|365|510|Gradient de température||-1||FFFFFF||
+obj|IO|IO_value14|370|485|465|510||P030|-1|99999|||
+obj|TEXT|ST_unit14|465|485|505|510|°C/min.||-1||||
+obj|TEXT|ST_title32|515|485|875|510|Bearing C réglage échelle température max||-1||FFFFFF||
+obj|IO|IO_value32|880|485|975|510||P078|-1|99999|||
+obj|TEXT|ST_unit32|975|485|1015|510|°C||-1||||
+obj|TEXT|ST_title15|5|515|365|540|Température max. rotors||-1||FFFFFF||
+obj|IO|IO_value15|370|515|465|540||P031|-1|99999|||
+obj|TEXT|ST_unit15|465|515|505|540|°C||-1||||
+obj|TEXT|ST_title33|515|515|875|540|Bearing C réglage alarme température ||-1||FFFFFF||
+obj|IO|IO_value33|880|515|975|540||P079|-1|99999|||
+obj|TEXT|ST_unit33|975|515|1015|540|°C||-1||||
+obj|TEXT|ST_title16|5|545|365|570|Tolérance température rotors||-1||FFFFFF||
+obj|IO|IO_value16|370|545|465|570||P032|-1|99999|||
+obj|TEXT|ST_unit16|465|545|505|570|°C||-1||||
+obj|TEXT|ST_title34|515|545|875|570|Bearing C réglage défaut température||-1||FFFFFF||
+obj|IO|IO_value34|880|545|975|570||P080|-1|99999|||
+obj|TEXT|ST_unit34|975|545|1015|570|°C||-1||||
+obj|TEXT|ST_title17|5|575|365|600|Gradient de température ||-1||FFFFFF||
+obj|IO|IO_value17|370|575|465|600||P035|-1|99999|||
+obj|TEXT|ST_unit17|465|575|505|600|°C/min.||-1||||
+obj|TEXT|ST_title35|515|575|875|600|Bearing D réglage échelle température min||-1||FFFFFF||
+obj|IO|IO_value35|880|575|975|600||P083|-1|99999|||
+obj|TEXT|ST_unit35|975|575|1015|600|°C||-1||||
+obj|TEXT|ST_title18|5|605|365|630|Température max.||-1||FFFFFF||
+obj|IO|IO_value18|370|605|465|630||P036|-1|99999|||
+obj|TEXT|ST_unit18|465|605|505|630|°C||-1||||
+obj|TEXT|ST_title36|515|605|875|630|Bearing D réglage échelle température max||-1||FFFFFF||
+obj|IO|IO_value36|880|605|975|630||P084|-1|99999|||
+obj|TEXT|ST_unit36|975|605|1015|630|°C||-1||||

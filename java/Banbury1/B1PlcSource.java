@@ -166,6 +166,38 @@ public final class B1PlcSource implements B1Source {
         return t == null ? "?" : (t.guess ? t.spec + " (ipotesi)" : t.spec);
     }
 
+    private static final java.util.regex.Pattern WTAG =
+            java.util.regex.Pattern.compile("^DB(\\d+)DB([XWDB])(\\d+)(?:_([0-7]))?$");
+
+    @Override
+    public Double raw(String winccTag) {
+        if (!connected || winccTag == null) {
+            return null;
+        }
+        java.util.regex.Matcher m = WTAG.matcher(winccTag.trim());
+        if (!m.matches()) {
+            return null;
+        }
+        byte[] d = data.get(Integer.parseInt(m.group(1)));
+        int off = Integer.parseInt(m.group(3));
+        if (d == null) {
+            return null;
+        }
+        switch (m.group(2)) {
+            case "W":
+                return off + 2 <= d.length ? (double) S7ReadClient.int16(d, off) : null;
+            case "D":
+                return off + 4 <= d.length
+                        ? (double) (((d[off] & 0xFF) << 24) | ((d[off + 1] & 0xFF) << 16)
+                        | ((d[off + 2] & 0xFF) << 8) | (d[off + 3] & 0xFF)) : null;
+            case "B":
+                return off < d.length ? (double) (d[off] & 0xFF) : null;
+            default:
+                return off < d.length && m.group(4) != null
+                        ? (S7ReadClient.bit(d, off, Integer.parseInt(m.group(4))) ? 1.0 : 0.0) : null;
+        }
+    }
+
     @Override
     public byte[] dbImage(int db) {
         byte[] d = connected ? data.get(db) : null;

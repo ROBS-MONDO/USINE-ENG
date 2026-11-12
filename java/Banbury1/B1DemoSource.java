@@ -102,6 +102,11 @@ public final class B1DemoSource implements B1Source {
     }
 
     @Override
+    public Double raw(String winccTag) {
+        return winccTag == null ? null : (double) (10 + Math.abs(winccTag.hashCode()) % 90);
+    }
+
+    @Override
     public byte[] dbImage(int db) {
         return db == 201 ? sampleDb201(384) : null;
     }

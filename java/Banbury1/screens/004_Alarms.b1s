@@ -1,0 +1,4 @@
+screen|004_Alarms|1024|768
+obj|PIC|GO_logo2|0|60|1024|648|||-1||||background5.jpg
+obj|TEXT|ST_title10|0|60|1024|648|Line speed||-1||||
+obj|CONTROL|Control1|0|60|1024|648|||-1||||

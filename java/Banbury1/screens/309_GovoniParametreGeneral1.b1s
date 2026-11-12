@@ -1,0 +1,134 @@
+screen|309_GovoniParametreGeneral1|1024|768
+obj|TEXT|ST_title500|5|65|1015|90|Paramètres Général||-1||||
+obj|TEXT|ST_title1|5|95|365|120|Temps avertissement vacuostat GC127||-1||||
+obj|IO|IO_value1|365|95|460|120|||-1|99999|||
+obj|TEXT|ST_unit1|465|95|505|120|sec||-1||||
+obj|TEXT|ST_title23|515|95|875|120|Vitesse manuel cochlée C109A||-1||||
+obj|IO|IO_value21|875|95|970|120|||-1|99999|||
+obj|TEXT|ST_unit23|975|95|1015|120|%||-1||||
+obj|TEXT|ST_title2|5|120|365|145|Temps lavage vacuostat GC127||-1||||
+obj|IO|IO_value2|365|120|460|145|||-1|99999|||
+obj|TEXT|ST_unit2|465|120|505|145|sec||-1||||
+obj|TEXT|ST_title24|515|120|875|145|Vitesse manuel cochlée C109B||-1||||
+obj|IO|IO_value22|875|120|970|145|||-1|99999|||
+obj|TEXT|ST_unit24|975|120|1015|145|%||-1||||
+obj|TEXT|ST_title3|5|145|365|170|Temps reprendre vacuostat GC127||-1||||
+obj|IO|IO_value3|365|145|460|170|||-1|99999|||
+obj|TEXT|ST_unit3|465|145|505|170|sec||-1||||
+obj|TEXT|ST_title25|515|145|875|170|Vitesse manuel cochlée C110A||-1||||
+obj|IO|IO_value23|875|145|970|170|||-1|99999|||
+obj|TEXT|ST_unit25|975|145|1015|170|%||-1||||
+obj|TEXT|ST_title4|5|170|365|195|Temps avertissement vacuostat GC128||-1||||
+obj|IO|IO_value4|365|170|460|195|||-1|99999|||
+obj|TEXT|ST_unit4|465|170|505|195|sec||-1||||
+obj|TEXT|ST_title26|515|170|875|195|Vitesse manuel cochlée C110B||-1||||
+obj|IO|IO_value24|875|170|970|195|||-1|99999|||
+obj|TEXT|ST_unit26|975|170|1015|195|%||-1||||
+obj|TEXT|ST_title5|5|195|365|220|Temps lavage vacuostat GC128||-1||||
+obj|IO|IO_value5|365|195|460|220|||-1|99999|||
+obj|TEXT|ST_unit5|465|195|505|220|sec||-1||||
+obj|TEXT|ST_title27|515|195|875|220|Vitesse manuel cochlée C111A||-1||||
+obj|IO|IO_value25|875|195|970|220|||-1|99999|||
+obj|TEXT|ST_unit27|975|195|1015|220|%||-1||||
+obj|TEXT|ST_title6|5|220|365|245|Temps reprendre vacuostat GC128||-1||||
+obj|IO|IO_value6|365|220|460|245|||-1|99999|||
+obj|TEXT|ST_unit6|465|220|505|245|sec||-1||||
+obj|TEXT|ST_title28|515|220|875|245|Vitesse manuel cochlée C111B||-1||||
+obj|IO|IO_value26|875|220|970|245|||-1|99999|||
+obj|TEXT|ST_unit28|975|220|1015|245|%||-1||||
+obj|TEXT|ST_title7|5|245|365|270|Vitesse manuel cochlée C101A||-1||||
+obj|IO|IO_value7|365|245|460|270|||-1|99999|||
+obj|TEXT|ST_unit7|465|245|505|270|%||-1||||
+obj|TEXT|ST_title29|515|245|875|270|Vitesse manuel cochlée C112A||-1||||
+obj|IO|IO_value27|875|245|970|270|||-1|99999|||
+obj|TEXT|ST_unit29|975|245|1015|270|%||-1||||
+obj|TEXT|ST_title8|5|270|365|295|Vitesse manuel cochlée C101B||-1||||
+obj|IO|IO_value8|365|270|460|295|||-1|99999|||
+obj|TEXT|ST_unit8|465|270|505|295|%||-1||||
+obj|TEXT|ST_title30|515|270|875|295|Vitesse manuel cochlée C112B||-1||||
+obj|IO|IO_value28|875|270|970|295|||-1|99999|||
+obj|TEXT|ST_unit30|975|270|1015|295|%||-1||||
+obj|TEXT|ST_title9|5|295|365|320|Vitesse manuel cochlée C102A||-1||||
+obj|IO|IO_value9|365|295|460|320|||-1|99999|||
+obj|TEXT|ST_unit9|465|295|505|320|%||-1||||
+obj|TEXT|ST_title31|515|295|875|320|Retard ferme GC127||-1||||
+obj|IO|IO_value29|875|295|970|320|||-1|99999|||
+obj|TEXT|ST_unit31|975|295|1015|320|sec||-1||||
+obj|TEXT|ST_title10|5|320|365|345|Vitesse manuel cochlée C102B||-1||||
+obj|IO|IO_value10|365|320|460|345|||-1|99999|||
+obj|TEXT|ST_unit10|465|320|505|345|%||-1||||
+obj|TEXT|ST_title32|515|320|875|345|Retard GC127 a regime||-1||||
+obj|IO|IO_value30|875|320|970|345|||-1|99999|||
+obj|TEXT|ST_unit32|975|320|1015|345|sec||-1||||
+obj|TEXT|ST_title11|5|345|365|370|Vitesse manuel cochlée C103A||-1||||
+obj|IO|IO_value11|365|345|460|370|||-1|99999|||
+obj|TEXT|ST_unit11|465|345|505|370|%||-1||||
+obj|TEXT|ST_title33|515|345|875|370|Retard ferme gc128||-1||||
+obj|IO|IO_value31|875|345|970|370|||-1|99999|||
+obj|TEXT|ST_unit33|975|345|1015|370|sec||-1||||
+obj|TEXT|ST_title12|5|370|365|395|Vitesse manuel cochlée C103B||-1||||
+obj|IO|IO_value12|365|370|460|395|||-1|99999|||
+obj|TEXT|ST_unit12|465|370|505|395|%||-1||||
+obj|TEXT|ST_title34|515|370|875|395|Retard GC128 a régime||-1||||
+obj|IO|IO_value32|875|370|970|395|||-1|99999|||
+obj|TEXT|ST_unit34|975|370|1015|395|sec||-1||||
+obj|TEXT|ST_title13|5|395|365|420|Vitesse manuel cochlée C104A||-1||||
+obj|IO|IO_value13|365|395|460|420|||-1|99999|||
+obj|TEXT|ST_unit13|465|395|505|420|%||-1||||
+obj|TEXT|ST_title35|515|395|875|420|Temps pause FL101||-1||||
+obj|IO|IO_value33|875|395|970|420|||-1|99999|||
+obj|TEXT|ST_unit35|975|395|1015|420|1/10sec||-1||||
+obj|TEXT|ST_title14|5|420|365|445|Vitesse manuel cochlée C104B||-1||||
+obj|IO|IO_value14|365|420|460|445|||-1|99999|||
+obj|TEXT|ST_unit14|465|420|505|445|%||-1||||
+obj|TEXT|ST_title36|515|420|875|445|Temps travail FL101||-1||||
+obj|IO|IO_value34|875|420|970|445|||-1|99999|||
+obj|TEXT|ST_unit36|975|420|1015|445|1/100sec||-1||||
+obj|TEXT|ST_title15|5|445|365|470|Vitesse manuel cochlée C105A||-1||||
+obj|IO|IO_value15|365|445|460|470|||-1|99999|||
+obj|TEXT|ST_unit15|465|445|505|470|%||-1||||
+obj|TEXT|ST_title37|515|445|875|470|Temps pause FL102||-1||||
+obj|IO|IO_value35|875|445|970|470|||-1|99999|||
+obj|TEXT|ST_unit37|975|445|1015|470|1/10sec||-1||||
+obj|TEXT|ST_title16|5|470|365|495|Vitesse manuel cochlée C105B||-1||||
+obj|IO|IO_value16|365|470|460|495|||-1|99999|||
+obj|TEXT|ST_unit16|465|470|505|495|%||-1||||
+obj|TEXT|ST_title38|515|470|875|495|Temps travail FL102||-1||||
+obj|IO|IO_value36|875|470|970|495|||-1|99999|||
+obj|TEXT|ST_unit38|975|470|1015|495|1/100sec||-1||||
+obj|TEXT|ST_title17|5|495|365|520|Vitesse manuel cochlée C106A||-1||||
+obj|IO|IO_value17|365|495|460|520|||-1|99999|||
+obj|TEXT|ST_unit17|465|495|505|520|%||-1||||
+obj|TEXT|ST_title39|515|495|875|520|Temps pause FL103||-1||||
+obj|IO|IO_value37|875|495|970|520|||-1|99999|||
+obj|TEXT|ST_unit39|975|495|1015|520|1/10sec||-1||||
+obj|TEXT|ST_title18|5|520|365|545|Vitesse manuel cochlée C106B||-1||||
+obj|IO|IO_value18|365|520|460|545|||-1|99999|||
+obj|TEXT|ST_unit18|465|520|505|545|%||-1||||
+obj|TEXT|ST_title40|515|520|875|545|Temps travail FL103||-1||||
+obj|IO|IO_value38|875|520|970|545|||-1|99999|||
+obj|TEXT|ST_unit40|975|520|1015|545|1/100sec||-1||||
+obj|TEXT|ST_title19|5|545|365|570|Vitesse manuel cochlée C107A||-1||||
+obj|IO|IO_value19|365|545|460|570|||-1|99999|||
+obj|TEXT|ST_unit19|465|545|505|570|%||-1||||
+obj|TEXT|ST_title41|515|545|875|570|Temps pause FL105||-1||||
+obj|IO|IO_value39|875|545|970|570|||-1|99999|||
+obj|TEXT|ST_unit41|975|545|1015|570|1/10sec||-1||||
+obj|TEXT|ST_title20|5|570|365|595|Vitesse manuel cochlée C107B||-1||||
+obj|IO|IO_value20|365|570|460|595|||-1|99999|||
+obj|TEXT|ST_unit20|465|570|505|595|%||-1||||
+obj|TEXT|ST_title42|515|570|875|595|Temps travail FL105||-1||||
+obj|IO|IO_value40|875|570|970|595|||-1|99999|||
+obj|TEXT|ST_unit42|975|570|1015|595|1/100sec||-1||||
+obj|TEXT|ST_title21|5|595|365|620|Vitesse manuel cochlée C108A||-1||||
+obj|IO|IO_value41|365|595|460|620|||-1|99999|||
+obj|TEXT|ST_unit21|465|595|505|620|%||-1||||
+obj|TEXT|ST_title43|515|595|875|620|Temps pause FL107||-1||||
+obj|IO|IO_value43|875|595|970|620|||-1|99999|||
+obj|TEXT|ST_unit43|975|595|1015|620|1/10sec||-1||||
+obj|TEXT|ST_title22|5|620|365|645|Vitesse manuel cochlée C108B||-1||||
+obj|IO|IO_value42|365|620|460|645|||-1|99999|||
+obj|TEXT|ST_unit22|465|620|505|645|%||-1||||
+obj|TEXT|ST_title44|515|620|875|645|Temps travail FL107||-1||||
+obj|IO|IO_value44|875|620|970|645|||-1|99999|||
+obj|TEXT|ST_unit44|975|620|1015|645|1/100sec||-1||||

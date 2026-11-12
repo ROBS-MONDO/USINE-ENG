@@ -1,0 +1,36 @@
+screen|304_GovoniEtatBalance|1024|768
+obj|TEXT|ST_title500|5|70|1015|95|Etat Balance||-1||||
+obj|RECT|Rectangle1|500|140|640|185|||-1||||
+obj|TEXT|Texte statique5|50|150|185|170|Balance||-1||||
+obj|BUTTON|Bouton4|510|150|560|175|bal||-1||00FFFE||
+obj|BUTTON|Bouton1|575|150|625|175|bal||-1||00FFFE||
+obj|TEXT|Texte statique4|50|170|185|190|Utilisateur||-1||||
+obj|TEXT|Texte statique17|185|170|340|187|||-1||||
+obj|BUTTON|Bouton5|510|185|560|210|bal||-1||00FFFE||
+obj|BUTTON|Bouton2|575|185|625|210|bal||-1||00FFFE||
+obj|TEXT|Texte statique3|50|190|185|210|Cycle par faire||-1||||
+obj|TEXT|Texte statique1|50|210|185|230|Cycle executé||-1||||
+obj|BUTTON|Bouton8|510|225|560|250|bal||-1||00FFFE||
+obj|BUTTON|Bouton3|575|225|625|250|bal||-1||00FFFE||
+obj|TEXT|Texte statique2|50|230|185|250|Code recette ||-1||||
+obj|TEXT|Texte statique10|50|250|185|270|Description recette||-1||||
+obj|TEXT|Texte statique9|50|270|185|290|Etat exécution ||-1||||
+obj|BUTTON|Bouton6|510|270|625|305|STOP||-1||000000||
+obj|TEXT|Texte statique59|185|275|340|292|||-1||||
+obj|TEXT|Texte statique8|50|290|185|310|Etat dosage||-1||||
+obj|TEXT|Texte statique16|185|290|340|307|||-1||||
+obj|TEXT|Texte statique6|50|310|185|330|Pointes de prélèvement||-1||||
+obj|BUTTON|Bouton7|510|315|625|350|START||-1||000000||
+obj|TEXT|Texte statique7|50|330|185|350|Silo||-1||||
+obj|TEXT|Texte statique74|195|330|329|347|||-1||||
+obj|TEXT|Texte statique15|50|350|185|370|Poids brut||-1||||
+obj|BUTTON|Bouton9|510|360|625|395|NOUV. EPREUVE||-1||000000||
+obj|TEXT|Texte statique14|50|370|185|390|Poids net||-1||||
+obj|TEXT|Texte statique13|50|390|185|410|Set point||-1||||
+obj|BUTTON|Bouton10|510|405|625|440|CONTINUE||-1||000000||
+obj|TEXT|Texte statique11|50|410|185|430|Poids net composant ||-1||||
+obj|TEXT|Texte statique12|50|430|185|450|Tare||-1||||
+obj|TEXT|Texte statique20|50|450|185|470|Désaxé réelle||-1||||
+obj|BUTTON|Bouton11|510|450|625|485|STOP SYNCR.||-1||000000||
+obj|TEXT|Texte statique19|50|470|185|490|Queue réelle||-1||||
+obj|BUTTON|Bouton12|510|495|625|530|ABORT||-1||000000||

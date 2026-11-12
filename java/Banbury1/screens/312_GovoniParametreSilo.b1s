@@ -1,0 +1,71 @@
+screen|312_GovoniParametreSilo|1024|768
+obj|TEXT|ST_title500|10|70|1020|95|Paramètres Silo||-1||FFFFFF||
+obj|TEXT|ST_title1|30|120|390|145|Vieux queue de PC||-1||FFFFFF||
+obj|IO|IO_value1|395|120|490|145|||-1||||
+obj|TEXT|ST_unit1|490|120|530|145|Kg||-1||||
+obj|TEXT|ST_title2|30|145|390|170|Vitesse haute||-1||FFFFFF||
+obj|IO|IO_value2|395|145|490|170|||-1|99999|||
+obj|TEXT|ST_unit2|490|145|530|170|%||-1||||
+obj|TEXT|ST_title3|30|170|390|195|Vitesse moyenne||-1||FFFFFF||
+obj|IO|IO_value3|395|170|490|195|||-1|99999|||
+obj|TEXT|ST_unit3|490|170|530|195|%||-1||||
+obj|RECT|Rectangle1|635|185|830|260|||-1||||
+obj|TEXT|Texte statique5|675|190|725|225|Balance||-1||030100||
+obj|TEXT|Texte statique1|705|190|805|225|bal||-1||||
+obj|TEXT|ST_title4|30|195|390|220|Vitesse Basse||-1||FFFFFF||
+obj|IO|IO_value4|395|195|490|220|||-1|99999|||
+obj|TEXT|ST_unit4|490|195|530|220|%||-1||||
+obj|TEXT|ST_title5|30|220|390|245|Lavage haute vitesse||-1||FFFFFF||
+obj|IO|IO_value5|395|220|490|245|||-1|99999|||
+obj|TEXT|ST_unit5|490|220|530|245|sec||-1||||
+obj|BUTTON|Bouton4|675|225|725|250|bal||-1||00FFFE||
+obj|BUTTON|Bouton1|740|225|790|250|bal||-1||00FFFE||
+obj|TEXT|ST_title6|30|245|390|270|Lavage moyenne vitesse||-1||FFFFFF||
+obj|IO|IO_value6|395|245|490|270|||-1|99999|||
+obj|TEXT|ST_unit6|490|245|530|270|sec||-1||||
+obj|BUTTON|Bouton5|675|260|725|285|bal||-1||00FFFE||
+obj|BUTTON|Bouton2|740|260|790|285|bal||-1||00FFFE||
+obj|TEXT|ST_title7|30|270|390|295|Preset moyenne vitesse||-1||FFFFFF||
+obj|IO|IO_value7|395|270|490|295|||-1||||
+obj|TEXT|ST_unit7|490|270|530|295|Kg||-1||||
+obj|TEXT|ST_title8|30|295|390|320|Preset basse vitesse||-1||FFFFFF||
+obj|IO|IO_value8|395|295|490|320|||-1||||
+obj|TEXT|ST_unit8|490|295|530|320|Kg||-1||||
+obj|BUTTON|Bouton8|675|300|725|325|bal||-1||00FFFE||
+obj|BUTTON|Bouton3|740|300|790|325|bal||-1||00FFFE||
+obj|TEXT|ST_title9|30|320|390|345|Division de tolérence||-1||FFFFFF||
+obj|IO|IO_value9|395|320|490|345|||-1|99999|||
+obj|TEXT|ST_unit9|490|320|530|345|rpm||-1||||
+obj|TEXT|ST_title10|30|345|390|370|Temps ON||-1||FFFFFF||
+obj|IO|IO_value10|395|345|490|370|||-1|99999|||
+obj|TEXT|ST_unit10|490|345|530|370|sec||-1||||
+obj|TEXT|ST_title11|30|370|390|395|Flag mise à jour queue||-1||FFFFFF||
+obj|IO|IO_value11|395|370|490|395|||-1|99999|||
+obj|TEXT|ST_unit11|490|370|530|395|rpm||-1||||
+obj|RECT|Rectangle2|635|390|830|485|||-1||||
+obj|TEXT|ST_title12|30|395|390|420|Temps queue||-1||FFFFFF||
+obj|IO|IO_value12|395|395|490|420|||-1|99999|||
+obj|TEXT|ST_unit12|490|395|530|420|sec||-1||||
+obj|TEXT|Texte statique2|665|405|715|440|Prel:||-1||030100||
+obj|TEXT|Texte statique3|700|405|740|430|prel||-1||||
+obj|TEXT|Texte statique4|755|405|805|440|Silo:||-1||030100||
+obj|TEXT|Texte statique6|785|405|825|430|silo||-1||||
+obj|TEXT|ST_title13|30|420|390|445|Type queue||-1||FFFFFF||
+obj|IO|IO_value13|395|420|490|445|||-1|99999|||
+obj|TEXT|ST_unit13|490|420|530|445|rpm||-1||||
+obj|BUTTON|Bouton6|675|440|725|465|<--||-1||||
+obj|BUTTON|Bouton7|740|440|790|465|-->||-1||||
+obj|TEXT|ST_title14|30|445|390|470|Nouveau queue PC||-1||FFFFFF||
+obj|IO|IO_value14|395|445|490|470|||-1||||
+obj|TEXT|ST_unit14|490|445|530|470|Kg||-1||||
+obj|TEXT|ST_title15|30|470|390|495|Coté minimum||-1||FFFFFF||
+obj|IO|IO_value15|395|470|490|495|||-1||||
+obj|TEXT|ST_unit15|490|470|530|495|Kg||-1||||
+obj|TEXT|ST_title16|30|495|390|520|Coté maximum||-1||FFFFFF||
+obj|IO|IO_value16|395|495|490|520|||-1||||
+obj|TEXT|ST_unit16|490|495|530|520|Kg||-1||||
+obj|TEXT|ST_title17|30|520|390|545|K||-1||FFFFFF||
+obj|IO|IO_value17|395|520|490|545|||-1|99999|||
+obj|TEXT|ST_unit17|490|520|530|545|rpm||-1||||
+obj|BUTTON|Bouton9|910|550|990|585|SAUVER||-1||||
+obj|BUTTON|Bouton10|910|595|990|630|CHARGER||-1||||

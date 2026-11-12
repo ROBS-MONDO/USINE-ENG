@@ -1,0 +1,113 @@
+screen|008_Settings_1|1024|768
+obj|PIC|GO_logo2|0|60|1024|648|||-1||||background5.jpg
+obj|TEXT|ST_title0|0|60|1024|648|Line speed||-1||||
+obj|TEXT|ST_title500|5|65|505|90|Paramètres||-1||FFFFFF||
+obj|TEXT|ST_title501|515|65|1015|90|Timers||-1||91DCFF||
+obj|TEXT|ST_title1|5|95|365|120|Bearing D réglage alarme température ||-1||FFFFFF||
+obj|IO|IO_value1|370|95|465|120||P085|-1|99999|||
+obj|TEXT|ST_unit1|465|95|505|120|°C||-1||||
+obj|TEXT|ST_title19|515|95|875|120|Arrêt malaxeur pour alarme avec porte de déchargement ouverte||-1||91DCFF||
+obj|IO|IO_value19|880|95|975|120||T001|-1|99999|||
+obj|TEXT|ST_unit19|975|95|1015|120|s||-1||||
+obj|TEXT|ST_title2|5|125|365|150|Bearing D réglage défaut température||-1||FFFFFF||
+obj|IO|IO_value2|370|125|465|150||P086|-1|99999|||
+obj|TEXT|ST_unit2|465|125|505|150|°C||-1||||
+obj|TEXT|ST_title20|515|125|875|150|Arrêt malaxeur pour alarme avec porte de déchargement fermée||-1||91DCFF||
+obj|IO|IO_value20|880|125|975|150||T002|-1|99999|||
+obj|TEXT|ST_unit20|975|125|1015|150|s||-1||||
+obj|TEXT|ST_title3|5|155|365|180|Bearing E réglage échelle température min||-1||FFFFFF||
+obj|IO|IO_value3|370|155|465|180||P089|-1|99999|||
+obj|TEXT|ST_unit3|465|155|505|180|°C||-1||||
+obj|TEXT|ST_title21|515|155|875|180|Vitesse rotor en tolerance||-1||91DCFF||
+obj|IO|IO_value21|880|155|975|180||T003|-1|99999|||
+obj|TEXT|ST_unit21|975|155|1015|180|s||-1||||
+obj|TEXT|ST_title4|5|185|365|210|Bearing E réglage échelle température max||-1||FFFFFF||
+obj|IO|IO_value4|370|185|465|210||P090|-1|99999|||
+obj|TEXT|ST_unit4|465|185|505|210|°C||-1||||
+obj|TEXT|ST_title22|515|185|875|210|Courant élévée moteur pour poids flottant||-1||91DCFF||
+obj|IO|IO_value22|880|185|975|210||T004|-1|99999|||
+obj|TEXT|ST_unit22|975|185|1015|210|s||-1||||
+obj|TEXT|ST_title5|5|215|365|240|Bearing E réglage alarme température ||-1||FFFFFF||
+obj|IO|IO_value5|370|215|465|240||P091|-1|99999|||
+obj|TEXT|ST_unit5|465|215|505|240|°C||-1||||
+obj|TEXT|ST_title23|515|215|875|240|Temps poids flottant avec courant élévée moteur||-1||91DCFF||
+obj|IO|IO_value23|880|215|975|240||T005|-1|99999|||
+obj|TEXT|ST_unit23|975|215|1015|240|s||-1||||
+obj|TEXT|ST_title6|5|245|365|270|Bearing E réglage défaut température||-1||FFFFFF||
+obj|IO|IO_value6|370|245|465|270||P092|-1|99999|||
+obj|TEXT|ST_unit6|465|245|505|270|°C||-1||||
+obj|TEXT|ST_title24|515|245|875|270|Temps min. entre deux cycles||-1||91DCFF||
+obj|IO|IO_value24|880|245|975|270||T006|-1|99999|||
+obj|TEXT|ST_unit24|975|245|1015|270|s||-1||||
+obj|TEXT|ST_title7|5|275|365|300|Bearing F réglage échelle température min||-1||FFFFFF||
+obj|IO|IO_value7|370|275|465|300||P095|-1|99999|||
+obj|TEXT|ST_unit7|465|275|505|300|°C||-1||||
+obj|TEXT|ST_title25|515|275|875|300|HORN TIME FOR MANUAL BAG||-1||91DCFF||
+obj|IO|IO_value25|880|275|975|300||T007|-1|99999|||
+obj|TEXT|ST_unit25|975|275|1015|300|s||-1||||
+obj|TEXT|ST_title8|5|305|365|330|Bearing F réglage échelle température max||-1||FFFFFF||
+obj|IO|IO_value8|370|305|465|330||P096|-1|99999|||
+obj|TEXT|ST_unit8|465|305|505|330|°C||-1||||
+obj|TEXT|ST_title26|515|305|875|330|Déchargement mélange, temps avertissement||-1||91DCFF||
+obj|IO|IO_value26|880|305|975|330||T008|-1|99999|||
+obj|TEXT|ST_unit26|975|305|1015|330|s||-1||||
+obj|TEXT|ST_title9|5|335|365|360|Bearing F réglage alarme température ||-1||FFFFFF||
+obj|IO|IO_value9|370|335|465|360||P097|-1|99999|||
+obj|TEXT|ST_unit9|465|335|505|360|°C||-1||||
+obj|TEXT|ST_title27|515|335|875|360|Moteur malaxeur délai à demarrer||-1||91DCFF||
+obj|IO|IO_value27|880|335|975|360||T009|-1|99999|||
+obj|TEXT|ST_unit27|975|335|1015|360|s||-1||||
+obj|TEXT|ST_title10|5|365|365|390|Bearing F réglage défaut température||-1||FFFFFF||
+obj|IO|IO_value10|370|365|465|390||P098|-1|99999|||
+obj|TEXT|ST_unit10|465|365|505|390|°C||-1||||
+obj|TEXT|ST_title28|515|365|875|390|Lubrification réducteur pression basse filtre||-1||91DCFF||
+obj|IO|IO_value28|880|365|975|390||T011|-1|99999|||
+obj|TEXT|ST_unit28|975|365|1015|390|s||-1||||
+obj|TEXT|ST_title11|5|395|365|420|Bearing G réglage échelle température min||-1||FFFFFF||
+obj|IO|IO_value11|370|395|465|420||P101|-1|99999|||
+obj|TEXT|ST_unit11|465|395|505|420|°C||-1||||
+obj|TEXT|ST_title29|515|395|875|420|Réducteur débit  bas filtre||-1||91DCFF||
+obj|IO|IO_value29|880|395|975|420||T012|-1|99999|||
+obj|TEXT|ST_unit29|975|395|1015|420|s||-1||||
+obj|TEXT|ST_title12|5|425|365|450|Bearing G réglage échelle température max||-1||FFFFFF||
+obj|IO|IO_value12|370|425|465|450||P102|-1|99999|||
+obj|TEXT|ST_unit12|465|425|505|450|°C||-1||||
+obj|TEXT|ST_title30|515|425|875|450|Filtre lubrification réducteur colmaté||-1||91DCFF||
+obj|IO|IO_value30|880|425|975|450||T013|-1|99999|||
+obj|TEXT|ST_unit30|975|425|1015|450|s||-1||||
+obj|TEXT|ST_title13|5|455|365|480|Bearing G réglage alarme température ||-1||FFFFFF||
+obj|IO|IO_value13|370|455|465|480||P103|-1|99999|||
+obj|TEXT|ST_unit13|465|455|505|480|°C||-1||||
+obj|TEXT|ST_title31|515|455|875|480|Lubrification réducteur haute température filtre||-1||91DCFF||
+obj|IO|IO_value31|880|455|975|480||T014|-1|99999|||
+obj|TEXT|ST_unit31|975|455|1015|480|s||-1||||
+obj|TEXT|ST_title14|5|485|365|510|Bearing G réglage défaut température||-1||FFFFFF||
+obj|IO|IO_value14|370|485|465|510||P104|-1|99999|||
+obj|TEXT|ST_unit14|465|485|505|510|°C||-1||||
+obj|TEXT|ST_title32|515|485|875|510|Fin cycle lubrification joints =0 filtre||-1||91DCFF||
+obj|IO|IO_value32|880|485|975|510||T019|-1|99999|||
+obj|TEXT|ST_unit32|975|485|1015|510|s||-1||||
+obj|TEXT|ST_title15|5|515|365|540|Bearing H réglage échelle température min||-1||FFFFFF||
+obj|IO|IO_value15|370|515|465|540||P107|-1|99999|||
+obj|TEXT|ST_unit15|465|515|505|540|°C||-1||||
+obj|TEXT|ST_title33|515|515|875|540|Fin cycle lubrification joints =1 filtre||-1||91DCFF||
+obj|IO|IO_value33|880|515|975|540||T020|-1|99999|||
+obj|TEXT|ST_unit33|975|515|1015|540|s||-1||||
+obj|TEXT|ST_title16|5|545|365|570|Bearing H réglage échelle température max||-1||FFFFFF||
+obj|IO|IO_value16|370|545|465|570||P108|-1|99999|||
+obj|TEXT|ST_unit16|465|545|505|570|°C||-1||||
+obj|TEXT|ST_title34|515|545|875|570|Temps pour démarrage lubrification anneau avec auxiliaires ON||-1||91DCFF||
+obj|IO|IO_value34|880|545|975|570||T021|-1|99999|||
+obj|TEXT|ST_unit34|975|545|1015|570|s||-1||||
+obj|TEXT|ST_title17|5|575|365|600|Bearing H réglage alarme température ||-1||FFFFFF||
+obj|IO|IO_value17|370|575|465|600||P109|-1|99999|||
+obj|TEXT|ST_unit17|465|575|505|600|°C||-1||||
+obj|TEXT|ST_title35|515|575|875|600|Max. pression piston||-1||91DCFF||
+obj|IO|IO_value35|880|575|975|600||T024|-1|99999|||
+obj|TEXT|ST_unit35|975|575|1015|600|s||-1||||
+obj|TEXT|ST_title18|5|605|365|630|Bearing H réglage défaut température||-1||FFFFFF||
+obj|IO|IO_value18|370|605|465|630||P110|-1|99999|||
+obj|TEXT|ST_unit18|465|605|505|630|°C||-1||||
+obj|TEXT|ST_title36|515|605|875|630|Max. pression joints||-1||91DCFF||
+obj|IO|IO_value36|880|605|975|630||T025|-1|99999|||
+obj|TEXT|ST_unit36|975|605|1015|630|s||-1||||

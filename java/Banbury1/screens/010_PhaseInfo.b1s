@@ -1,0 +1,19 @@
+screen|010_PhaseInfo|1024|768
+obj|TEXT|ST_msg1|65|5|205|20|Phase description not valid||-1||||
+obj|TEXT|ST_msg4|210|5|350|20|Code not valid||-1||||
+obj|TEXT|ST_msg2|65|20|205|35|Saving phase description. Are you sure?||-1||||
+obj|TEXT|ST_msg5|210|20|350|35|Reference not selected||-1||||
+obj|TEXT|ST_msg3|65|35|205|50|Deleting phase description. Are you sure?||-1||||
+obj|PIC|GO_logo2|0|60|1024|648|||-1||||background5.jpg
+obj|TEXT|ST_title0|0|60|1024|648|Line speed||-1||||
+obj|TEXT|ST_title26|5|65|935|380|Line speed||-1||||
+obj|TEXT|ST_title25|10|70|930|95|LIST||-1||||
+obj|TEXT|ST_title1|5|385|755|515|Line speed||-1||||
+obj|TEXT|ST_title11|10|390|750|415|INFO SELECTION||-1||||
+obj|TEXT|ST_title33|10|420|145|445|DESCRIPTION||-1||||
+obj|IO|IO_PhaseInfoDescription|150|420|750|445|||-1||||
+obj|TEXT|ST_title30|10|450|145|475|CODE||-1||||
+obj|IO|IO_PhaseInfoID|150|450|385|475|||-1||||
+obj|TEXT|ST_title29|10|480|145|505|REFERENCE||-1||||
+obj|IO|IO_PhaseInfoRef|150|480|385|505|||-1||||
+obj|IO|IO_PhaseInfoRefID|385|480|395|490|||-1|99999|||

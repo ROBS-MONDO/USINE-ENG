@@ -1,0 +1,28 @@
+screen|303_GovoniNavigation|1024|768
+obj|RECT|Rectangle1|80|125|265|315|||-1||||
+obj|RECT|Rectangle3|305|125|490|505|||-1||||
+obj|RECT|Rectangle4|520|125|705|255|||-1||||
+obj|RECT|Rectangle5|720|125|905|375|||-1||||
+obj|BUTTON|Bouton3|90|135|255|185|Silos||-1||||
+obj|BUTTON|Bouton5|315|135|480|185|Parametre General 1||-1||||
+obj|BUTTON|Bouton16|530|135|695|185|Semiautomatique||-1||||
+obj|BUTTON|Bouton19|730|135|895|185|Semiautomatique||-1||||
+obj|BUTTON|Bouton1|90|195|255|245|Bambury 1||-1||||
+obj|BUTTON|Bouton7|315|195|480|245|Parametre General 2||-1||||
+obj|BUTTON|Bouton12|530|195|695|245|Semiautomatique||-1||||
+obj|BUTTON|Bouton13|730|195|895|245|Alarme||-1||||
+obj|BUTTON|Bouton2|90|255|255|305|Bambury 2||-1||||
+obj|BUTTON|Bouton4|315|255|480|305|Parametres Balance||-1||||
+obj|BUTTON|Bouton17|530|255|695|305|Semiautomatique||-1||||
+obj|BUTTON|Bouton20|730|255|895|305|Semiautomatique||-1||||
+obj|BUTTON|Bouton6|315|315|480|365|Parametre Silo||-1||||
+obj|BUTTON|Bouton21|730|315|895|365|Semiautomatique||-1||||
+obj|RECT|Rectangle2|80|365|265|615|||-1||||
+obj|BUTTON|Bouton9|90|375|255|425|Etat Balance||-1||||
+obj|BUTTON|Bouton18|730|375|895|425|Semiautomatique||-1||||
+obj|BUTTON|Bouton14|315|380|480|430|Archive Composant||-1||||
+obj|CONTROL|Contrôle2|720|380|725|385|||-1||||
+obj|BUTTON|Bouton11|90|435|255|485|Production Bambury 1||-1||||
+obj|BUTTON|Bouton15|315|445|480|495|Assignation Silo Composant||-1||||
+obj|BUTTON|Bouton8|90|495|255|545|Production Bambury 2||-1||||
+obj|BUTTON|Bouton10|90|555|255|605|Planning Bambury 1||-1||||

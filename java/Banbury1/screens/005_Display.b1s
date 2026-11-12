@@ -1,0 +1,50 @@
+screen|005_Display|1024|768
+obj|PIC|GO_logo2|0|60|1024|648|||-1||||background5.jpg
+obj|TEXT|ST_title10|0|60|1024|648|Line speed||-1||||
+obj|TEXT|ST_title41|5|65|385|115|CYCLE||-1||FFFFFF||
+obj|TEXT|ST_title46|455|65|1020|115|ROTOR||-1||FFFFFF||
+obj|TEXT|ST_title40|5|120|385|230|Line speed||-1||||
+obj|TEXT|ST_title39|455|120|1020|230|Line speed||-1||||
+obj|TEXT|ST_title4|10|125|170|175|Temps||-1||D4D0C8||
+obj|IO|IO_value7|170|125|305|175|||-1||||
+obj|TEXT|ST_unit7|305|125|380|175|HH:ss||-1||||
+obj|TEXT|ST_title1|460|125|620|175|Vitesse||-1||D4D0C8||
+obj|IO|IO_value4|620|125|755|175||DB110DBW58|-1|999|||
+obj|TEXT|ST_unit4|755|125|815|175|rpm||-1||||
+obj|IO|IO_value5|820|125|955|175||DB110DBW60|-1|999|||
+obj|TEXT|ST_unit5|955|125|1015|175|rpm||-1||||
+obj|TEXT|ST_title17|10|175|170|225|Malaxage||-1||D4D0C8||
+obj|IO|IO_value8|170|175|305|225|||-1||||
+obj|TEXT|ST_unit8|305|175|380|225|HH:ss||-1||||
+obj|TEXT|ST_title14|460|175|620|225|Courant||-1||D4D0C8||
+obj|IO|IO_value9|820|175|955|225||DB110DBW62|-1|9999|||
+obj|TEXT|ST_unit9|955|175|1015|225|A||-1||||
+obj|CONTROL|Control1|5|235|450|635|||-1||||
+obj|TEXT|ST_title15|455|245|1020|295|PISTON||-1||FFFFFF||
+obj|TEXT|ST_title7|455|300|1020|575|Line speed||-1||||
+obj|LAMP|GO_logo9|460|305|510|355||DB110DBW22|9|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title9|460|305|510|355|Line speed||-1||||
+obj|TEXT|ST_title12|515|305|675|355|Pos. haute||-1||D4D0C8||
+obj|LAMP|GO_logo1|680|305|730|355||DB110DBW22|6|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title19|680|305|730|355|Line speed||-1||||
+obj|TEXT|ST_title18|735|305|895|355|Bloqué||-1||D4D0C8||
+obj|LAMP|GO_logo5|460|360|510|410||DB110DBW22|10|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title6|460|360|510|410|Line speed||-1||||
+obj|TEXT|ST_title8|515|360|675|410|Flottant||-1||D4D0C8||
+obj|BUTTON|Button1|770|400|850|450|Reset Cycle||-1||||
+obj|IO|IO_value10|865|400|945|450||DB110DBW132|-1|999|||
+obj|LAMP|GO_logo4|460|415|510|465||DB110DBW22|11|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title5|460|415|510|465|Line speed||-1||||
+obj|TEXT|ST_title13|515|415|675|465|Pos. basse||-1||D4D0C8||
+obj|TEXT|ST_title3|460|470|620|520|Position||-1||D4D0C8||
+obj|IO|IO_value3|820|470|955|520||DB110DBW74|-1|999|||
+obj|TEXT|ST_unit3|955|470|1015|520|%||-1||||
+obj|TEXT|ST_title2|460|520|620|570|Pression||-1||D4D0C8||
+obj|IO|IO_value1|620|520|755|570||DB110DBW70|-1|999.9|||
+obj|TEXT|ST_unit1|755|520|815|570|bar||-1||||
+obj|IO|IO_value2|820|520|955|570||DB110DBW72|-1|999.9|||
+obj|TEXT|ST_unit2|955|520|1015|570|bar||-1||||
+obj|TEXT|ST_title11|455|575|820|635|Line speed||-1||||
+obj|TEXT|ST_title16|460|580|620|630|Temp.||-1||D4D0C8||
+obj|IO|IO_value6|620|580|755|630||DB110DBW104|-1|999|||
+obj|TEXT|ST_unit6|755|580|815|630|°C||-1||||

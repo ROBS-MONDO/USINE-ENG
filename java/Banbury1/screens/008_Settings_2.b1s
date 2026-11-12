@@ -1,0 +1,112 @@
+screen|008_Settings_2|1024|768
+obj|PIC|GO_logo2|0|60|1024|648|||-1||||background5.jpg
+obj|TEXT|ST_title0|0|60|1024|648|Line speed||-1||||
+obj|TEXT|ST_title501|5|65|1015|90|Timers||-1||||
+obj|TEXT|ST_title1|5|95|365|120|Lubrification anneau et joint min. niveau filtre||-1||||
+obj|IO|IO_value1|370|95|465|120||T027|-1|99999|||
+obj|TEXT|ST_unit1|465|95|505|120|s||-1||||
+obj|TEXT|ST_title19|515|95|875|120|Porte de chargement fermée timeout||-1||||
+obj|IO|IO_value19|880|95|975|120||T057|-1|99999|||
+obj|TEXT|ST_unit19|975|95|1015|120|s||-1||||
+obj|TEXT|ST_title2|5|125|365|150|Lubrification anneau et joint max. niveau filtre||-1||||
+obj|IO|IO_value2|370|125|465|150||T028|-1|99999|||
+obj|TEXT|ST_unit2|465|125|505|150|s||-1||||
+obj|TEXT|ST_title20|515|125|875|150|Porte de déchargement filtre ouvert||-1||||
+obj|IO|IO_value20|880|125|975|150||T058|-1|99999|||
+obj|TEXT|ST_unit20|975|125|1015|150|s||-1||||
+obj|TEXT|ST_title3|5|155|365|180|Fin cycle lubrification anneau =0 filtre||-1||||
+obj|IO|IO_value3|370|155|465|180||T029|-1|99999|||
+obj|TEXT|ST_unit3|465|155|505|180|s||-1||||
+obj|TEXT|ST_title21|515|155|875|180|Porte de déchargement filtre fermé||-1||||
+obj|IO|IO_value21|880|155|975|180||T059|-1|99999|||
+obj|TEXT|ST_unit21|975|155|1015|180|s||-1||||
+obj|TEXT|ST_title4|5|185|365|210|Fin cycle lubrification anneau=1 filtre||-1||||
+obj|IO|IO_value4|370|185|465|210||T030|-1|99999|||
+obj|TEXT|ST_unit4|465|185|505|210|s||-1||||
+obj|TEXT|ST_title22|515|185|875|210|Porte de déchargement ouverte timeout||-1||||
+obj|IO|IO_value22|880|185|975|210||T060|-1|99999|||
+obj|TEXT|ST_unit22|975|185|1015|210|s||-1||||
+obj|TEXT|ST_title5|5|215|365|240|Lubrification anneau et joint timeout remplissage||-1||||
+obj|IO|IO_value5|370|215|465|240||T031|-1|99999|||
+obj|TEXT|ST_unit5|465|215|505|240|s||-1||||
+obj|TEXT|ST_title23|515|215|875|240|Porte de déchargement fermée timeout||-1||||
+obj|IO|IO_value23|880|215|975|240||T061|-1|99999|||
+obj|TEXT|ST_unit23|975|215|1015|240|s||-1||||
+obj|TEXT|ST_title6|5|245|365|270|Fin de cycle graisse points  en mouvement=0 filtre||-1||||
+obj|IO|IO_value6|370|245|465|270||T032|-1|99999|||
+obj|TEXT|ST_unit6|465|245|505|270|s||-1||||
+obj|TEXT|ST_title24|515|245|875|270|Temps ouverture verrou||-1||||
+obj|IO|IO_value24|880|245|975|270||T062|-1|99999|||
+obj|TEXT|ST_unit24|975|245|1015|270|s||-1||||
+obj|TEXT|ST_title7|5|275|365|300|Niveau min. filtre graisse points en mouvement||-1||||
+obj|IO|IO_value7|370|275|465|300||T035|-1|99999|||
+obj|TEXT|ST_unit7|465|275|505|300|s||-1||||
+obj|TEXT|ST_title25|515|275|875|300|Temps de fermeture verrou||-1||||
+obj|IO|IO_value25|880|275|975|300||T063|-1|99999|||
+obj|TEXT|ST_unit25|975|275|1015|300|s||-1||||
+obj|TEXT|ST_title8|5|305|365|330|Fin de cycle graisse points  en mouvement=1 filtre||-1||||
+obj|IO|IO_value8|370|305|465|330||T036|-1|99999|||
+obj|TEXT|ST_unit8|465|305|505|330|s||-1||||
+obj|TEXT|ST_title26|515|305|875|330|Temps positionnement piston en haut||-1||||
+obj|IO|IO_value26|880|305|975|330||T065|-1|99999|||
+obj|TEXT|ST_unit26|975|305|1015|330|s||-1||||
+obj|TEXT|ST_title9|5|335|365|360|Temps de travail EV graisse||-1||||
+obj|IO|IO_value9|370|335|465|360||T038|-1|99999|||
+obj|TEXT|ST_unit9|465|335|505|360|s||-1||||
+obj|TEXT|ST_title27|515|335|875|360|Temps de position en bas du piston||-1||||
+obj|IO|IO_value27|880|335|975|360||T066|-1|99999|||
+obj|TEXT|ST_unit27|975|335|1015|360|s||-1||||
+obj|TEXT|ST_title10|5|365|365|390|Temps de pause EV graisse||-1||||
+obj|IO|IO_value10|370|365|465|390||T039|-1|99999|||
+obj|TEXT|ST_unit10|465|365|505|390|s||-1||||
+obj|TEXT|ST_title28|515|365|875|390|Timeout position haute piston||-1||||
+obj|IO|IO_value28|880|365|975|390||T067|-1|99999|||
+obj|TEXT|ST_unit28|975|365|1015|390|s||-1||||
+obj|TEXT|ST_title11|5|395|365|420|Groupe hydraulique huile min. niveau filtre||-1||||
+obj|IO|IO_value11|370|395|465|420||T041|-1|99999|||
+obj|TEXT|ST_unit11|465|395|505|420|s||-1||||
+obj|TEXT|ST_title29|515|395|875|420|Timeout position basse piston||-1||||
+obj|IO|IO_value29|880|395|975|420||T068|-1|99999|||
+obj|TEXT|ST_unit29|975|395|1015|420|s||-1||||
+obj|TEXT|ST_title12|5|425|365|450|Groupe hydraulique huile filtre colmaté||-1||||
+obj|IO|IO_value12|370|425|465|450||T042|-1|99999|||
+obj|TEXT|ST_unit12|465|425|505|450|s||-1||||
+obj|TEXT|ST_title30|515|425|875|450|Temps en position nettoyage piston||-1||||
+obj|IO|IO_value30|880|425|975|450||T069|-1|99999|||
+obj|TEXT|ST_unit30|975|425|1015|450|s||-1||||
+obj|TEXT|ST_title13|5|455|365|480|Groupe hydraulique huile haute température filtre||-1||||
+obj|IO|IO_value13|370|455|465|480||T043|-1|99999|||
+obj|TEXT|ST_unit13|465|455|505|480|s||-1||||
+obj|TEXT|ST_title31|515|455|875|480|Retard piston pour décélération EV = BAS||-1||||
+obj|IO|IO_value31|880|455|975|480||T070|-1|99999|||
+obj|TEXT|ST_unit31|975|455|1015|480|s||-1||||
+obj|TEXT|ST_title14|5|485|365|510|Groupe hydraulique huile température filtre très élévée||-1||||
+obj|IO|IO_value14|370|485|465|510||T044|-1|99999|||
+obj|TEXT|ST_unit14|465|485|505|510|s||-1||||
+obj|TEXT|ST_title32|515|485|875|510|Retard piston pour décélération EV = HAUT||-1||||
+obj|IO|IO_value32|880|485|975|510||T071|-1|99999|||
+obj|TEXT|ST_unit32|975|485|1015|510|s||-1||||
+obj|TEXT|ST_title15|5|515|365|540|Groupe hydraulique huile porte déchargement filtre pression basse||-1||||
+obj|IO|IO_value15|370|515|465|540||T046|-1|99999|||
+obj|TEXT|ST_unit15|465|515|505|540|s||-1||||
+obj|TEXT|ST_title33|515|515|875|540|Pression piston hors tolérance||-1||||
+obj|IO|IO_value33|880|515|975|540||T073|-1|99999|||
+obj|TEXT|ST_unit33|975|515|1015|540|s||-1||||
+obj|TEXT|ST_title16|5|545|365|570|Porte de chargement filtre ouvert||-1||||
+obj|IO|IO_value16|370|545|465|570||T054|-1|99999|||
+obj|TEXT|ST_unit16|465|545|505|570|s||-1||||
+obj|TEXT|ST_title34|515|545|875|570|Réserve||-1||||
+obj|IO|IO_value34|880|545|975|570||T074|-1|99999|||
+obj|TEXT|ST_unit34|975|545|1015|570|s||-1||||
+obj|TEXT|ST_title17|5|575|365|600|Porte de chargement filtre fermé||-1||||
+obj|IO|IO_value17|370|575|465|600||T055|-1|99999|||
+obj|TEXT|ST_unit17|465|575|505|600|s||-1||||
+obj|TEXT|ST_title35|515|575|875|600|Moteur 1 ||-1||||
+obj|IO|IO_value35|880|575|975|600||T078|-1|99999|||
+obj|TEXT|ST_unit35|975|575|1015|600|s||-1||||
+obj|TEXT|ST_title18|5|605|365|630|Porte de chargement ouverte timeout||-1||||
+obj|IO|IO_value18|370|605|465|630||T056|-1|99999|||
+obj|TEXT|ST_unit18|465|605|505|630|s||-1||||
+obj|TEXT|ST_title36|515|605|875|630|Retard fermeture porte déchargement - ligne soupape pression||-1||||
+obj|IO|IO_value36|880|605|975|630||T080|-1|99999|||
+obj|TEXT|ST_unit36|975|605|1015|630|s||-1||||

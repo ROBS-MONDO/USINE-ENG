@@ -1,0 +1,528 @@
+screen|301_GovoniSynoptique2Bambury1|1024|768
+obj|BUTTON|Bouton13|303|61|376|77|Bouton1||-1||||
+obj|BUTTON|Bouton9|58|62|131|78|Bouton1||-1||||
+obj|BUTTON|Bouton10|183|62|256|78|Bouton1||-1||||
+obj|BUTTON|Bouton14|419|62|492|78|Bouton1||-1||||
+obj|BUTTON|Bouton15|542|63|615|79|Bouton1||-1||||
+obj|BUTTON|Bouton16|659|64|732|80|Bouton1||-1||||
+obj|BUTTON|Bouton17|782|64|855|80|Bouton1||-1||||
+obj|BUTTON|Bouton19|901|64|974|80|Bouton1||-1||||
+obj|CONTROL|Control30|36|69|152|142|||-1||||
+obj|CONTROL|Control23|281|70|397|143|||-1||||
+obj|CONTROL|Control5|161|71|277|144|||-1||||
+obj|CONTROL|Control34|398|71|514|144|||-1||||
+obj|CONTROL|Control44|521|71|637|144|||-1||||
+obj|CONTROL|Control64|760|71|876|144|||-1||||
+obj|CONTROL|Control74|879|71|995|144|||-1||||
+obj|CONTROL|Control55|638|73|754|146|||-1||||
+obj|TEXT|Texte statique3|50|82|115|117|ind1||-1||00FFFE||
+obj|TEXT|Texte statique12|295|83|360|118|LSL103||-1||||
+obj|TEXT|Texte statique7|175|84|240|119|LSL102||-1||||
+obj|TEXT|Texte statique15|412|84|477|119|LSL104||-1||||
+obj|TEXT|Texte statique16|446|84|511|124|||-1||||
+obj|TEXT|Texte statique24|535|84|600|119|LSL105||-1||||
+obj|TEXT|Texte statique34|774|84|839|119|LSL107||-1||||
+obj|TEXT|Texte statique39|893|84|958|119|LSL108||-1||||
+obj|TEXT|Texte statique26|652|86|717|121|LSL106||-1||||
+obj|TEXT|Texte statique18|84|87|149|122|||-1||||
+obj|TEXT|Texte statique13|329|88|394|123|||-1||||
+obj|TEXT|Texte statique8|209|89|274|124|||-1||||
+obj|TEXT|Texte statique25|569|89|634|124|||-1||||
+obj|TEXT|Texte statique35|808|89|873|124|||-1||||
+obj|TEXT|Texte statique40|927|89|992|124|||-1||||
+obj|TEXT|Texte statique27|686|91|751|126|||-1||||
+obj|ELLIPSE|Cercle9|86|97|103|114|||6||||
+obj|ELLIPSE|Cercle14|330|97|347|114|||9||||
+obj|ELLIPSE|Cercle4|210|98|227|115|||3||||
+obj|ELLIPSE|Cercle18|447|98|464|115|||14||||
+obj|ELLIPSE|Cercle24|570|98|587|115|||10||||
+obj|ELLIPSE|Cercle34|809|98|826|115|||11||||
+obj|ELLIPSE|Cercle39|928|98|945|115|||12||||
+obj|ELLIPSE|Cercle28|687|100|704|117|||15||||
+obj|POLY|Polygone1|108|122|125|137|||-1||||
+obj|CONTROL|Control39|430|122|483|149|||-1||||
+obj|ELLIPSE|Cercle42|31|123|48|140|||0||||
+obj|POLY|Polygone2|64|123|81|138|||-1||||
+obj|POLY|Polygone5|353|123|370|138|||-1||||
+obj|POLY|Polygone3|233|124|250|139|||-1||||
+obj|POLY|Polygone6|309|124|326|139|||-1||||
+obj|CONTROL|Control50|410|124|435|145|EV104cmd||-1||||
+obj|POLY|Polygone9|593|124|610|139|||-1||||
+obj|CONTROL|Control87|670|124|723|151|||-1||||
+obj|POLY|Polygone13|832|124|849|139|||-1||||
+obj|POLY|Polygone15|951|124|968|139|||-1||||
+obj|ELLIPSE|Cercle5|156|125|173|142|||11||||
+obj|POLY|Polygone4|189|125|206|140|||-1||||
+obj|ELLIPSE|Cercle10|276|125|293|142|||11||||
+obj|POLY|Polygone10|549|125|566|140|||-1||||
+obj|ELLIPSE|Cercle30|754|125|771|142|||0||||
+obj|POLY|Polygone14|788|125|805|140|||-1||||
+obj|ELLIPSE|Cercle35|874|125|891|142|||4||||
+obj|POLY|Polygone16|907|125|924|140|||-1||||
+obj|ELLIPSE|Cercle20|516|126|533|143|||12||||
+obj|CONTROL|Control92|650|126|675|147|EV106cmd||-1||||
+obj|ELLIPSE|Cercle19|414|128|426|140|||11||||
+obj|ELLIPSE|Cercle29|654|130|666|142|||15||||
+obj|LINE|Trait2|120|133|120|156|||-1||||
+obj|LINE|Trait3|70|134|70|156|||-1||||
+obj|LINE|Trait8|365|134|365|157|||-1||||
+obj|LINE|Trait5|245|135|245|158|||-1||||
+obj|LINE|Trait9|315|135|315|157|||-1||||
+obj|LINE|Trait14|605|135|605|158|||-1||||
+obj|LINE|Trait20|844|135|844|158|||-1||||
+obj|LINE|Trait23|963|135|963|158|||-1||||
+obj|LINE|Trait6|195|136|195|158|||-1||||
+obj|LINE|Trait15|555|136|555|158|||-1||||
+obj|LINE|Trait21|794|136|794|158|||-1||||
+obj|LINE|Trait24|913|136|913|158|||-1||||
+obj|CONTROL|Control93|27|140|52|161|FL101cmd||-1||||
+obj|CONTROL|Control12|81|141|106|162|||-1||||
+obj|CONTROL|Control24|272|141|297|162|FL103cmd||-1||||
+obj|CONTROL|Control6|152|142|177|163|FL102cmd||-1||||
+obj|CONTROL|Control22|326|142|351|163|||-1||||
+obj|CONTROL|Control45|512|142|537|163|FL105cmd||-1||||
+obj|CONTROL|Control65|751|142|776|163|FL107cmd||-1||||
+obj|CONTROL|Control75|870|142|895|163|FL108cmd||-1||||
+obj|CONTROL|Control13|90|143|115|164|||-1||||
+obj|CONTROL|Control4|206|143|231|164|||-1||||
+obj|CONTROL|Control33|443|143|468|164|||-1||||
+obj|CONTROL|Control43|566|143|591|164|||-1||||
+obj|CONTROL|Control63|805|143|830|164|||-1||||
+obj|CONTROL|Control73|924|143|949|164|||-1||||
+obj|CONTROL|Control21|335|144|360|165|||-1||||
+obj|CONTROL|Control3|215|145|240|166|||-1||||
+obj|TEXT|Texte statique17|381|145|446|180|Bouton1||-1||||
+obj|CONTROL|Control32|452|145|477|166|||-1||||
+obj|CONTROL|Control42|575|145|600|166|||-1||||
+obj|CONTROL|Control54|683|145|708|166|||-1||||
+obj|CONTROL|Control62|814|145|839|166|||-1||||
+obj|CONTROL|Control72|933|145|958|166|||-1||||
+obj|TEXT|Texte statique28|621|147|686|182|Bouton1||-1||||
+obj|CONTROL|Control53|692|147|717|168|||-1||||
+obj|LINE|Trait1|50|156|120|156|||-1||||
+obj|CONTROL|Control14|81|157|106|178|||-1||||
+obj|LINE|Trait7|295|157|365|157|||-1||||
+obj|LINE|Trait4|175|158|245|158|||-1||||
+obj|CONTROL|Control25|326|158|351|179|||-1||||
+obj|LINE|Trait13|535|158|605|158|||-1||||
+obj|LINE|Trait19|774|158|844|158|||-1||||
+obj|LINE|Trait22|893|158|963|158|||-1||||
+obj|CONTROL|Control7|206|159|231|180|||-1||||
+obj|CONTROL|Control35|443|159|468|180|||-1||||
+obj|CONTROL|Control46|566|159|591|180|||-1||||
+obj|CONTROL|Control66|805|159|830|180|||-1||||
+obj|CONTROL|Control76|924|159|949|180|||-1||||
+obj|TEXT|Texte statique22|5|160|70|195|Bouton1||-1||||
+obj|TEXT|Texte statique9|250|161|315|196|Bouton1||-1||||
+obj|CONTROL|Control56|683|161|708|182|||-1||||
+obj|TEXT|Texte statique4|130|162|195|197|Bouton1||-1||||
+obj|TEXT|Texte statique20|490|162|555|197|Bouton1||-1||||
+obj|TEXT|Texte statique31|729|162|794|197|Bouton1||-1||||
+obj|TEXT|Texte statique36|848|162|913|197|Bouton1||-1||||
+obj|CONTROL|Control16|55|167|99|196|C101Acmd||-1||||
+obj|CONTROL|Control27|300|168|344|197|C103Acmd||-1||||
+obj|CONTROL|Control9|180|169|224|198|C102Acmd||-1||||
+obj|CONTROL|Control37|417|169|461|198|C104Acmd||-1||||
+obj|CONTROL|Control48|540|169|584|198|C105Acmd||-1||||
+obj|CONTROL|Control68|779|169|823|198|C107Acmd||-1||||
+obj|CONTROL|Control78|898|169|942|198|C108Acmd||-1||||
+obj|CONTROL|Control58|657|171|701|200|C106Acmd||-1||||
+obj|CONTROL|Control15|31|172|56|193|||-1||||
+obj|CONTROL|Control26|276|173|301|194|||-1||||
+obj|CONTROL|Control8|156|174|181|195|||-1||||
+obj|CONTROL|Control36|393|174|418|195|||-1||||
+obj|CONTROL|Control47|516|174|541|195|||-1||||
+obj|CONTROL|Control67|755|174|780|195|||-1||||
+obj|CONTROL|Control77|874|174|899|195|||-1||||
+obj|ELLIPSE|Cercle3|35|176|47|188|||3||||
+obj|CONTROL|Control57|633|176|658|197|||-1||||
+obj|ELLIPSE|Cercle13|280|177|292|189|||11||||
+obj|ELLIPSE|Cercle8|160|178|172|190|||7||||
+obj|ELLIPSE|Cercle17|397|178|409|190|||10||||
+obj|ELLIPSE|Cercle23|520|178|532|190|||15||||
+obj|ELLIPSE|Cercle33|759|178|771|190|||3||||
+obj|ELLIPSE|Cercle38|878|178|890|190|||7||||
+obj|ELLIPSE|Cercle27|637|180|649|192|||14||||
+obj|CONTROL|Control17|48|184|73|205|||-1||||
+obj|CONTROL|Control20|293|185|318|206|||-1||||
+obj|CONTROL|Control2|173|186|198|207|||-1||||
+obj|CONTROL|Control31|410|186|435|207|||-1||||
+obj|CONTROL|Control41|533|186|558|207|||-1||||
+obj|CONTROL|Control61|772|186|797|207|||-1||||
+obj|CONTROL|Control71|891|186|916|207|||-1||||
+obj|CONTROL|Control52|650|188|675|209|||-1||||
+obj|TEXT|Texte statique1|-2|191|63|226|Bouton1||-1||||
+obj|TEXT|Texte statique10|243|192|308|227|Bouton1||-1||||
+obj|TEXT|Texte statique5|123|193|188|228|Bouton1||-1||||
+obj|TEXT|Texte statique14|360|193|425|228|Bouton1||-1||||
+obj|TEXT|Texte statique21|483|193|548|228|Bouton1||-1||||
+obj|TEXT|Texte statique32|722|193|787|228|Bouton1||-1||||
+obj|TEXT|Texte statique37|841|193|906|228|Bouton1||-1||||
+obj|TEXT|Texte statique19|600|195|665|230|cmd||-1||00FFFE||
+obj|CONTROL|Control18|51|203|76|224|V101Acmd1||-1||||
+obj|CONTROL|Control28|296|204|321|225|V103Acmd1||-1||||
+obj|ELLIPSE|Cercle1|73|205|90|222|||5||||
+obj|ELLIPSE|Cercle2|90|205|107|222|||6||||
+obj|CONTROL|Control10|176|205|201|226|V102Acmd1||-1||||
+obj|ELLIPSE|Cercle11|318|205|335|222|||9||||
+obj|ELLIPSE|Cercle12|335|205|352|222|||10||||
+obj|CONTROL|Control38|413|205|438|226|V104Acmd1||-1||||
+obj|CONTROL|Control49|536|205|561|226|V105Acmd1||-1||||
+obj|CONTROL|Control69|775|205|800|226|V107Acmd1||-1||||
+obj|CONTROL|Control79|894|205|919|226|V108Acmd1||-1||||
+obj|ELLIPSE|Cercle15|435|206|452|223|||8||||
+obj|ELLIPSE|Cercle16|452|206|469|223|||9||||
+obj|ELLIPSE|Cercle21|558|206|575|223|||13||||
+obj|ELLIPSE|Cercle22|575|206|592|223|||14||||
+obj|ELLIPSE|Cercle36|917|206|934|223|||5||||
+obj|ELLIPSE|Cercle37|934|206|951|223|||2||||
+obj|ELLIPSE|Cercle6|199|207|216|224|||5||||
+obj|ELLIPSE|Cercle7|216|207|233|224|||6||||
+obj|CONTROL|Control59|653|207|678|228|V106Acmd1||-1||||
+obj|ELLIPSE|Cercle31|797|207|814|224|||1||||
+obj|ELLIPSE|Cercle32|814|207|831|224|||2||||
+obj|ELLIPSE|Cercle25|676|209|693|226|||12||||
+obj|ELLIPSE|Cercle26|693|209|710|226|||8||||
+obj|TEXT|Texte statique2|55|220|120|255|Bouton1||-1||||
+obj|CONTROL|Control19|47|221|72|242|||-1||||
+obj|TEXT|Texte statique11|300|221|365|256|Bouton1||-1||||
+obj|CONTROL|Control1|173|222|198|243|||-1||||
+obj|TEXT|Texte statique6|180|222|245|257|cmd||-1||00FFFE||
+obj|CONTROL|Control11|292|222|317|243|||-1||||
+obj|TEXT|Texte statique23|540|222|605|257|Bouton1||-1||||
+obj|TEXT|Texte statique33|779|222|844|257|Bouton1||-1||||
+obj|TEXT|Texte statique38|898|222|963|257|Bouton1||-1||||
+obj|CONTROL|Control29|409|223|434|244|||-1||||
+obj|CONTROL|Control40|532|223|557|244|||-1||||
+obj|CONTROL|Control60|771|223|796|244|||-1||||
+obj|CONTROL|Control70|890|223|915|244|||-1||||
+obj|TEXT|Texte statique58|416|224|481|259|Bouton1||-1||||
+obj|CONTROL|Control51|649|225|674|246|||-1||||
+obj|TEXT|Texte statique59|656|226|721|261|Bouton1||-1||||
+obj|CONTROL|Control178|22|232|64|266|||-1||||
+obj|CONTROL|Control125|68|232|110|266|||-1||||
+obj|CONTROL|Control126|104|232|146|266|||-1||||
+obj|CONTROL|Control127|135|232|177|266|||-1||||
+obj|CONTROL|Control129|192|232|234|266|||-1||||
+obj|CONTROL|Control130|226|232|268|266|||-1||||
+obj|CONTROL|Control131|255|232|297|266|||-1||||
+obj|CONTROL|Control133|310|232|352|266|||-1||||
+obj|CONTROL|Control134|347|232|389|266|||-1||||
+obj|CONTROL|Control135|377|232|419|266|||-1||||
+obj|CONTROL|Control137|428|232|470|266|||-1||||
+obj|CONTROL|Control138|465|232|507|266|||-1||||
+obj|CONTROL|Control139|495|232|537|266|||-1||||
+obj|CONTROL|Control141|552|232|594|266|||-1||||
+obj|CONTROL|Control142|591|232|633|266|||-1||||
+obj|CONTROL|Control143|614|232|656|266|||-1||||
+obj|CONTROL|Control145|669|232|711|266|||-1||||
+obj|CONTROL|Control146|707|232|749|266|||-1||||
+obj|CONTROL|Control147|736|232|778|266|||-1||||
+obj|CONTROL|Control149|790|232|832|266|||-1||||
+obj|CONTROL|Control150|826|232|868|266|||-1||||
+obj|CONTROL|Control151|854|232|896|266|||-1||||
+obj|CONTROL|Control153|909|232|951|266|||-1||||
+obj|CONTROL|Control124|50|236|70|256|||-1||||
+obj|CONTROL|Control128|176|236|196|256|||-1||||
+obj|CONTROL|Control132|295|236|315|256|||-1||||
+obj|CONTROL|Control136|412|236|432|256|||-1||||
+obj|CONTROL|Control140|535|236|555|256|||-1||||
+obj|CONTROL|Control144|652|236|672|256|||-1||||
+obj|CONTROL|Control148|774|236|794|256|||-1||||
+obj|CONTROL|Control152|893|236|913|256|||-1||||
+obj|CONTROL|Control154|948|243|964|260|||-1||||
+obj|CONTROL|Control179|10|244|26|260|||-1||||
+obj|CONTROL|Control181|24|252|66|286|||-1||||
+obj|CONTROL|Control197|61|252|103|286|||-1||||
+obj|CONTROL|Control198|95|252|137|286|||-1||||
+obj|CONTROL|Control199|129|252|171|286|||-1||||
+obj|CONTROL|Control200|165|252|207|286|||-1||||
+obj|CONTROL|Control201|203|252|245|286|||-1||||
+obj|CONTROL|Control202|242|252|284|286|||-1||||
+obj|CONTROL|Control203|279|252|321|286|||-1||||
+obj|CONTROL|Control204|315|252|357|286|||-1||||
+obj|CONTROL|Control205|352|252|394|286|||-1||||
+obj|CONTROL|Control180|10|258|26|274|||-1||||
+obj|CONTROL|Control155|934|258|983|300|||-1||||
+obj|BUTTON|Bouton11|473|263|546|279|Bouton1||-1||||
+obj|CONTROL|Control206|391|264|407|280|||-1||||
+obj|BUTTON|Bouton12|605|265|678|281|Bouton1||-1||||
+obj|BUTTON|Bouton18|730|265|803|281|Bouton1||-1||||
+obj|BUTTON|Bouton20|870|265|943|281|Bouton1||-1||||
+obj|CONTROL|Control118|451|275|567|348|||-1||||
+obj|CONTROL|Control108|583|276|699|349|||-1||||
+obj|CONTROL|Control98|709|276|825|349|||-1||||
+obj|CONTROL|Control207|389|277|414|298|||-1||||
+obj|CONTROL|Control86|848|277|964|350|||-1||||
+obj|ELLIPSE|Cercle61|335|281|352|298|||7||||
+obj|TEXT|Texte statique55|465|288|530|323|LSL112||-1||||
+obj|CONTROL|Control183|230|289|378|387|||-1||||
+obj|TEXT|Texte statique50|597|289|662|324|LSL111||-1||||
+obj|TEXT|Texte statique45|723|289|788|324|LSL110||-1||||
+obj|TEXT|Texte statique43|862|290|927|325|LSL109||-1||||
+obj|TEXT|Texte statique56|499|293|564|328|||-1||||
+obj|TEXT|Texte statique51|631|294|696|329|||-1||||
+obj|TEXT|Texte statique46|757|294|822|329|||-1||||
+obj|TEXT|Texte statique62|339|295|404|330|Bouton1||-1||||
+obj|CONTROL|Control208|389|295|414|316|||-1||||
+obj|TEXT|Texte statique44|896|295|961|330|||-1||||
+obj|CONTROL|Control156|934|297|983|339|||-1||||
+obj|ELLIPSE|Cercle60|500|302|517|319|||2||||
+obj|ELLIPSE|Cercle55|632|303|649|320|||1||||
+obj|ELLIPSE|Cercle50|758|303|775|320|||0||||
+obj|ELLIPSE|Cercle45|897|304|914|321|||13||||
+obj|CONTROL|Control222|46|313|88|347|V126cmd1||-1||||
+obj|CONTROL|Control209|389|313|414|334|||-1||||
+obj|CONTROL|Control221|12|314|54|348|||-1||||
+obj|CONTROL|Control195|82|314|124|348|||-1||||
+obj|CONTROL|Control194|141|314|183|348|||-1||||
+obj|CONTROL|Control193|180|314|222|348|||-1||||
+obj|CONTROL|Control192|218|314|260|348|||-1||||
+obj|CONTROL|Control182|232|316|380|414|||-1||||
+obj|CONTROL|Control210|389|320|414|341|||-1||||
+obj|POLY|Polygone25|1|323|18|342|||-1||||
+obj|CONTROL|Control213|122|325|143|341|||-1||||
+obj|POLY|Polygone17|523|328|540|343|||-1||||
+obj|CONTROL|Control80|880|328|933|355|||-1||||
+obj|ELLIPSE|Cercle76|445|329|462|346|||7||||
+obj|POLY|Polygone18|479|329|496|344|||-1||||
+obj|POLY|Polygone11|655|329|672|344|||-1||||
+obj|POLY|Polygone7|781|329|798|344|||-1||||
+obj|CONTROL|Control212|351|330|393|364|||-1||||
+obj|POLY|Polygone12|611|330|628|345|||-1||||
+obj|ELLIPSE|Cercle46|704|330|721|347|||4||||
+obj|POLY|Polygone8|737|330|754|345|||-1||||
+obj|CONTROL|Control81|860|330|885|351|EV109cmd||-1||||
+obj|ELLIPSE|Cercle51|578|331|595|348|||2||||
+obj|ELLIPSE|Cercle40|864|334|876|346|||13||||
+obj|CONTROL|Control157|934|334|983|376|||-1||||
+obj|CONTROL|Control211|391|335|407|352|||-1||||
+obj|TEXT|Texte statique70|72|339|137|374|Bouton1||-1||||
+obj|CONTROL|Control196|119|339|145|361|||-1||||
+obj|LINE|Trait26|535|339|535|362|||-1||||
+obj|LINE|Trait27|485|340|485|362|||-1||||
+obj|LINE|Trait17|667|340|667|363|||-1||||
+obj|LINE|Trait11|793|340|793|363|||-1||||
+obj|LINE|Trait18|617|341|617|363|||-1||||
+obj|LINE|Trait12|743|341|743|363|||-1||||
+obj|ELLIPSE|Cercle68|46|343|63|360|||10||||
+obj|ELLIPSE|Cercle69|68|343|85|360|||8||||
+obj|TEXT|Texte statique66|144|343|209|378|Dech.||-1||||
+obj|CONTROL|Control119|442|346|467|367|FL112cmd||-1||||
+obj|CONTROL|Control117|496|347|521|368|||-1||||
+obj|CONTROL|Control109|574|347|599|368|FL111cmd||-1||||
+obj|CONTROL|Control99|700|347|725|368|FL110cmd||-1||||
+obj|TEXT|Texte statique63|272|348|337|383|W118||-1||||
+obj|CONTROL|Control107|628|348|653|369|||-1||||
+obj|CONTROL|Control97|754|348|779|369|||-1||||
+obj|CONTROL|Control116|505|349|530|370|||-1||||
+obj|CONTROL|Control85|893|349|918|370|||-1||||
+obj|CONTROL|Control106|637|350|662|371|||-1||||
+obj|CONTROL|Control96|763|350|788|371|||-1||||
+obj|TEXT|Texte statique41|831|351|896|386|Bouton1||-1||||
+obj|CONTROL|Control84|902|351|927|372|||-1||||
+obj|POLY|Polygone23|26|353|46|364|||-1||||
+obj|CONTROL|Control214|119|357|145|379|||-1||||
+obj|TEXT|Texte statique69|85|359|150|394|PLS128||-1||||
+obj|BUTTON|Bouton1|161|359|208|382|B2_start_scarico||-1||00FFFE||
+obj|LINE|Trait25|465|362|535|362|||-1||||
+obj|CONTROL|Control120|496|363|521|384|||-1||||
+obj|LINE|Trait16|597|363|667|363|||-1||||
+obj|LINE|Trait10|723|363|793|363|||-1||||
+obj|CONTROL|Control110|628|364|653|385|||-1||||
+obj|CONTROL|Control100|754|364|779|385|||-1||||
+obj|CONTROL|Control88|893|365|918|386|||-1||||
+obj|TEXT|Texte statique53|420|366|485|401|Bouton1||-1||||
+obj|TEXT|Texte statique48|552|367|617|402|Bouton1||-1||||
+obj|TEXT|Texte statique29|678|367|743|402|Bouton1||-1||||
+obj|LINE|Trait polygonal1|20|368|93|461|||-1||||
+obj|LINE|Trait28|355|372|383|372|||-1||||
+obj|POLY|Polygone19|372|372|387|382|||-1||||
+obj|CONTROL|Control122|470|373|514|402|C112Acmd||-1||||
+obj|CONTROL|Control216|29|374|55|396|||-1||||
+obj|POLY|Polygone20|225|374|240|384|||-1||||
+obj|LINE|Trait29|228|374|256|374|||-1||||
+obj|CONTROL|Control112|602|374|646|403|C111Acmd||-1||||
+obj|CONTROL|Control102|728|374|772|403|C110Acmd||-1||||
+obj|CONTROL|Control215|119|375|145|397|||-1||||
+obj|CONTROL|Control90|867|375|911|404|C109Acmd||-1||||
+obj|CONTROL|Control158|934|375|983|417|||-1||||
+obj|ELLIPSE|Cercle75|33|378|50|395|||15||||
+obj|CONTROL|Control121|446|378|471|399|||-1||||
+obj|CONTROL|Control111|578|379|603|400|||-1||||
+obj|CONTROL|Control101|704|379|729|400|||-1||||
+obj|CONTROL|Control89|843|380|868|401|||-1||||
+obj|ELLIPSE|Cercle78|452|382|464|394|||9||||
+obj|ELLIPSE|Cercle54|582|383|594|395|||5||||
+obj|ELLIPSE|Cercle49|708|383|720|395|||14||||
+obj|ELLIPSE|Cercle44|847|384|859|396|||12||||
+obj|POLY|Polygone21|327|387|346|405|||-1||||
+obj|POLY|Polygone22|268|389|287|407|||-1||||
+obj|BUTTON|Bouton2|161|390|208|413|B2_stop_scarico||-1||00FFFE||
+obj|CONTROL|Control115|463|390|488|411|||-1||||
+obj|CONTROL|Control105|595|391|620|412|||-1||||
+obj|CONTROL|Control95|721|391|746|412|||-1||||
+obj|CONTROL|Control83|860|392|885|413|||-1||||
+obj|CONTROL|Control218|119|394|145|416|||-1||||
+obj|TEXT|Texte statique57|410|396|475|431|Bouton1||-1||||
+obj|TEXT|Texte statique67|11|397|76|432|Bouton1||-1||||
+obj|ELLIPSE|Cercle67|98|397|115|414|||3||||
+obj|TEXT|Texte statique52|542|397|607|432|Bouton1||-1||||
+obj|TEXT|Texte statique47|668|397|733|432|Bouton1||-1||||
+obj|TEXT|Texte statique42|810|399|875|434|Bouton1||-1||||
+obj|LINE|Trait31|340|401|340|429|||-1||||
+obj|LINE|Trait32|275|403|275|429|||-1||||
+obj|CONTROL|Control162|934|407|983|449|||-1||||
+obj|CONTROL|Control220|85|409|127|443|||-1||||
+obj|CONTROL|Control123|466|409|491|430|V112Acmd1||-1||||
+obj|LINE|Trait33|106|410|106|422|||-1||||
+obj|ELLIPSE|Cercle77|489|410|506|427|||11||||
+obj|ELLIPSE|Cercle58|506|410|523|427|||6||||
+obj|CONTROL|Control113|598|410|623|431|V111Acmd1||-1||||
+obj|CONTROL|Control103|724|410|749|431|V110Acmd1||-1||||
+obj|POLY|Polygone24|50|411|61|431|||-1||||
+obj|ELLIPSE|Cercle52|621|411|638|428|||12||||
+obj|ELLIPSE|Cercle53|638|411|655|428|||4||||
+obj|ELLIPSE|Cercle47|747|411|764|428|||15||||
+obj|ELLIPSE|Cercle48|764|411|781|428|||0||||
+obj|CONTROL|Control91|863|411|888|432|V109Acmd1||-1||||
+obj|ELLIPSE|Cercle41|886|412|903|429|||10||||
+obj|ELLIPSE|Cercle43|903|412|920|429|||11||||
+obj|CONTROL|Control219|120|413|138|432|||-1||||
+obj|CONTROL|Control184|293|414|318|435|||-1||||
+obj|CONTROL|Control217|61|415|87|437|||-1||||
+obj|ELLIPSE|Cercle74|68|417|85|434|||1||||
+obj|TEXT|Texte statique61|179|420|244|455|Bouton1||-1||||
+obj|CONTROL|Control185|233|422|258|443|FL120cmd||-1||||
+obj|CONTROL|Control187|293|423|318|444|||-1||||
+obj|TEXT|Texte statique54|470|426|535|461|Bouton1||-1||||
+obj|TEXT|Texte statique49|602|427|667|462|Bouton1||-1||||
+obj|TEXT|Texte statique30|728|427|793|462|Bouton1||-1||||
+obj|CONTROL|Control114|462|428|487|449|||-1||||
+obj|CONTROL|Control104|594|428|619|449|||-1||||
+obj|CONTROL|Control94|720|428|745|449|||-1||||
+obj|LINE|Trait30|255|429|340|429|||-1||||
+obj|CONTROL|Control82|859|429|884|450|||-1||||
+obj|TEXT|Texte statique60|867|429|932|464|cmd||-1||00FFFE||
+obj|CONTROL|Control186|296|440|321|461|V123cmd1||-1||||
+obj|CONTROL|Control177|426|441|468|475|||-1||||
+obj|CONTROL|Control176|480|441|522|475|||-1||||
+obj|CONTROL|Control175|520|441|562|475|||-1||||
+obj|CONTROL|Control174|558|441|600|475|||-1||||
+obj|CONTROL|Control172|605|441|647|475|||-1||||
+obj|CONTROL|Control171|644|441|686|475|||-1||||
+obj|CONTROL|Control170|683|441|725|475|||-1||||
+obj|CONTROL|Control166|740|441|782|475|||-1||||
+obj|CONTROL|Control165|779|441|821|475|||-1||||
+obj|CONTROL|Control168|797|441|839|475|||-1||||
+obj|CONTROL|Control164|822|441|864|475|||-1||||
+obj|CONTROL|Control160|879|441|921|475|||-1||||
+obj|CONTROL|Control161|911|441|953|475|||-1||||
+obj|ELLIPSE|Cercle63|318|442|335|459|||7||||
+obj|ELLIPSE|Cercle64|338|442|355|459|||11||||
+obj|TEXT|Texte statique68|37|443|102|478|Bouton1||-1||||
+obj|ELLIPSE|Cercle62|237|443|254|460|||5||||
+obj|CONTROL|Control173|465|445|485|465|||-1||||
+obj|CONTROL|Control169|597|445|617|465|||-1||||
+obj|CONTROL|Control167|723|445|743|465|||-1||||
+obj|CONTROL|Control159|862|445|882|465|||-1||||
+obj|CONTROL|Control163|948|446|964|463|||-1||||
+obj|POLY|Polygone26|411|449|428|468|||-1||||
+obj|CONTROL|Control262|781|455|823|489|||-1||||
+obj|TEXT|Texte statique64|301|458|366|493|Bouton1||-1||||
+obj|CONTROL|Control188|293|459|318|480|||-1||||
+obj|BUTTON|Bouton3|16|464|96|474|Champ d'E/S2||-1||||
+obj|CONTROL|Control263|817|466|833|483|||-1||||
+obj|CONTROL|Control261|772|467|788|483|||-1||||
+obj|CONTROL|Control227|874|467|1037|604|||-1||||
+obj|RECT|Rectangle53|7|475|112|560|||-1||||
+obj|CONTROL|Control189|289|478|314|499|V124cmd1||-1||||
+obj|TEXT|Texte statique88|632|478|697|513|Bouton1||-1||||
+obj|ELLIPSE|Cercle66|254|480|271|497|||12||||
+obj|ELLIPSE|Cercle65|274|480|291|497|||14||||
+obj|CONTROL|Control260|764|480|789|501|||-1||||
+obj|TEXT|Texte statique74|16|482|150|499|||-1||||
+obj|BUTTON|Bouton4|139|482|189|507|bal||-1||00FFFE||
+obj|CONTROL|Control264|815|482|840|503|||-1||||
+obj|TEXT|Texte statique71|16|484|40|501|Silo||-1||||
+obj|CONTROL|Control254|688|492|713|513|V200cmd||-1||||
+obj|CONTROL|Control259|764|492|789|513|||-1||||
+obj|ELLIPSE|Cercle72|674|494|691|511|||0||||
+obj|TEXT|Texte statique87|928|494|987|536|Citerne||-1||||
+obj|CONTROL|Control226|755|495|900|593|||-1||||
+obj|TEXT|Texte statique65|247|496|312|531|Bouton1||-1||||
+obj|CONTROL|Control190|293|498|318|519|||-1||||
+obj|TEXT|Texte statique72|16|501|55|518|Brut||-1||||
+obj|LINE|Trait38|704|506|704|534|||-1||||
+obj|CONTROL|Control258|764|512|789|533|||-1||||
+obj|CONTROL|Control191|293|515|318|536|||-1||||
+obj|CONTROL|Control239|616|518|658|552|||-1||||
+obj|CONTROL|Control255|655|518|697|552|||-1||||
+obj|BUTTON|Bouton22|919|521|992|537|Bouton1||-1||||
+obj|TEXT|Texte statique73|16|522|40|539|Set||-1||||
+obj|CONTROL|Control253|694|524|732|561|||-1||||
+obj|CONTROL|Control256|729|526|771|560|||-1||||
+obj|TEXT|Texte statique85|801|526|860|568|Réservoir ||-1||||
+obj|CONTROL|Control240|603|530|619|546|||-1||||
+obj|CONTROL|Control224|293|532|318|553|||-1||||
+obj|CONTROL|Control257|765|532|783|548|||-1||||
+obj|TEXT|Texte statique79|16|539|40|556|Net||-1||||
+obj|CONTROL|Control238|595|543|620|564|||-1||||
+obj|TEXT|Texte statique86|790|549|868|591|de céraclor||-1||||
+obj|CONTROL|Control225|293|550|318|571|||-1||||
+obj|RECT|Rectangle46|256|552|280|565|||-1||||
+obj|TEXT|Texte statique89|680|555|745|590|Bouton1||-1||||
+obj|CONTROL|Control273|260|559|302|593|||-1||||
+obj|RECT|Rectangle56|374|561|493|587|||-1||||
+obj|CONTROL|Control229|595|563|620|584|||-1||||
+obj|RECT|Rectangle45|248|565|288|584|||-1||||
+obj|CONTROL|Control223|293|565|312|581|||-1||||
+obj|TEXT|Texte statique77|377|565|451|582|Onduleur %||-1||||
+obj|CONTROL|Control228|297|576|339|610|||-1||||
+obj|CONTROL|Control231|333|576|375|610|||-1||||
+obj|CONTROL|Control232|370|576|412|610|||-1||||
+obj|CONTROL|Control233|408|576|450|610|||-1||||
+obj|CONTROL|Control234|445|576|487|610|||-1||||
+obj|CONTROL|Control235|484|576|526|610|||-1||||
+obj|CONTROL|Control236|519|576|561|610|||-1||||
+obj|CONTROL|Control237|558|576|600|610|||-1||||
+obj|ELLIPSE|Cercle73|640|577|657|594|||2||||
+obj|CONTROL|Control252|595|582|614|598|||-1||||
+obj|BUTTON|Bouton21|792|582|865|598|Bouton1||-1||||
+obj|RECT|Rectangle44|233|583|302|617|||-1||||
+obj|CONTROL|Control272|943|586|968|607|||-1||||
+obj|TEXT|Texte statique91|686|589|751|624|Bouton1||-1||||
+obj|CONTROL|Control249|657|591|699|625|||-1||||
+obj|ELLIPSE|Cercle71|278|592|295|609|||-1||||
+obj|CONTROL|Control230|297|592|339|626|||-1||||
+obj|CONTROL|Control241|337|592|379|626|||-1||||
+obj|CONTROL|Control242|374|592|416|626|||-1||||
+obj|CONTROL|Control243|409|592|451|626|||-1||||
+obj|CONTROL|Control244|449|592|491|626|||-1||||
+obj|CONTROL|Control245|488|592|530|626|||-1||||
+obj|CONTROL|Control246|523|592|565|626|||-1||||
+obj|CONTROL|Control247|562|592|604|626|||-1||||
+obj|CONTROL|Control248|600|592|642|626|||-1||||
+obj|ELLIPSE|Cercle70|242|593|259|610|||-1||||
+obj|CONTROL|Control265|637|594|662|615|V204cmd||-1||||
+obj|LINE|Trait37|287|595|287|606|||-1||||
+obj|LINE|Trait35|251|596|251|607|||-1||||
+obj|RECT|Rectangle55|127|597|232|649|||-1||||
+obj|CONTROL|Control250|696|597|734|634|||-1||||
+obj|CONTROL|Control251|732|599|774|633|||-1||||
+obj|CONTROL|Control266|767|599|809|633|||-1||||
+obj|CONTROL|Control267|808|599|850|633|||-1||||
+obj|CONTROL|Control268|848|599|890|633|||-1||||
+obj|CONTROL|Control269|885|599|927|633|||-1||||
+obj|CONTROL|Control270|910|599|952|633|||-1||||
+obj|LINE|Trait36|281|601|292|601|||-1||||
+obj|LINE|Trait34|245|602|256|602|||-1||||
+obj|CONTROL|Control271|944|605|962|621|||-1||||
+obj|BUTTON|Bouton6|27|607|87|627|Planning||-1||000000||
+obj|TEXT|Texte statique75|134|607|176|624|Recette||-1||||
+obj|RECT|Rectangle43|230|616|305|625|||-1||||
+obj|TEXT|Texte statique90|617|616|682|651|Bouton1||-1||||
+obj|TEXT|Texte statique76|134|626|163|643|Lot||-1||||
+obj|BUTTON|Bouton7|232|626|302|646|Production||-1||000000||
+obj|CONTROL|Fenêtre de vue1|724|659|924|779|331_GovoniPopUp1.PDL||-1||||
+obj|CONTROL|Fenêtre de vue2|737|674|987|824|332_GovoniPopUp_2||-1||||

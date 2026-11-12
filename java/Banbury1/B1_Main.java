@@ -54,10 +54,10 @@ public class B1_Main extends JFrame {
 
     private final SynPanel panel;
 
-    public B1_Main(B1Source src, B1RecipeBridge bridge) {
+    public B1_Main(B1Source src, B1RecipeBridge bridge, B1Tags tags) {
         super("Banbury 1 - MCC-240 T - " + VERSION);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        panel = new SynPanel(src, bridge);
+        panel = new SynPanel(src, bridge, tags);
         setContentPane(panel);
         pack();
         setLocationRelativeTo(null);
@@ -68,6 +68,8 @@ public class B1_Main extends JFrame {
         boolean demo = false;
         String snap = null;
         int period = 300;
+        String screen = null;
+        boolean overlay = false;
         Path tagFile = DEFAULT_TAGS;
         Path recipeDir = B1RecipeEditor.DEFAULT_DIR;
         Path layoutFile = B1RecipeEditor.DEFAULT_LAYOUT;
@@ -79,6 +81,8 @@ public class B1_Main extends JFrame {
                 case "--recipes-dir": recipeDir = Paths.get(args[++i]); break;
                 case "--layout": layoutFile = Paths.get(args[++i]); break;
                 case "--period": period = Integer.parseInt(args[++i]); break;
+                case "--screen": screen = args[++i]; break;
+                case "--overlay": overlay = true; break;
                 case "--write-tags":
                     B1Tags.writeTemplate(Paths.get(args[++i]));
                     return;
@@ -97,15 +101,26 @@ public class B1_Main extends JFrame {
         final B1RecipeLayout layout = B1RecipeLayout.load(layoutFile);
         final B1RecipeRepository repo = new B1FileRecipeRepository(recipeDir, layout);
         final B1RecipeBridge bridge = new B1RecipeBridge(repo, layout, ip);
+        final B1Tags tagsObj = B1Tags.load(tagFile);
         final B1Source src = demo ? new B1DemoSource()
-                : newPlcSource(B1Tags.load(tagFile), ip, layout, period);
+                : newPlcSource(tagsObj, ip, layout, period);
+        if (snap != null && screen != null) {
+            System.setProperty("java.awt.headless", "true");
+            for (int i = 0; i < 40 && !src.connected(); i++) {
+                Thread.sleep(100);
+            }
+            Thread.sleep(700);
+            B1ScreensWindow.snapshot(src, screen, snap, overlay);
+            src.close();
+            System.exit(0);
+        }
         if (snap != null) {
             System.setProperty("java.awt.headless", "true");
             for (int i = 0; i < 40 && !src.connected(); i++) {
                 Thread.sleep(100);
             }
             Thread.sleep(700);
-            SynPanel p = new SynPanel(src, bridge);
+            SynPanel p = new SynPanel(src, bridge, tagsObj);
             p.setSize(SynPanel.BASE_W, SynPanel.BASE_H);
             BufferedImage img = new BufferedImage(SynPanel.BASE_W, SynPanel.BASE_H, BufferedImage.TYPE_INT_RGB);
             for (int pass = 0; pass < 2; pass++) { // 1a passata: avvia il confronto ricetta
@@ -118,7 +133,7 @@ public class B1_Main extends JFrame {
             src.close();
             System.exit(0);
         }
-        SwingUtilities.invokeLater(() -> new B1_Main(src, bridge).setVisible(true));
+        SwingUtilities.invokeLater(() -> new B1_Main(src, bridge, tagsObj).setVisible(true));
     }
 
     private static B1Source newPlcSource(B1Tags tags, String ip, B1RecipeLayout layout, int period) {
@@ -155,6 +170,7 @@ public class B1_Main extends JFrame {
 
         private final B1Source src;
         private final B1RecipeBridge bridge;
+        private final B1Tags tags;
         private final Font fNormal = new Font("Arial", Font.PLAIN, 14);
         private final Font fBold = new Font("Arial", Font.BOLD, 15);
         private final Font fBig = new Font("Arial", Font.BOLD, 20);
@@ -188,9 +204,10 @@ public class B1_Main extends JFrame {
             }
         }
 
-        SynPanel(B1Source src, B1RecipeBridge bridge) {
+        SynPanel(B1Source src, B1RecipeBridge bridge, B1Tags tags) {
             this.src = src;
             this.bridge = bridge;
+            this.tags = tags;
             setPreferredSize(new Dimension(BASE_W, BASE_H));
             setDoubleBuffered(true);
             new Timer(60, e -> {
@@ -203,6 +220,13 @@ public class B1_Main extends JFrame {
                 }
                 repaint();
             }).start();
+            getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "raw");
+            getActionMap().put("raw", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    B1RawViewer.open(src, tags);
+                }
+            });
             getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "overlay");
             getActionMap().put("overlay", new AbstractAction() {
                 @Override
@@ -817,22 +841,33 @@ public class B1_Main extends JFrame {
                 g.setColor(new Color(0x808080));
                 g.drawRect(x, y, w - 1, h - 1);
                 icon(g, i, x, y);
+                final String[] target = {null, "002_Process", "003_Trends", "004_Alarms", "005_Display", null,
+                        "007_Production", "008_Settings", "009_Temperatures", "010_Components"};
                 if (i == 5 && bridge != null) {
                     hits.add(new Hit(x, y, w, h, names[i], () -> bridge.openEditor(null)));
+                } else if (target[i] != null) {
+                    final String scr = target[i];
+                    hits.add(new Hit(x, y, w, h, names[i], () -> B1ScreensWindow.open(src, scr)));
                 } else {
                     hits.add(new Hit(x, y, w, h, names[i]));
                 }
             }
-            String[] t = {"Govoni", "B2", "B2 main"};
-            int[] tx = {578, 632, 688};
-            int[] tw = {48, 48, 58};
-            for (int i = 0; i < 3; i++) {
+            String[] t = {"Govoni", "B2", "B2 main", "Valori PLC"};
+            int[] tx = {578, 632, 688, 752};
+            int[] tw = {48, 48, 58, 70};
+            for (int i = 0; i < t.length; i++) {
                 g.setPaint(new GradientPaint(tx[i], 686, Color.WHITE, tx[i], 736, new Color(0xCFCFCF)));
                 g.fillRect(tx[i], 686, tw[i], 50);
                 g.setColor(new Color(0x808080));
                 g.drawRect(tx[i], 686, tw[i] - 1, 49);
                 text(g, t[i], tx[i], 686, tw[i], 50, new Font("Arial", Font.PLAIN, 11), Color.BLACK, 0);
-                hits.add(new Hit(tx[i], 686, tw[i], 50, t[i]));
+                if (i == 0) {
+                    hits.add(new Hit(tx[i], 686, tw[i], 50, t[i], () -> B1ScreensWindow.open(src, "301_GovoniSynoptique2Bambury1")));
+                } else if (i == 3) {
+                    hits.add(new Hit(tx[i], 686, tw[i], 50, t[i], () -> B1RawViewer.open(src, tags)));
+                } else {
+                    hits.add(new Hit(tx[i], 686, tw[i], 50, t[i]));
+                }
             }
             g.setPaint(new GradientPaint(932, 685, Color.WHITE, 932, 737, new Color(0xCFCFCF)));
             g.fillRect(932, 685, 88, 52);

@@ -73,22 +73,22 @@ public final class B1Tags {
     // chiave, descrizione, indirizzo predefinito ("" = non collegato)
     private static final String[][] DEFAULTS = {
         // --- valori ---
-        {"press_top",   "Pressione (barra alta)",                    ""},
-        {"temp",        "Temperatura camera (barra alta e riquadro)", ""},
-        {"speed_top",   "Velocita' rotori (barra alta)",             ""},
+        {"press_top",   "Pressione (barra alta)",                    "DB110.W70*0.01"},
+        {"temp",        "Temperatura camera (barra alta e riquadro)", "DB110.W100"},
+        {"speed_top",   "Velocita' rotori (barra alta)",             "DB110.W60"},
         {"cycle_time",  "Tempo ciclo, secondi (mm:ss)",              ""},
-        {"mix_total",   "Miscele totali (ipotesi dal dump)",         "DB110.W210"},
-        {"mix_done",    "Miscele fatte (ipotesi dal dump)",          "DB110.W208"},
+        {"mix_total",   "Miscele totali (WinCC: DBW210)",         "DB110.W210"},
+        {"mix_done",    "Miscele fatte (WinCC: DBW212)",          "DB110.W212"},
         {"mix_todo",    "Miscele da fare (vuoto = totali - fatte)",  ""},
-        {"press_set",   "Pistone: pressione consegna",               ""},
-        {"press_act",   "Pistone: pressione attuale",                ""},
-        {"piston_pct1", "Pistone: % 1",                              ""},
+        {"press_set",   "Pistone: pressione consegna",               "DB110.W70*0.01"},
+        {"press_act",   "Pistone: pressione attuale",                "DB110.W72*0.01"},
+        {"piston_pct1", "Pistone: % 1",                              "DB110.W86"},
         {"piston_pct2", "Pistone: % 2 (ipotesi: velocita' discesa)", "DB110.W106"},
         {"piston_pct3", "Pistone: % 3 (ipotesi: velocita' salita)",  "DB110.W108"},
-        {"rpm_set",     "Rotori: giri consegna",                     ""},
-        {"rpm_act",     "Rotori: giri attuali",                      ""},
-        {"current",     "Rotori: corrente (A)",                      ""},
-        {"steps",       "Cycle malaxeur: passi (ipotesi)",           "DB110.W212"},
+        {"rpm_set",     "Rotori: giri consegna",                     "DB110.W58"},
+        {"rpm_act",     "Rotori: giri attuali",                      "DB110.W60"},
+        {"current",     "Rotori: corrente (A)",                      "DB110.W62"},
+        {"steps",       "Cycle malaxeur: passi (ipotesi)",           "DB110.W234"},
         {"suffix",      "Suffisso",                                  ""},
         {"seq_a",       "SEQ prima cifra (ipotesi dal dump)",        "DB150.W0"},
         {"seq_b",       "SEQ seconda cifra (ipotesi dal dump)",      "DB150.W2"},
@@ -100,45 +100,45 @@ public final class B1Tags {
         {"num_melange", "NUM MELANGE",                               ""},
         {"recipe_name", "Nome ricetta (stringa)",                    "DB201.S4"},
         // --- lampade piston ---
-        {"piston_high",    "Pistone: posizione alta",   ""},
-        {"piston_float",   "Pistone: flottante",        ""},
-        {"piston_low",     "Pistone: posizione bassa",  ""},
-        {"piston_blocked", "Pistone: bloccato",         ""},
-        {"rotors_running", "Rotori: running",           ""},
+        {"piston_high",    "Pistone: posizione alta",   "DB110.W22.B1"},
+        {"piston_float",   "Pistone: flottante",        "DB110.W22.B5"},
+        {"piston_low",     "Pistone: posizione bassa",  "DB110.W22.B6"},
+        {"piston_blocked", "Pistone: bloccato",         "DB110.W22.B0"},
+        {"rotors_running", "Rotori: running",           "DB110.W60"},
         {"lube_running",   "Lubrificazione: running",   ""},
         // --- silos / porte ---
         {"silos_open",      "Silos: aperto (ipotesi da PDL)",  "DB110.W6.B12"},
         {"silos_closed",    "Silos: chiuso (ipotesi da PDL)",  "DB110.W6.B13"},
-        {"door_load_open",  "Porta carico: aperta",            ""},
-        {"door_load_closed","Porta carico: chiusa",            ""},
-        {"weight_open",     "Poids presseur: aperto",          ""},
-        {"weight_closed",   "Poids presseur: chiuso",          ""},
-        {"door_dis_open",   "Porta scarico: aperta",           ""},
-        {"door_dis_closed", "Porta scarico: chiusa",           ""},
+        {"door_load_open",  "Porta carico: aperta",            "DB110.W26.B0"},
+        {"door_load_closed","Porta carico: chiusa",            "DB110.W26.B1"},
+        {"weight_open",     "Poids presseur: aperto",          "DB110.W24.B4"},
+        {"weight_closed",   "Poids presseur: chiuso",          "DB110.W24.B3"},
+        {"door_dis_open",   "Porta scarico: aperta",           "DB110.W24.B0"},
+        {"door_dis_closed", "Porta scarico: chiusa",           "DB110.W24.B1"},
         // --- malaxeur pret ---
-        {"rdy_temp",     "Pronto: temp. min. OK avviamento", ""},
-        {"rdy_discharge","Pronto: scarico OK",               ""},
-        {"rdy_motor",    "Pronto: motore principale OK",     ""},
-        {"rdy_door",     "Pronto: porta scarico chiusa",     ""},
-        {"rdy_mintime",  "Pronto: tempo min. tra cicli",     ""},
-        {"rdy_cycles",   "Pronto: n. cicli passi effettuati",""},
+        {"rdy_temp",     "Pronto: temp. min. OK avviamento", "DB110.W54.B6"},
+        {"rdy_discharge","Pronto: scarico OK",               "DB110.W54.B7"},
+        {"rdy_motor",    "Pronto: motore principale OK",     "DB110.W54.B8"},
+        {"rdy_door",     "Pronto: porta scarico chiusa",     "DB110.W54.B9"},
+        {"rdy_mintime",  "Pronto: tempo min. tra cicli",     "DB110.W54.B10"},
+        {"rdy_cycles",   "Pronto: n. cicli passi effettuati","DB110.W54.B11"},
         // --- cycle malaxeur ---
-        {"cyc_auto",   "Ciclo: auto",       ""},
-        {"cyc_cont",   "Ciclo: continuo",   ""},
-        {"cyc_susp",   "Ciclo: sospeso",    ""},
-        {"cyc_cycle",  "Ciclo: ciclo",      ""},
+        {"cyc_auto",   "Ciclo: auto",       "DB110.W54.B12"},
+        {"cyc_cont",   "Ciclo: continuo",   "DB110.W54.B14"},
+        {"cyc_susp",   "Ciclo: sospeso",    "DB110.W54.B15"},
+        {"cyc_cycle",  "Ciclo: ciclo",      "DB110.W44.B9"},
         // --- posizioni ---
-        {"pos_load",     "Posizione carico",       ""},
-        {"decel_load",   "Decelerazione carico",   ""},
-        {"decel_dis",    "Decelerazione scarico",  ""},
-        {"pos_dis",      "Posizione scarico",      ""},
+        {"pos_load",     "Posizione carico",       "DB110.W140.B11"},
+        {"decel_load",   "Decelerazione carico",   "DB110.W140.B13"},
+        {"decel_dis",    "Decelerazione scarico",  "DB110.W140.B12"},
+        {"pos_dis",      "Posizione scarico",      "DB110.W140.B14"},
         // --- produzione ---
-        {"prod_ready",   "Pronto per produzione",   ""},
-        {"prod_auto_on", "Ciclo auto ON",           ""},
+        {"prod_ready",   "Pronto per produzione",   "DB110.W44.B12"},
+        {"prod_auto_on", "Ciclo auto ON",           "DB110.W44.B11"},
         {"new_load",     "Caricamento nuova (ipotesi da PDL)", "DB201.X41.0"},
-        {"prod_auto",    "Funzionamento produzione auto", ""},
-        {"cycle_stopped","Ciclo arrestato",         ""},
-        {"recipe_ok",    "Ricetta valida",          ""},
+        {"prod_auto",    "Funzionamento produzione auto", "DB110.W44.B1"},
+        {"cycle_stopped","Ciclo arrestato",         "DB110.W44.B2"},
+        {"recipe_ok",    "Ricetta valida",          "DB110.W44.B0"},
     };
 
     private B1Tags() {
@@ -214,6 +214,11 @@ public final class B1Tags {
                     Integer.parseInt(m.group(7)), 1, neg, guess);
         }
         return new Tag(key, desc, spec, Kind.STRING, db, Integer.parseInt(m.group(8)), 0, 1, false, guess);
+    }
+
+    /** Chiavi note (per elenchi/diagnostica). */
+    public static java.util.Set<String> keysOf(B1Tags t) {
+        return t.tags.keySet();
     }
 
     public Tag get(String key) {

@@ -1,0 +1,315 @@
+screen|001_Synoptic|1024|768
+obj|TEXT|ST_unit16|267|50|307|70|LOT:||-1||||
+obj|PIC|GO_logo2|-5|60|1019|648|||-1||||background5.jpg
+obj|TEXT|ST_title10|0|60|1024|648|Running||-1||||
+obj|TEXT|ST_title98|570|65|670|90|SILOS||-1||FFFFFF||
+obj|TEXT|ST_title11|675|65|925|90|PORTE DE CHARGEMENT||-1||FFFFFF||
+obj|TEXT|ST_title15|5|75|255|100|PISTON||-1||FFFFFF||
+obj|CONTROL|Bar1|260|75|355|360|DB110DBW86||-1||||
+obj|RECT|Rettangoloarrotondato13|448|75|505|83|||-1||||
+obj|RECT|Rettangoloarrotondato5|452|80|502|208|||-1||||
+obj|RECT|Rettangolo13|456|80|459|202|||-1||||
+obj|RECT|Rettangolo32|471|80|482|211|||-1||||
+obj|RECT|Rettangolo14|495|80|498|202|||-1||||
+obj|RECT|Rettangolo33|459|82|495|90|||-1||||
+obj|CONTROL|Control2|358|85|446|205|||-1||||
+obj|TEXT|ST_title97|570|95|670|160|Line speed||-1||||
+obj|TEXT|ST_title2|675|95|830|160|Line speed||-1||||
+obj|LAMP|GO_logo50|575|100|600|125||SilosOpen|11|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title102|575|100|600|125|Line speed||-1||||
+obj|TEXT|ST_title100|605|100|660|125|Ouvert ||-1||D4D0C8||
+obj|LAMP|GO_logo6|680|100|705|125||DB110DBW26|13|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title14|680|100|705|125|Line speed||-1||||
+obj|TEXT|ST_title4|710|100|775|125|Ouverte||-1||D4D0C8||
+obj|TEXT|ST_title7|5|105|255|385|Line speed||-1||||
+obj|LAMP|GO_logo3|780|105|795|120||DB110DBW26|13|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title16|780|105|795|120|Line speed||-1||||
+obj|PIC|GO_logo8|800|105|825|120|||-1||||3-D Gate valve.wmf
+obj|LAMP|GO_logo9|10|110|35|135||DB110DBW22|7|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title9|10|110|35|135|Line speed||-1||||
+obj|TEXT|ST_title12|40|110|200|135|Position haute ||-1||D4D0C8||
+obj|POLY|Polygon2|215|110|245|140|||4||||
+obj|LAMP|GO_logo49|575|130|600|155||SilosClose|12|||RED|lamp_RED.JPG
+obj|TEXT|ST_title101|575|130|600|155|Line speed||-1||||
+obj|TEXT|ST_title99|605|130|660|155|Fermé||-1||D4D0C8||
+obj|LAMP|GO_logo1|680|130|705|155||DB110DBW26|9|||RED|lamp_RED.JPG
+obj|TEXT|ST_title1|680|130|705|155|Line speed||-1||||
+obj|TEXT|ST_title3|710|130|775|155|Fermée||-1||D4D0C8||
+obj|LAMP|GO_logo11|780|135|795|150||DB110DBW26|3|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title17|780|135|795|150|Line speed||-1||||
+obj|PIC|GO_logo10|800|135|825|150|||-1||||3-D Gate valve.wmf
+obj|LAMP|GO_logo5|10|140|35|165||DB110DBW22|5|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title6|10|140|35|165|Line speed||-1||||
+obj|TEXT|ST_title8|40|140|200|165|Flottant||-1||D4D0C8||
+obj|TEXT|ST_title51|835|140|1020|165|MALAXEUR PRET||-1||FFFFFF||
+obj|TEXT|ST_unit17|267|160|307|180|LOT:||-1||||
+obj|POLY|Polygon1|215|165|245|195|||8||||
+obj|LAMP|GO_logo4|10|170|35|195||DB110DBW22|6|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title5|10|170|35|195|Line speed||-1||||
+obj|TEXT|ST_title13|40|170|200|195|Position basse||-1||D4D0C8||
+obj|TEXT|ST_title52|820|170|1020|355|Line speed||-1||||
+obj|LAMP|GO_logo29|825|175|850|200||DB110DBW54|1|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title54|825|175|850|200|Line speed||-1||||
+obj|TEXT|ST_title53|855|175|1015|200|Témp. Min. OK démarrage||-1||D4D0C8||
+obj|CONTROL|Control5|395|178|415|248|||-1||||
+obj|TEXT|ST_unit18|590|180|665|200|SUFFIXE :||-1||||
+obj|IO|IO_value12|670|180|695|200||B1_SUFFIXE|-1||||
+obj|RECT|Rettangolo35|471|189|482|320|||-1||||
+obj|RECT|Rettangolo36|459|191|495|199|||-1||||
+obj|RECT|Rettangolo12|447|198|507|207|||-1||||
+obj|LAMP|GO_logo44|10|200|35|225||DB110DBW22|9|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title80|10|200|35|225|Line speed||-1||||
+obj|TEXT|ST_title79|40|200|200|225|Bloqué||-1||D4D0C8||
+obj|RECT|Rettangoloarrotondato8|468|204|485|215|||-1||||
+obj|LAMP|GO_logo43|205|205|220|220||A66_0|10|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title78|205|205|220|220|Line speed||-1||||
+obj|PIC|GO_logo42|225|205|250|220|||-1||||3-D Gate valve.wmf
+obj|RECT|Rettangolo34|464|205|489|235|||-1||||
+obj|TEXT|ST_unit11|590|205|630|225|LOT:||-1||||
+obj|IO|IO_value11|650|205|675|225||B1_NUM_LOT_PREFIXE|-1||||
+obj|TEXT|ST_title84|675|205|690|225|/||-1||FFFFFF||
+obj|IO|IO_value6|690|205|765|225||B1_NUM_LOT_SUFFIXE|-1||||
+obj|LAMP|GO_logo30|825|205|850|230||DB110DBW54|2|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title56|825|205|850|230|Line speed||-1||||
+obj|TEXT|ST_title55|855|205|1015|230|Déchargement OK||-1||D4D0C8||
+obj|RECT|Rettangolo22|447|206|457|308|||-1||||
+obj|RECT|Rettangolo15|462|207|492|308|||-1||||
+obj|RECT|Rettangolo11|457|208|463|318|||-1||||
+obj|RECT|Rettangolo17|490|208|496|318|||-1||||
+obj|RECT|Rettangolo18|496|208|546|307|||-1||||
+obj|RECT|Rettangolo19|494|209|498|244|||-1||||
+obj|CONTROL|Control3|400|210|450|260|||-1||||
+obj|RECT|Rettangolo30|444|211|452|225|||-1||||
+obj|LINE|Linea8|500|214|540|214|||-1||||
+obj|LINE|Linea9|540|214|540|234|||-1||||
+obj|BUTTON|btn_1|10|230|50|260|È·ÈÏ||-1||||
+obj|IO|IO_value1|55|230|150|255||DB110DBW70|-1|999.9|||
+obj|TEXT|ST_unit1|150|230|190|255|bar||-1||||
+obj|BUTTON|btn_6|195|230|235|260|È·ÈÏ||-1||||
+obj|CONTROL|Control4|420|230|470|280|||-1||||
+obj|TEXT|ST_unit12|590|230|630|250| ||-1||||
+obj|IO|IO_value13|635|230|680|250||DB150DBW0|-1|999|||
+obj|IO|IO_value14|680|230|720|250||DB150DBW2|-1|999|||
+obj|BUTTON|Button1|725|230|810|250|RESET SEQ||-1||||
+obj|POLY|Polygon4|20|235|40|255|||-1||||
+obj|POLY|Polygon3|205|235|225|255|||-1||||
+obj|POLY|Poligono22|465|235|488|242|||-1||||
+obj|LAMP|GO_logo31|825|235|850|260||DB110DBW54|3|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title58|825|235|850|260|Line speed||-1||||
+obj|TEXT|ST_title57|855|235|1015|260|Moteur principal OK||-1||D4D0C8||
+obj|LINE|Linea28|499|240|499|302|||10||||
+obj|LINE|Linea27|499|246|530|302|||9||||
+obj|TEXT|ST_unit13|590|255|630|275| ||-1||||
+obj|COMBO|Champ de combinaison1|636|255|686|275||SUP|-1||||
+obj|TEXT|ST_unit14|690|255|735|275| ||-1||||
+obj|COMBO|Champ de combinaison2|738|255|783|275||B1_SEQUENCE_PASSAGE|-1||||
+obj|IO|IO_value2|55|260|150|285||DB110DBW72|-1|999.9|||
+obj|TEXT|ST_unit2|150|260|190|285|bar||-1||||
+obj|LAMP|GO_logo32|825|265|850|290||DB110DBW54|4|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title60|825|265|850|290|Line speed||-1||||
+obj|TEXT|ST_title59|855|265|1015|290|Porte déch. fermée||-1||D4D0C8||
+obj|LINE|Linea7|496|266|550|305|||6||||
+obj|TEXT|ST_unit15|590|280|665|300| ||-1||||
+obj|COMBO|Champ de combinaison3|670|280|720|300||Clair|-1||||
+obj|RECT|Rettangolo31|444|289|452|303|||-1||||
+obj|ELLIPSE|Cerchio51|491|294|507|310|||-1||||
+obj|IO|IO_value3|55|295|150|320||DB110DBW86|-1|999|||
+obj|TEXT|ST_unit3|150|295|190|320|%||-1||||
+obj|LAMP|GO_logo33|825|295|850|320||DB110DBW54|5|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title62|825|295|850|320|Line speed||-1||||
+obj|TEXT|ST_title61|855|295|1015|320|Temps min. entre cycles||-1||D4D0C8||
+obj|ELLIPSE|Cerchio52|496|299|502|305|||-1||||
+obj|LINE|Linea10|508|304|544|304|||-1||||
+obj|TEXT|ST_unit19|590|305|705|325|NUM MELANGE||-1||||
+obj|COMBO|Champ de combinaison4|710|305|760|325||Clair|-1||||
+obj|RECT|Rettangoloarrotondato2|417|307|537|431|||-1||||
+obj|LINE|Linea23|424|312|457|312|||-1||||
+obj|LINE|Linea26|495|312|528|312|||-1||||
+obj|RECT|Rettangoloarrotondato9|468|313|485|324|||-1||||
+obj|RECT|Rettangolo37|464|314|489|344|||-1||||
+obj|RECT|Rettangolo1|420|317|463|322|||-1||||
+obj|RECT|Rettangolo2|490|317|533|322|||-1||||
+obj|ELLIPSE|Arcodicerchio16|422|322|462|362|||-1||||
+obj|ELLIPSE|Arcodicerchio12|491|322|531|362|||-1||||
+obj|LINE|Linea1|462|323|462|333|||-1||||
+obj|LINE|Linea2|491|323|491|333|||-1||||
+obj|IO|IO_value9|55|325|150|350||DB110DBW106|-1|999|||
+obj|TEXT|ST_unit9|150|325|190|350|%||-1||||
+obj|ELLIPSE|Cerchio31|452|325|458|331|||-1||||
+obj|ELLIPSE|Cerchio32|492|325|498|331|||-1||||
+obj|LAMP|GO_logo34|825|325|850|350||DB110DBW54|6|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title64|825|325|850|350|Line speed||-1||||
+obj|TEXT|ST_title63|855|325|1015|350|Nr. Cycles pas effectués||-1||D4D0C8||
+obj|CONTROL|Control18|425|327|465|367|DB110DBW6||14||||
+obj|CONTROL|Control19|489|327|529|367|DB110DBW6||15||||
+obj|ELLIPSE|Ellisse6|431|330|522|396|||-1||||
+obj|ELLIPSE|Cerchio33|439|331|445|337|||-1||||
+obj|ELLIPSE|Cerchio34|508|331|514|337|||-1||||
+obj|ELLIPSE|Arcodicerchio14|431|332|461|362|||-1||||
+obj|ELLIPSE|Arcodicerchio10|492|332|522|362|||-1||||
+obj|ELLIPSE|Cerchio35|431|340|437|346|||-1||||
+obj|ELLIPSE|Cerchio36|517|340|523|346|||-1||||
+obj|POLY|Poligono23|465|344|488|351|||-1||||
+obj|ELLIPSE|Cerchio47|440|346|474|380|||-1||||
+obj|ELLIPSE|Cerchio48|480|346|514|380|||-1||||
+obj|ELLIPSE|Ellisse13|448|347|467|380|||-1||||
+obj|ELLIPSE|Ellisse17|448|347|467|380|||-1||||
+obj|ELLIPSE|Ellisse12|488|347|507|380|||-1||||
+obj|ELLIPSE|Ellisse16|488|347|507|380|||-1||||
+obj|TEXT|ST_title43|565|350|815|375|POIDS PRESSEUR||-1||FFFFFF||
+obj|ELLIPSE|Cerchio37|425|353|431|359|||-1||||
+obj|ELLIPSE|Cerchio38|522|353|528|359|||-1||||
+obj|ELLIPSE|Ellisse11|441|354|474|373|||-1||||
+obj|ELLIPSE|Ellisse15|441|354|474|373|||-1||||
+obj|ELLIPSE|Ellisse14|481|354|514|373|||-1||||
+obj|ELLIPSE|Ellisse18|481|354|514|373|||-1||||
+obj|IO|IO_value10|55|355|150|380||DB110DBW108|-1|999|||
+obj|TEXT|ST_unit10|150|355|190|380|%||-1||||
+obj|CONTROL|Control20|425|359|465|399|DB110DBW6||0||||
+obj|CONTROL|Control21|489|359|529|399|DB110DBW6||1||||
+obj|TEXT|ST_title65|820|360|1020|385|CYCLE MALAXEUR||-1||FFFFFF||
+obj|ELLIPSE|Arcodicerchio15|422|363|462|403|||-1||||
+obj|ELLIPSE|Arcodicerchio13|431|363|461|393|||-1||||
+obj|ELLIPSE|Arcodicerchio11|491|363|531|403|||-1||||
+obj|ELLIPSE|Arcodicerchio9|492|363|522|393|||-1||||
+obj|TEXT|ST_title85|260|365|405|390|DB110DBX0_0||3||||
+obj|ELLIPSE|Cerchio39|425|367|431|373|||-1||||
+obj|ELLIPSE|Cerchio40|522|367|528|373|||-1||||
+obj|ELLIPSE|Cerchio41|430|380|436|386|||-1||||
+obj|ELLIPSE|Cerchio42|517|380|523|386|||-1||||
+obj|TEXT|ST_title42|565|380|815|445|Line speed||-1||||
+obj|LAMP|GO_logo24|570|385|595|410||DB110DBW24|4|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title48|570|385|595|410|Line speed||-1||||
+obj|TEXT|ST_title45|600|385|760|410|Ouvert ||-1||D4D0C8||
+obj|TEXT|ST_title46|5|390|255|415|ROTORS||-1||FFFFFF||
+obj|ELLIPSE|Cerchio43|441|390|447|396|||-1||||
+obj|LINE|Linea5|458|390|471|391|||-1||||
+obj|POLY|Poligono19|462|390|492|405|||-1||||
+obj|LINE|Linea6|482|390|492|391|||-1||||
+obj|ELLIPSE|Cerchio44|506|390|512|396|||-1||||
+obj|LAMP|GO_logo25|765|390|780|405||DB110DBW24|5|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title49|765|390|780|405|Line speed||-1||||
+obj|PIC|GO_logo26|785|390|810|405|||-1||||3-D Gate valve.wmf
+obj|TEXT|ST_title66|820|390|1020|545|Line speed||-1||||
+obj|LINE|Linea3|462|393|472|403|||-1||||
+obj|LINE|Linea4|482|393|492|403|||-1||||
+obj|TEXT|ST_title40|260|395|405|430|Line speed||-1||||
+obj|LAMP|GO_logo35|825|395|850|420||DB110DBW54|6|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title68|825|395|850|420|Line speed||-1||||
+obj|TEXT|ST_title67|855|395|1015|420|Auto||-1||D4D0C8||
+obj|RECT|Rettangolo4|420|399|463|404|||-1||||
+obj|RECT|Rettangolo5|491|399|534|404|||-1||||
+obj|IO|IO_value7|265|400|360|425||DB110DBW100|-1|999|||
+obj|TEXT|ST_unit7|360|400|400|425|°C||-1||||
+obj|RECT|Rettangolo29|460|405|494|413|||-1||||
+obj|ELLIPSE|Cerchio45|427|407|447|427|||-1||||
+obj|ELLIPSE|Cerchio49|427|407|447|427|||-1||||
+obj|RECT|Rettangolo7|510|407|520|429|||-1||||
+obj|RECT|Rettangolo8|545|407|555|429|||-1||||
+obj|RECT|Rettangolo6|517|411|547|426|||-1||||
+obj|ELLIPSE|Cerchio46|432|412|442|422|||-1||||
+obj|ELLIPSE|Cerchio50|432|412|442|422|||-1||||
+obj|POLY|Poligono20|475|412|486|423|||-1||||
+obj|POLY|Poligono16|476|412|488|423|||4||||
+obj|POLY|Poligono21|497|412|509|423|||11||||
+obj|RECT|Rettangoloarrotondato7|441|413|476|423|||-1||||
+obj|POLY|Poligono13|522|414|542|429|||-1||||
+obj|RECT|Rettangolo16|488|415|510|421|||-1||||
+obj|ELLIPSE|Cerchio30|528|415|536|423|||-1||||
+obj|LAMP|GO_logo23|570|415|595|440||DB110DBW24|3|||RED|lamp_RED.JPG
+obj|TEXT|ST_title47|570|415|595|440|Line speed||-1||||
+obj|TEXT|ST_title44|600|415|760|440|Fermé||-1||D4D0C8||
+obj|TEXT|ST_title39|5|420|255|545|Line speed||-1||||
+obj|LAMP|GO_logo28|765|420|780|435||DB110DBW24|6|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title50|765|420|780|435|Line speed||-1||||
+obj|PIC|GO_logo27|785|420|810|435|||-1||||3-D Gate valve.wmf
+obj|RECT|Rettangoloarrotondato6|431|421|441|456|||-1||||
+obj|ELLIPSE|Cerchio3|491|424|499|432|||-1||||
+obj|BUTTON|btn_3|10|425|50|455|È·ÈÏ||-1||||
+obj|IO|IO_value4|55|425|150|450||DB110DBW58|-1|999|||
+obj|TEXT|ST_unit4|150|425|190|450|rpm||-1||||
+obj|BUTTON|btn_2|195|425|235|455|È·ÈÏ||-1||||
+obj|LAMP|GO_logo36|825|425|850|450||DB110DBW54|7|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title70|825|425|850|450|Line speed||-1||||
+obj|TEXT|ST_title69|855|425|1015|450|Continu||-1||D4D0C8||
+obj|RECT|Rettangoloarrotondato3|487|427|502|437|||-1||||
+obj|RECT|Rettangolo3|415|429|538|457|||-1||||
+obj|POLY|Polygon6|20|430|40|450|||-1||||
+obj|POLY|Polygon5|205|430|225|450|||-1||||
+obj|RECT|Rettangolo9|490|432|538|457|||-1||||
+obj|RECT|Rettangolo21|441|440|449|474|||-1||||
+obj|POLY|Poligono17|449|442|464|472|||-1||||
+obj|TEXT|ST_title32|565|450|815|475|PORTE DE DECHARGEMENT||-1||FFFFFF||
+obj|RECT|Rettangoloarrotondato10|409|454|418|460|||-1||||
+obj|RECT|Rettangoloarrotondato11|531|454|540|460|||-1||||
+obj|IO|IO_value5|55|455|150|480||DB110DBW60|-1|999|||
+obj|TEXT|ST_unit5|150|455|190|480|rpm||-1||||
+obj|POLY|Poligono18|431|455|442|466|||-1||||
+obj|LAMP|GO_logo37|825|455|850|480||DB110DBW54|8|||RED|lamp_RED.JPG
+obj|TEXT|ST_title72|825|455|850|480|Line speed||-1||||
+obj|TEXT|ST_title71|855|455|1015|480|Suspension ||-1||D4D0C8||
+obj|RECT|Rettangoloarrotondato1|400|457|549|470|||-1||||
+obj|RECT|Rettangolo20|390|469|560|506|||-1||||
+obj|CONTROL|Control1|391|470|559|504|||-1||||
+obj|TEXT|ST_title31|565|480|815|545|Line speed||-1||||
+obj|IO|IO_value8|55|485|150|510||DB110DBW62|-1|9999|||
+obj|TEXT|ST_unit8|150|485|190|510|A||-1||||
+obj|LAMP|GO_logo18|570|485|595|510||DB110DBW24|3|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title36|570|485|595|510|Line speed||-1||||
+obj|TEXT|ST_title34|600|485|760|510|Ouverte||-1||D4D0C8||
+obj|LAMP|GO_logo38|825|485|850|510||DB110DBW44|9|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title74|825|485|850|510|Line speed||-1||||
+obj|TEXT|ST_title73|855|485|1015|510|Cycle||-1||D4D0C8||
+obj|LAMP|GO_logo19|765|490|780|505||DB110DBW24|4|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title37|765|490|780|505|Line speed||-1||||
+obj|PIC|GO_logo20|785|490|810|505|||-1||||3-D Gate valve.wmf
+obj|LINE|Linea30|388|505|561|505|||-1||||
+obj|LAMP|GO_logo39|10|515|35|540||RotorRunning|1|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title76|10|515|35|540|Line speed||-1||||
+obj|TEXT|ST_title75|40|515|200|540|Running||-1||D4D0C8||
+obj|LAMP|GO_logo17|570|515|595|540||DB110DBW24|2|||RED|lamp_RED.JPG
+obj|TEXT|ST_title35|570|515|595|540|Line speed||-1||||
+obj|TEXT|ST_title33|600|515|760|540|Fermée||-1||D4D0C8||
+obj|IO|IO_value15|825|515|915|540||DB110DBW234|-1|99|||
+obj|TEXT|ST_unit6|920|515|960|540|pas||-1||||
+obj|TEXT|ST_title95|360|520|560|645|Line speed||-1||||
+obj|LAMP|GO_logo22|765|520|780|535||DB110DBW24|5|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title38|765|520|780|535|Line speed||-1||||
+obj|PIC|GO_logo21|785|520|810|535|||-1||||3-D Gate valve.wmf
+obj|LAMP|GO_logo45|365|525|390|550||DB110DBW140|11|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title87|365|525|390|550|Line speed||-1||||
+obj|TEXT|ST_title86|395|525|555|550|Position chargement||-1||D4D0C8||
+obj|TEXT|ST_title81|5|550|205|575|LUBRICATION||-1||FFFFFF||
+obj|TEXT|ST_title18|615|550|1020|645|Line speed||-1||||
+obj|LAMP|GO_logo47|365|555|390|580||DB110DBW140|13|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title91|365|555|390|580|Line speed||-1||||
+obj|TEXT|ST_title90|395|555|555|580|décélération charg.||-1||D4D0C8||
+obj|LAMP|GO_logo12|620|555|645|580||DB110DBW44|15|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title22|620|555|645|580|Line speed||-1||||
+obj|TEXT|ST_title20|650|555|810|580|Prêt pour production||-1||D4D0C8||
+obj|LAMP|GO_logo15|825|555|850|580||DB110DBW44|2|||RED|lamp_RED.JPG
+obj|TEXT|ST_title28|825|555|850|580|Line speed||-1||||
+obj|TEXT|ST_title27|855|555|1015|580|Fonct. production auto||-1||D4D0C8||
+obj|TEXT|ST_title77|5|580|205|615|Line speed||-1||||
+obj|LAMP|GO_logo40|10|585|35|610||LubricationRunning|5|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title83|10|585|35|610|Line speed||-1||||
+obj|TEXT|ST_title82|40|585|200|610|Running||-1||D4D0C8||
+obj|LAMP|GO_logo46|365|585|390|610||DB110DBW140|12|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title89|365|585|390|610|Line speed||-1||||
+obj|TEXT|ST_title88|395|585|555|610|Décélération déch.||-1||D4D0C8||
+obj|LAMP|GO_logo7|620|585|645|610||DB110DBW44|14|||RED|lamp_RED.JPG
+obj|TEXT|ST_title21|620|585|645|610|Line speed||-1||||
+obj|TEXT|ST_title19|650|585|810|610|Cycle auto ON||-1||D4D0C8||
+obj|LAMP|GO_logo16|825|585|850|610||DB110DBW44|2|||RED|lamp_RED.JPG
+obj|TEXT|ST_title30|825|585|850|610|Line speed||-1||||
+obj|TEXT|ST_title29|855|585|1015|610|DB110DBW44||1||000101||
+obj|TEXT|ST_title96|855|585|1015|610|DB110DBW44||3||||
+obj|LAMP|GO_logo48|365|615|390|640||DB110DBW140|14|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title93|365|615|390|640|Line speed||-1||||
+obj|TEXT|ST_title92|395|615|555|640|Postion déch.||-1||D4D0C8||
+obj|LAMP|GO_logo13|620|615|645|640||DB201DBX41_0|0|||ORANGE|lamp_ORANGE.JPG
+obj|TEXT|ST_title24|620|615|645|640|Line speed||-1||||
+obj|TEXT|ST_title23|650|615|810|640|Chargement nouvelle recette||-1||D4D0C8||
+obj|LAMP|GO_logo14|825|615|850|640||DB110DBW44|1|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title26|825|615|850|640|Line speed||-1||||
+obj|TEXT|ST_title25|855|615|1015|640|Recette valide||-1||D4D0C8||

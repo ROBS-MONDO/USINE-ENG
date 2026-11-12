@@ -1,0 +1,39 @@
+screen|007_Production|1024|768
+obj|TEXT|ST_msg1|65|5|205|20|nom de production pas valide||-1||FFFFFF||
+obj|TEXT|ST_msg4|210|5|350|20|nom production déjà utilisé||-1||FFFFFF||
+obj|TEXT|ST_msg2|65|20|205|35|sauvegarde production. Tu es sûr?||-1||FFFFFF||
+obj|TEXT|ST_msg5|210|20|350|35|recette pas sélectionnée||-1||FFFFFF||
+obj|TEXT|ST_msg3|65|35|205|50|effacement production. Tu es sûr?||-1||FFFFFF||
+obj|PIC|GO_logo2|0|60|1024|648|||-1||||background5.jpg
+obj|TEXT|ST_title0|0|60|1024|648|Line speed||-1||||
+obj|TEXT|ST_title26|5|65|755|400|Line speed||-1||||
+obj|TEXT|ST_title27|815|65|1015|190|Line speed||-1||||
+obj|TEXT|ST_title25|10|70|750|95|LISTE DE PRODUCTION||-1||FFFFFF||
+obj|LAMP|GO_logo12|820|70|845|95||DB110DBW44|4|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title38|820|70|845|95|Line speed||-1||||
+obj|TEXT|ST_title36|850|70|1010|95|Transfert recette habilité||-1||D4D0C8||
+obj|LAMP|GO_logo7|820|100|845|125||DB201DBX41_0|3|||GREEN|lamp_GREEN_off.JPG
+obj|TEXT|ST_title37|820|100|845|125|Line speed||-1||||
+obj|TEXT|ST_title28|850|100|1010|125|Start transfert||-1||D4D0C8||
+obj|LAMP|GO_logo13|820|130|845|155||DB201DBX563_0|5|||GREEN|lamp_GREEN_off.JPG
+obj|TEXT|ST_title40|820|130|845|155|Line speed||-1||||
+obj|TEXT|ST_title39|850|130|1010|155|Fin transfert||-1||D4D0C8||
+obj|LAMP|GO_logo14|820|160|845|185||DB110DBW44|11|||RED|lamp_RED.JPG
+obj|TEXT|ST_title42|820|160|845|185|Line speed||-1||||
+obj|TEXT|ST_title41|850|160|1010|185|Recette valide||-1||D4D0C8||
+obj|TEXT|ST_title1|5|410|755|600|Line speed||-1||||
+obj|TEXT|ST_title11|10|415|750|440|PRODUCTION SELECTIONNÉE||-1||FFFFFF||
+obj|TEXT|ST_title31|10|445|145|470|PRODUCTION||-1||FFFFFF||
+obj|IO|IO_ProductionName|150|445|750|470|||-1||||
+obj|IO|IO_ProductionID|150|445|160|455|||-1|99999|||
+obj|TEXT|ST_title33|10|475|145|500|DESCRIPTION||-1||FFFFFF||
+obj|IO|IO_ProductionDescription|150|475|750|500|||-1||||
+obj|TEXT|ST_title30|10|505|145|530|DATE||-1||FFFFFF||
+obj|IO|IO_DateCreated|150|505|385|530|||-1||||
+obj|IO|IO_DateUpdated|150|505|385|530|||-1||||
+obj|TEXT|ST_title13|10|535|145|560|QUANT. MELANGE||-1||FFFFFF||
+obj|IO|IO_value1|150|535|245|560|||-1|99999|||
+obj|TEXT|ST_unit1|245|535|285|560|nr||-1||||
+obj|IO|IO_RecipeID|375|555|385|565|||-1|99999|||
+obj|TEXT|ST_title29|10|565|145|590|RECETTE||-1||FFFFFF||
+obj|IO|IO_RecipeName|150|565|385|590|||-1||||

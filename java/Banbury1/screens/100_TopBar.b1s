@@ -1,0 +1,25 @@
+screen|100_TopBar|1024|768
+obj|TEXT|ST_title10|0|0|1024|60|Line speed||-1||||
+obj|BUTTON|Button4|10|5|60|55|reset||-1||||ELI.JPG
+obj|TEXT|ST_title3|80|5|180|30|MCC-240 T||-1||D4D0C8||
+obj|BUTTON|Button1|195|5|260|55|Imprimer Page||-1||||
+obj|TEXT|ST_title13|485|5|555|30|Pression||-1||D4D0C8||
+obj|IO|IO_value2|555|5|615|30||DB110DBW70|-1|999.9|||
+obj|TEXT|ST_unit2|615|5|655|30|bar||-1||||
+obj|TEXT|ST_title2|660|5|730|30|Vitesse||-1||D4D0C8||
+obj|IO|IO_value5|730|5|800|30||DB110DBW60|-1|999|||
+obj|TEXT|ST_unit5|800|5|850|30|rpm||-1||||
+obj|TEXT|ST_title6|855|5|1010|20|Mélanges||-1||D4D0C8||
+obj|TEXT|ST_title12|855|20|900|30|total||-1||D4D0C8||
+obj|TEXT|ST_title8|910|20|955|30|fait||-1||D4D0C8||
+obj|TEXT|ST_title14|965|20|1010|30|à faire||-1||D4D0C8||
+obj|TEXT|ST_title11|80|30|180|55|MCC||-1||D4D0C8||
+obj|TEXT|ST_title1|485|30|555|55|Temp.||-1||D4D0C8||
+obj|IO|IO_value7|555|30|615|55||DB110DBW104|-1|999|||
+obj|TEXT|ST_unit7|615|30|655|55|°C||-1||||
+obj|TEXT|ST_title5|660|30|730|55|Cycle||-1||D4D0C8||
+obj|IO|IO_value1|730|30|800|55|||-1||||
+obj|TEXT|ST_unit1|800|30|850|55|mm:ss||-1||||
+obj|IO|IO_value4|855|30|900|55||DB110DBW210|-1|999|||
+obj|IO|IO_value3|910|30|955|55||DB110DBW212|-1|999|||
+obj|IO|IO_value6|965|30|1010|55|||-1|999|||

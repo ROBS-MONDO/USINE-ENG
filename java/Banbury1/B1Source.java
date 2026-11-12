@@ -11,6 +11,11 @@ public interface B1Source extends AutoCloseable {
     /** Indirizzo configurato per la chiave ("?" se non collegata): per l'overlay F2. */
     String spec(String key);
 
+    /** Valore grezzo di un tag WinCC tipo "DB110DBW70" (null se non disponibile / DB non letto). */
+    default Double raw(String winccTag) {
+        return null;
+    }
+
     /** Copia dell'ultima immagine letta del DB (null se non disponibile). */
     default byte[] dbImage(int db) {
         return null;

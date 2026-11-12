@@ -1,0 +1,59 @@
+screen|311_GovoniParametreBalance|1024|768
+obj|TEXT|ST_title500|10|80|1020|105|Paramètres Balance||-1||FFFFFF||
+obj|TEXT|ST_title1|50|115|410|140|Maximum de l'échelle||-1||FFFFFF||
+obj|IO|IO_value1|415|115|510|140|||-1||||
+obj|TEXT|ST_unit1|510|115|550|140|Kg||-1||||
+obj|RECT|Rectangle1|615|135|810|210|||-1||||
+obj|TEXT|ST_title2|50|140|410|165|Offset maximum théorique||-1||FFFFFF||
+obj|IO|IO_value2|415|140|510|165|||-1||||
+obj|TEXT|ST_unit2|510|140|550|165|Kg||-1||||
+obj|TEXT|Texte statique5|655|140|705|175|Balance||-1||030100||
+obj|TEXT|Texte statique1|685|140|785|175|bal||-1||||
+obj|TEXT|ST_title3|50|165|410|190|Temps stabilisation charge||-1||FFFFFF||
+obj|IO|IO_value3|415|165|510|190|||-1|99999|||
+obj|TEXT|ST_unit3|510|165|550|190|Sec||-1||||
+obj|BUTTON|Bouton4|655|175|705|200|bal||-1||00FFFE||
+obj|BUTTON|Bouton1|720|175|770|200|bal||-1||00FFFE||
+obj|TEXT|ST_title4|50|190|410|215|Temps stabilisation decharge||-1||FFFFFF||
+obj|IO|IO_value4|415|190|510|215|||-1|99999|||
+obj|TEXT|ST_unit4|510|190|550|215|Sec||-1||||
+obj|BUTTON|Bouton5|655|210|705|235|bal||-1||00FFFE||
+obj|BUTTON|Bouton2|720|210|770|235|bal||-1||00FFFE||
+obj|TEXT|ST_title5|50|215|410|240|Débit minimum decharge||-1||FFFFFF||
+obj|IO|IO_value5|415|215|510|240|||-1||||
+obj|TEXT|ST_unit5|510|215|550|240|Kg/Sec||-1||||
+obj|TEXT|ST_title6|50|240|410|265|Seuil plein||-1||FFFFFF||
+obj|IO|IO_value6|415|240|510|265|||-1||||
+obj|TEXT|ST_unit6|510|240|550|265|Kg||-1||||
+obj|BUTTON|Bouton8|655|250|705|275|bal||-1||00FFFE||
+obj|BUTTON|Bouton3|720|250|770|275|bal||-1||00FFFE||
+obj|TEXT|ST_title7|50|265|410|290|Seuil vide||-1||FFFFFF||
+obj|IO|IO_value7|415|265|510|290|||-1||||
+obj|TEXT|ST_unit7|510|265|550|290|Kg||-1||||
+obj|TEXT|ST_title8|50|290|410|315|Temps de vidage ||-1||FFFFFF||
+obj|IO|IO_value8|415|290|510|315|||-1|99999|||
+obj|TEXT|ST_unit8|510|290|550|315|Sec||-1||||
+obj|TEXT|ST_title9|50|315|410|340|Maximum oscillation de poids||-1||FFFFFF||
+obj|IO|IO_value9|415|315|510|340|||-1||||
+obj|TEXT|ST_unit9|510|315|550|340|Kg||-1||||
+obj|TEXT|ST_title10|50|340|410|365|Temps échantillonnage||-1||FFFFFF||
+obj|IO|IO_value10|415|340|510|365|||-1|99999|||
+obj|TEXT|ST_unit10|510|340|550|365|Sec||-1||||
+obj|TEXT|ST_title11|50|365|410|390|Maximum oscillation de plein||-1||FFFFFF||
+obj|IO|IO_value11|415|365|510|390|||-1||||
+obj|TEXT|ST_unit11|510|365|550|390|Kg||-1||||
+obj|TEXT|ST_title12|50|390|410|415|Tempo oscillations poids||-1||FFFFFF||
+obj|IO|IO_value12|415|390|510|415|||-1|99999|||
+obj|TEXT|ST_unit12|510|390|550|415|Sec||-1||||
+obj|TEXT|ST_title13|50|415|410|440|Correction dosage (1=permission)||-1||FFFFFF||
+obj|IO|IO_value13|415|415|510|440|||-1|99999|||
+obj|TEXT|ST_unit13|510|415|550|440|rpm||-1||||
+obj|TEXT|ST_title14|50|440|410|465|Temps lecture de précision||-1||FFFFFF||
+obj|IO|IO_value14|415|440|510|465|||-1|99999|||
+obj|TEXT|ST_unit14|510|440|550|465|Sec||-1||||
+obj|TEXT|ST_title15|50|465|410|490|Division balance vide||-1||FFFFFF||
+obj|IO|IO_value15|415|465|510|490|||-1|99999|||
+obj|TEXT|ST_unit15|510|465|550|490|rpm||-1||||
+obj|BUTTON|Bouton6|710|465|790|500|Sauver||-1||||
+obj|BUTTON|Bouton9|925|540|1005|575|SAUVER||-1||||
+obj|BUTTON|Bouton10|925|585|1005|620|CHARGER||-1||||

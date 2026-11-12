@@ -1,0 +1,15 @@
+screen|009_Temperatures|1024|768
+obj|PIC|GO_logo2|0|60|1024|648|||-1||||background5.jpg
+obj|TEXT|ST_title10|0|60|1024|648|Line speed||-1||||
+obj|TEXT|ST_title1|5|175|255|200|Corps machine||-1||FFFFFF||
+obj|TEXT|ST_title4|260|175|510|200|Porte déchargement||-1||FFFFFF||
+obj|TEXT|ST_title2|5|205|255|270|Line speed||-1||||
+obj|TEXT|ST_title3|260|205|510|270|Line speed||-1||||
+obj|IO|IO_value1|10|210|105|235||DB110DBW92|-1|999|||
+obj|TEXT|ST_unit1|105|210|145|235|°C||-1||||
+obj|IO|IO_value3|265|210|360|235||DB110DBW94|-1|999|||
+obj|TEXT|ST_unit3|360|210|400|235|°C||-1||||
+obj|IO|IO_value2|10|240|105|265||DB110DBW112|-1|999|||
+obj|TEXT|ST_unit2|105|240|145|265|°C||-1||||
+obj|IO|IO_value4|265|240|360|265||DB110DBW114|-1|999|||
+obj|TEXT|ST_unit4|360|240|400|265|°C||-1||||

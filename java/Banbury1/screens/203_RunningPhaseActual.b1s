@@ -1,0 +1,31 @@
+screen|203_RunningPhaseActual|1024|768
+obj|TEXT|ST_title13|0|0|1024|125| ||-1||||
+obj|TEXT|ST_title11|45|10|400|35| ||-1||||
+obj|TEXT|ST_title17|400|10|675|35| ||-1||||
+obj|TEXT|ST_title24|705|10|1015|35| ||-1||||
+obj|TEXT|ST_title1|10|40|45|65| ||-1||||
+obj|TEXT|ST_title2|45|40|80|65| ||-1||||
+obj|TEXT|ST_title3|80|40|115|65| ||-1||||
+obj|TEXT|ST_title4|115|40|150|65| ||-1||||
+obj|TEXT|ST_title5|150|40|185|65| ||-1||||
+obj|TEXT|ST_title6|185|40|220|65| ||-1||||
+obj|TEXT|ST_title34|220|40|255|65| ||-1||||
+obj|TEXT|ST_title35|255|40|290|65| ||-1||||
+obj|TEXT|ST_title7|290|40|325|65| ||-1||||
+obj|TEXT|ST_title8|325|40|360|65| ||-1||||
+obj|TEXT|ST_title9|360|40|395|65| ||-1||||
+obj|TEXT|ST_title10|405|40|470|65| ||-1||||
+obj|TEXT|ST_title12|470|40|535|65| ||-1||||
+obj|TEXT|ST_title14|535|40|600|65| ||-1||||
+obj|TEXT|ST_title15|605|40|640|65| ||-1||||
+obj|TEXT|ST_title16|640|40|675|65| ||-1||||
+obj|TEXT|ST_title18|705|40|740|65| ||-1||||
+obj|TEXT|ST_title19|745|40|810|65| ||-1||||
+obj|TEXT|ST_title20|810|40|875|65| ||-1||||
+obj|TEXT|ST_title21|875|40|940|65| ||-1||||
+obj|TEXT|ST_title22|945|40|980|65| ||-1||||
+obj|TEXT|ST_title23|980|40|1015|65| ||-1||||
+obj|TEXT|ST_title0|0|70|1024|125| ||-1||||
+obj|TEXT|ST_titlePhase1|10|80|45|115| ||-1||||
+obj|TEXT|ST_PhaseID1|15|85|40|110| ||-1||||
+obj|IO|IO_Phase|15|85|25|95||DB110DBW218|-1|9999|||

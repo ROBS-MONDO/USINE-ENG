@@ -1,0 +1,36 @@
+screen|305_GovoniEtatProductionB1|1024|768
+obj|TEXT|ST_title500|10|70|1020|95|Etat Production Bambury 1||-1||FFFFFF||
+obj|TEXT|Texte statique3|55|170|120|205|Utilisateur||-1||030100||
+obj|TEXT|Texte statique4|155|170|220|205|BY1||-1||030100||
+obj|TEXT|Texte statique66|55|200|140|235|Code Recette||-1||030100||
+obj|TEXT|Texte statique5|455|200|540|235|Etat Utilisateur||-1||030100||
+obj|TEXT|Texte statique59|565|200|700|217|||-1||||
+obj|TEXT|Texte statique1|55|230|120|265|Lot Recette||-1||030100||
+obj|TEXT|Texte statique6|455|230|540|265|Cycle par faire||-1||030100||
+obj|TEXT|Texte statique7|665|230|775|265|Cycle executé||-1||030100||
+obj|TEXT|Texte statique2|55|260|165|295|Description Recette||-1||030100||
+obj|TEXT|Texte statique8|85|360|150|395|Balance||-1||030100||
+obj|TEXT|Texte statique9|175|360|260|395|Etat exécution||-1||030100||
+obj|TEXT|Texte statique10|325|360|410|395|Etat dosage||-1||030100||
+obj|TEXT|Texte statique11|460|360|545|395|Silo||-1||030100||
+obj|TEXT|Texte statique12|550|360|635|395|Set||-1||030100||
+obj|TEXT|Texte statique13|640|360|725|395|Net||-1||030100||
+obj|TEXT|Texte statique14|730|360|815|395|Brut||-1||030100||
+obj|TEXT|Texte statique15|820|360|905|395|Cycle||-1||030100||
+obj|TEXT|Texte statique16|910|360|995|395|Com||-1||030100||
+obj|TEXT|Texte statique20|155|385|310|402|||-1||||
+obj|TEXT|Texte statique21|300|385|455|402|||-1||||
+obj|TEXT|Texte statique74|420|385|554|402|||-1||||
+obj|BUTTON|Bouton1|915|385|945|405|bal||-1||00FFFE||
+obj|TEXT|Texte statique17|70|390|135|425|W118||-1||030100||
+obj|BUTTON|Bouton4|25|415|65|440|CL201reset||-1||00FFFE||
+obj|BUTTON|Bouton2|915|415|945|435|bal||-1||00FFFE||
+obj|TEXT|Texte statique18|70|420|135|455|CL201||-1||030100||
+obj|BUTTON|Bouton5|25|445|65|470|CL203reset||-1||00FFFE||
+obj|BUTTON|Bouton3|915|445|945|465|bal||-1||00FFFE||
+obj|TEXT|Texte statique19|70|450|135|485|CL203||-1||030100||
+obj|BUTTON|Bouton6|260|515|360|550|prod_UT1_cmd1||-1||00FFFE||
+obj|BUTTON|Bouton7|380|515|480|550|prod_UT1_cmd2||-1||00FFFE||
+obj|BUTTON|Bouton8|500|515|600|550|prod_UT1_cmd4||-1||00FFFE||
+obj|BUTTON|Bouton9|620|515|720|550|prod_UT1_cmd3||-1||00FFFE||
+obj|CONTROL|Fenêtre de vue1|650|525|850|925|333_GovoniPopUp_3||-1||||

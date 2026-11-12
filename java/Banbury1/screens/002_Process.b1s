@@ -1,0 +1,49 @@
+screen|002_Process|1024|768
+obj|PIC|GO_logo2|0|60|1024|648|||-1||||background5.jpg
+obj|TEXT|ST_title0|0|60|1024|648|Line speed||-1||||
+obj|IO|IO_RecipeName|5|70|240|95|||-1||||
+obj|IO|IO_RecipeID|5|70|15|80||DB201DBW2|-1|99999|||
+obj|TEXT|ST_title31|250|70|385|95|Temps de sécurité||-1||FFFFFF||
+obj|TEXT|ST_title13|390|70|525|95|Temp. de sécuritée||-1||FFFFFF||
+obj|TEXT|ST_title33|530|70|665|95|Energie MAX||-1||FFFFFF||
+obj|TEXT|ST_title30|670|70|805|95|Restart Température||-1||FFFFFF||
+obj|TEXT|ST_title29|810|70|945|95|Porte de déchargement||-1||FFFFFF||
+obj|TEXT|ST_title32|5|100|150|125|Temps cycle ||-1||FFFFFF||
+obj|IO|IO_value6|250|100|345|125||DB201DBW32|-1|99999|||
+obj|TEXT|ST_unit6|345|100|385|125|s||-1||||
+obj|IO|IO_value8|390|100|485|125||DB201DBW28|-1|99999|||
+obj|TEXT|ST_unit8|485|100|525|125|°C||-1||||
+obj|IO|IO_value9|530|100|625|125||DB201DBW34|-1|999.9|||
+obj|TEXT|ST_unit9|625|100|665|125|kWh||-1||||
+obj|IO|IO_value10|670|100|765|125||DB201DBW38|-1|99999|||
+obj|TEXT|ST_unit10|765|100|805|125|°C||-1||||
+obj|IO|IO_value11|810|100|905|125||DB201DBW30|-1|99999|||
+obj|TEXT|ST_unit11|905|100|945|125|s||-1||||
+obj|IO|IO_value2|5|125|100|150|||-1||||
+obj|TEXT|ST_unit2|100|125|150|150|mm:ss||-1||||
+obj|TEXT|ST_title2|5|530|55|555|Line speed||-1||||
+obj|TEXT|ST_title4|60|530|325|555|Phase actuelle - valeurs actuelles||-1||FFFFFF||
+obj|TEXT|ST_title7|615|530|1020|625|Line speed||-1||||
+obj|LAMP|GO_logo6|620|535|645|560||DB110DBW44|12|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title21|620|535|645|560|Line speed||-1||||
+obj|TEXT|ST_title9|650|535|810|560|Prêt pour production||-1||D4D0C8||
+obj|LAMP|GO_logo5|825|535|850|560||DB110DBW44|1|||RED|lamp_RED.JPG
+obj|TEXT|ST_title16|825|535|850|560|Line speed||-1||||
+obj|TEXT|ST_title15|855|535|1015|560|Production auto en fonction||-1||D4D0C8||
+obj|TEXT|ST_title3|5|560|55|585|Line speed||-1||||
+obj|TEXT|ST_title5|60|560|325|585|Phase actuelle - valeurs affichées||-1||FFFFFF||
+obj|LAMP|GO_logo1|620|565|645|590||DB110DBW44|11|||RED|lamp_RED.JPG
+obj|TEXT|ST_title20|620|565|645|590|Line speed||-1||||
+obj|TEXT|ST_title8|650|565|810|590|Auto cycle ON||-1||D4D0C8||
+obj|LAMP|GO_logo7|825|565|850|590||DB110DBW44|2|||RED|lamp_RED.JPG
+obj|TEXT|ST_title18|825|565|850|590|Line speed||-1||||
+obj|TEXT|ST_title17|855|565|1015|590|DB110DBW44||1||000101||
+obj|TEXT|ST_title96|855|565|1015|590|DB110DBW44||0||||
+obj|TEXT|ST_title1|5|590|55|615|Line speed||-1||||
+obj|TEXT|ST_title6|60|590|325|615|Phase suivante - valeurs affichées||-1||FFFFFF||
+obj|LAMP|GO_logo3|620|595|645|620||DB201DBX41_0|3|||ORANGE|lamp_ORANGE.JPG
+obj|TEXT|ST_title11|620|595|645|620|Line speed||-1||||
+obj|TEXT|ST_title10|650|595|810|620|Chargement nouvelle recette||-1||D4D0C8||
+obj|LAMP|GO_logo4|825|595|850|620||DB110DBW44|0|||GREEN|lamp_GREEN.JPG
+obj|TEXT|ST_title14|825|595|850|620|Line speed||-1||||
+obj|TEXT|ST_title12|855|595|1015|620|Recette valide||-1||D4D0C8||

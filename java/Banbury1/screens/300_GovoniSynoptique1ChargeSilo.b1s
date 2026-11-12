@@ -1,0 +1,266 @@
+screen|300_GovoniSynoptique1ChargeSilo|1024|768
+obj|TEXT|Texte statique12|353|84|418|119|Cercle1||-1||||
+obj|TEXT|Texte statique31|83|86|148|121|Cercle1||-1||||
+obj|TEXT|Texte statique29|587|88|652|123|Cercle1||-1||||
+obj|POLY|Polygone3|421|90|429|95|||-1||||
+obj|POLY|Polygone10|151|92|159|97|||-1||||
+obj|LINE|Trait3|425|92|425|103|||-1||||
+obj|LINE|Trait10|155|94|155|105|||-1||||
+obj|POLY|Polygone8|655|94|663|99|||-1||||
+obj|CONTROL|Control13|395|95|420|116|||-1||||
+obj|LINE|Trait8|659|96|659|107|||-1||||
+obj|CONTROL|Control21|125|97|150|118|||-1||||
+obj|CONTROL|Control16|418|98|428|109|||-1||||
+obj|CONTROL|Control15|358|99|408|160|Cmd103||-1||||
+obj|CONTROL|Control44|629|99|654|120|||-1||||
+obj|CONTROL|Control55|148|100|158|111|||-1||||
+obj|CONTROL|Control22|88|101|138|162|Cmd101||-1||||
+obj|ELLIPSE|Cercle9|351|102|362|113|||13||||
+obj|CONTROL|Control45|652|102|662|113|||-1||||
+obj|CONTROL|Control43|592|103|642|164|Cmd105||-1||||
+obj|ELLIPSE|Cercle24|81|104|92|115|||0||||
+obj|ELLIPSE|Cercle22|585|106|596|117|||11||||
+obj|CONTROL|Control12|511|113|536|134|||-1||||
+obj|CONTROL|Control6|658|114|683|135|||-1||||
+obj|CONTROL|Control36|819|114|844|135|||-1||||
+obj|CONTROL|Control42|964|114|989|135|||-1||||
+obj|CONTROL|Control29|241|115|266|136|||-1||||
+obj|CONTROL|Control47|313|115|338|136|||-1||||
+obj|CONTROL|Control52|43|117|68|138|||-1||||
+obj|CONTROL|Control7|495|118|515|138|||-1||||
+obj|CONTROL|Control9|533|118|554|138|||-1||||
+obj|CONTROL|Control1|642|119|662|139|||-1||||
+obj|CONTROL|Control3|680|119|701|139|||-1||||
+obj|CONTROL|Control31|803|119|823|139|||-1||||
+obj|CONTROL|Control33|841|119|862|139|||-1||||
+obj|CONTROL|Control37|948|119|968|139|||-1||||
+obj|CONTROL|Control39|986|119|1007|139|||-1||||
+obj|CONTROL|Control24|225|120|245|140|||-1||||
+obj|CONTROL|Control26|263|120|284|140|||-1||||
+obj|CONTROL|Control48|296|120|316|140|||-1||||
+obj|CONTROL|Control46|336|120|357|140|||-1||||
+obj|CONTROL|Control51|26|122|46|142|||-1||||
+obj|CONTROL|Control23|66|122|87|142|||-1||||
+obj|CONTROL|Control10|542|133|554|186|||-1||||
+obj|CONTROL|Control8|445|134|522|287|||-1||||
+obj|CONTROL|Control4|689|134|701|187|||-1||||
+obj|CONTROL|Control34|850|134|862|187|||-1||||
+obj|CONTROL|Control40|995|134|1007|187|||-1||||
+obj|CONTROL|Control27|272|135|284|188|||-1||||
+obj|CONTROL|Control49|296|135|308|188|||-1||||
+obj|CONTROL|Control14|333|135|410|288|||-1||||
+obj|CONTROL|Control2|592|135|669|288|||-1||||
+obj|CONTROL|Control32|753|135|830|288|||-1||||
+obj|CONTROL|Control38|898|135|975|288|||-1||||
+obj|CONTROL|Control25|175|136|252|289|||-1||||
+obj|CONTROL|Control53|26|137|38|190|||-1||||
+obj|CONTROL|Control30|63|137|140|290|||-1||||
+obj|CONTROL|Control17|406|137|431|158|||-1||||
+obj|CONTROL|Control18|428|137|453|158|||-1||||
+obj|CONTROL|Control20|136|139|161|160|||-1||||
+obj|CONTROL|Control19|158|139|183|160|||-1||||
+obj|ELLIPSE|Cercle4|475|152|490|167|||3||||
+obj|ELLIPSE|Cercle7|363|153|378|168|||1||||
+obj|ELLIPSE|Cercle1|622|153|637|168|||0||||
+obj|ELLIPSE|Cercle19|783|153|798|168|||13||||
+obj|ELLIPSE|Cercle16|928|153|943|168|||8||||
+obj|ELLIPSE|Cercle10|205|154|220|169|||0||||
+obj|ELLIPSE|Cercle13|93|155|108|170|||15||||
+obj|TEXT|Texte statique5|453|167|518|202|LSH104||-1||||
+obj|TEXT|Texte statique9|341|168|406|203|LSH103||-1||||
+obj|TEXT|Texte statique1|600|168|665|203|LSH105||-1||||
+obj|TEXT|Texte statique20|761|168|826|203|LSH106||-1||||
+obj|TEXT|Texte statique25|906|168|971|203|LSH107||-1||||
+obj|TEXT|Texte statique13|183|169|248|204|LSH102||-1||||
+obj|TEXT|Texte statique17|71|170|136|205|LSH101||-1||||
+obj|CONTROL|Contrôle10|290|172|313|204|ZS103||-1||000301||
+obj|CONTROL|Contrôle12|20|173|43|205|ZS101||-1||000301||
+obj|CONTROL|Contrôle11|266|173|289|205|ZS102||-1||000301||
+obj|CONTROL|Control50|296|173|308|226|||-1||||
+obj|CONTROL|Contrôle9|536|173|559|205|ZS104||-1||000301||
+obj|CONTROL|Contrôle7|844|174|867|206|ZS106||-1||000301||
+obj|CONTROL|Contrôle8|989|174|1012|206|ZS107||-1||000301||
+obj|CONTROL|Control54|26|175|38|228|||-1||||
+obj|CONTROL|Contrôle6|683|175|706|207|ZS105||-1||000301||
+obj|CONTROL|Control11|542|177|554|230|||-1||||
+obj|CONTROL|Control35|850|177|862|231|||-1||||
+obj|CONTROL|Control5|689|178|701|231|||-1||||
+obj|CONTROL|Control41|995|178|1007|231|||-1||||
+obj|CONTROL|Control28|272|179|284|232|||-1||||
+obj|TEXT|Texte statique6|453|184|518|219|||-1||||
+obj|TEXT|Texte statique10|341|185|406|220|||-1||||
+obj|TEXT|Texte statique2|600|185|665|220|||-1||||
+obj|TEXT|Texte statique21|761|185|826|220|||-1||||
+obj|TEXT|Texte statique26|906|185|971|220|||-1||||
+obj|TEXT|Texte statique14|183|186|248|221|||-1||||
+obj|TEXT|Texte statique18|71|187|136|222|||-1||||
+obj|RECT|Rectangle2|539|220|557|238|||-1||||
+obj|RECT|Rectangle9|292|221|310|239|||-1||||
+obj|TEXT|Texte statique7|453|221|518|256|LSL104||-1||||
+obj|RECT|Rectangle1|686|221|704|239|||-1||||
+obj|RECT|Rectangle7|847|221|865|239|||-1||||
+obj|RECT|Rectangle6|992|221|1010|239|||-1||||
+obj|RECT|Rectangle4|269|222|287|240|||-1||||
+obj|TEXT|Texte statique11|341|222|406|257|LSL103||-1||||
+obj|TEXT|Texte statique3|600|222|665|257|LSL105||-1||||
+obj|TEXT|Texte statique22|761|222|826|257|LSL106||-1||||
+obj|TEXT|Texte statique27|906|222|971|257|LSL107||-1||||
+obj|RECT|Rectangle5|22|223|40|241|||12||||
+obj|TEXT|Texte statique15|183|223|248|258|LSL102||-1||||
+obj|ELLIPSE|Cercle6|542|223|553|234|||5||||
+obj|TEXT|Texte statique19|71|224|136|259|LSL101||-1||||
+obj|ELLIPSE|Cercle23|295|224|306|235|||12||||
+obj|ELLIPSE|Cercle3|689|224|700|235|||2||||
+obj|ELLIPSE|Cercle21|850|224|861|235|||15||||
+obj|ELLIPSE|Cercle18|995|224|1006|235|||10||||
+obj|ELLIPSE|Cercle12|272|225|283|236|||0||||
+obj|ELLIPSE|Cercle15|25|226|36|237|||10||||
+obj|ELLIPSE|Cercle5|476|237|491|252|||6||||
+obj|ELLIPSE|Cercle8|364|238|379|253|||2||||
+obj|ELLIPSE|Cercle2|623|238|638|253|||1||||
+obj|ELLIPSE|Cercle20|784|238|799|253|||14||||
+obj|ELLIPSE|Cercle17|929|238|944|253|||9||||
+obj|ELLIPSE|Cercle11|206|239|221|254|||15||||
+obj|ELLIPSE|Cercle14|94|240|109|255|||8||||
+obj|TEXT|Texte statique4|18|244|45|261|ZS||-1||||
+obj|TEXT|Texte statique16|263|244|290|261|ZS||-1||||
+obj|TEXT|Texte statique8|288|244|315|261|ZS||-1||||
+obj|TEXT|Texte statique23|535|244|562|261|ZS||-1||||
+obj|TEXT|Texte statique24|683|244|710|261|ZS||-1||||
+obj|TEXT|Texte statique28|844|244|871|261|ZS||-1||||
+obj|TEXT|Texte statique30|988|244|1015|261|ZS||-1||||
+obj|TEXT|Texte statique48|452|301|517|336|Cercle1||-1||||
+obj|TEXT|Texte statique43|593|301|658|336|Cercle1||-1||||
+obj|POLY|Polygone16|520|307|528|312|||-1||||
+obj|POLY|Polygone14|661|307|669|312|||-1||||
+obj|LINE|Trait16|524|309|524|320|||-1||||
+obj|LINE|Trait14|665|309|665|320|||-1||||
+obj|CONTROL|Control77|494|312|519|333|||-1||||
+obj|CONTROL|Control68|635|312|660|333|||-1||||
+obj|CONTROL|Control85|517|315|527|326|||-1||||
+obj|CONTROL|Control76|658|315|668|326|||-1||||
+obj|CONTROL|Control78|457|316|507|377|Cmd109||-1||||
+obj|CONTROL|Control69|598|316|648|377|Cmd110||-1||||
+obj|ELLIPSE|Cercle38|450|319|461|330|||8||||
+obj|ELLIPSE|Cercle34|591|319|602|330|||0||||
+obj|CONTROL|Control91|397|327|422|348|||-1||||
+obj|CONTROL|Control84|523|327|548|348|||-1||||
+obj|CONTROL|Control75|664|327|689|348|||-1||||
+obj|CONTROL|Control61|821|327|846|348|||-1||||
+obj|CONTROL|Control67|966|327|991|348|||-1||||
+obj|CONTROL|Control86|381|332|401|352|||-1||||
+obj|CONTROL|Control88|419|332|440|352|||-1||||
+obj|CONTROL|Control79|507|332|527|352|||-1||||
+obj|CONTROL|Control81|545|332|566|352|||-1||||
+obj|CONTROL|Control70|648|332|668|352|||-1||||
+obj|CONTROL|Control72|686|332|707|352|||-1||||
+obj|CONTROL|Control56|805|332|825|352|||-1||||
+obj|CONTROL|Control58|843|332|864|352|||-1||||
+obj|CONTROL|Control62|950|332|970|352|||-1||||
+obj|CONTROL|Control64|988|332|1009|352|||-1||||
+obj|POLY|Polygone18|135|336|196|366|||-1||||
+obj|CONTROL|Control89|428|347|440|400|||-1||||
+obj|CONTROL|Control82|554|347|566|400|||-1||||
+obj|CONTROL|Control73|695|347|707|400|||-1||||
+obj|CONTROL|Control59|852|347|864|400|||-1||||
+obj|CONTROL|Control65|997|347|1009|400|||-1||||
+obj|CONTROL|Control87|331|348|408|501|||-1||||
+obj|CONTROL|Control80|457|348|534|501|||-1||||
+obj|CONTROL|Control71|598|348|675|501|||-1||||
+obj|CONTROL|Control57|755|348|832|501|||-1||||
+obj|CONTROL|Control63|900|348|977|501|||-1||||
+obj|CONTROL|Control116|134|360|195|407|||-1||||
+obj|ELLIPSE|Cercle39|361|366|376|381|||4||||
+obj|ELLIPSE|Cercle35|487|366|502|381|||0||||
+obj|ELLIPSE|Cercle31|628|366|643|381|||12||||
+obj|ELLIPSE|Cercle25|785|366|800|381|||6||||
+obj|ELLIPSE|Cercle28|930|366|945|381|||9||||
+obj|CONTROL|Control115|147|377|175|400|CmdEV30||-1||||
+obj|ELLIPSE|Cercle46|133|379|150|396|||10||||
+obj|TEXT|Texte statique50|339|381|404|416|LSH108||-1||||
+obj|TEXT|Texte statique45|465|381|530|416|LSH109||-1||||
+obj|TEXT|Texte statique40|606|381|671|416|LSH110||-1||||
+obj|TEXT|Texte statique32|763|381|828|416|LSH111||-1||||
+obj|TEXT|Texte statique35|908|381|973|416|LSH112||-1||||
+obj|TEXT|Texte statique58|85|382|150|417|Cercle1||-1||||
+obj|CONTROL|Contrôle3|422|386|445|418|ZS108||-1||000301||
+obj|CONTROL|Contrôle2|548|386|571|418|ZS109||-1||000301||
+obj|CONTROL|Contrôle1|689|386|712|418|ZS110||-1||000301||
+obj|CONTROL|Contrôle4|846|386|869|418|ZS111||-1||000301||
+obj|CONTROL|Contrôle5|991|387|1014|419|ZS112||-1||000301||
+obj|CONTROL|Control90|428|391|440|444|||-1||||
+obj|CONTROL|Control83|554|391|566|444|||-1||||
+obj|CONTROL|Control74|695|391|707|444|||-1||||
+obj|CONTROL|Control60|852|391|864|444|||-1||||
+obj|CONTROL|Control66|997|391|1009|444|||-1||||
+obj|CONTROL|Control114|134|396|195|443|||-1||||
+obj|TEXT|Texte statique51|339|398|404|433|||-1||||
+obj|TEXT|Texte statique46|465|398|530|433|||-1||||
+obj|TEXT|Texte statique41|606|398|671|433|||-1||||
+obj|TEXT|Texte statique33|763|398|828|433|||-1||||
+obj|TEXT|Texte statique36|908|398|973|433|||-1||||
+obj|ELLIPSE|Cercle42|22|405|39|422|||4||||
+obj|CONTROL|Control92|115|417|210|564|||-1||||
+obj|CONTROL|Control93|18|422|43|443|CmdEV20||5||||
+obj|CONTROL|Control95|38|423|80|449|||-1||||
+obj|CONTROL|Control96|79|423|121|449|||-1||||
+obj|RECT|Rectangle17|425|434|443|452|||-1||||
+obj|RECT|Rectangle15|551|434|569|452|||-1||||
+obj|RECT|Rectangle13|692|434|710|452|||-1||||
+obj|RECT|Rectangle11|849|434|867|452|||-1||||
+obj|RECT|Rectangle12|994|434|1012|452|||-1||||
+obj|TEXT|Texte statique52|339|435|404|470|LSL108||-1||||
+obj|TEXT|Texte statique47|465|435|530|470|LSL109||-1||||
+obj|TEXT|Texte statique42|606|435|671|470|LSL110||-1||||
+obj|TEXT|Texte statique34|763|435|828|470|LSL111||-1||||
+obj|TEXT|Texte statique37|908|435|973|470|LSL112||-1||||
+obj|CONTROL|Control103|99|437|148|467|||-1||||
+obj|ELLIPSE|Cercle41|428|437|439|448|||6||||
+obj|ELLIPSE|Cercle37|554|437|565|448|||2||||
+obj|ELLIPSE|Cercle33|695|437|706|448|||2||||
+obj|ELLIPSE|Cercle27|852|437|863|448|||8||||
+obj|ELLIPSE|Cercle30|997|437|1008|448|||11||||
+obj|ELLIPSE|Cercle44|153|444|170|461|||3||||
+obj|CONTROL|Control102|80|446|102|466|||-1||||
+obj|TEXT|Texte statique56|-1|447|64|482|Cercle1||-1||||
+obj|ELLIPSE|Cercle40|362|451|377|466|||1||||
+obj|ELLIPSE|Cercle36|488|451|503|466|||1||||
+obj|ELLIPSE|Cercle32|629|451|644|466|||4||||
+obj|ELLIPSE|Cercle26|786|451|801|466|||7||||
+obj|ELLIPSE|Cercle29|931|451|946|466|||10||||
+obj|TEXT|Texte statique53|422|457|449|474|ZS||-1||||
+obj|TEXT|Texte statique49|548|457|575|474|ZS||-1||||
+obj|TEXT|Texte statique44|689|457|716|474|ZS||-1||||
+obj|TEXT|Texte statique38|846|457|873|474|ZS||-1||||
+obj|TEXT|Texte statique39|990|457|1017|474|ZS||-1||||
+obj|TEXT|Texte statique54|130|461|195|496|LSH40||-1||||
+obj|CONTROL|Control101|56|463|117|510|||-1||||
+obj|CONTROL|Control100|56|484|117|531|||-1||||
+obj|CONTROL|Control112|228|486|292|536|||-1||||
+obj|ELLIPSE|Cercle45|206|521|223|538|||12||||
+obj|CONTROL|Control111|228|523|292|573|||-1||||
+obj|CONTROL|Control99|56|529|117|576|||-1||||
+obj|LINE|Trait18|171|530|206|530|||-1||||
+obj|RECT|Rectangle21|307|532|552|641|||-1||||
+obj|CONTROL|Control107|132|533|193|580|||-1||||
+obj|TEXT|Texte statique55|184|540|249|575|PSL50||-1||||
+obj|TEXT|Texte statique79|333|548|419|565|Type de cycle||-1||||
+obj|TEXT|Texte statique59|443|551|539|568|||-1||||
+obj|ELLIPSE|Cercle43|22|554|39|571|||2||||
+obj|CONTROL|Fenêtre de vue2|765|554|1015|704|332_GovoniPopUp_2||-1||||
+obj|TEXT|Texte statique80|333|567|419|584|Etat du cycle||-1||||
+obj|TEXT|Texte statique60|424|569|558|586|||-1||||
+obj|CONTROL|Control94|19|570|44|591|CmdEV10||-1||||
+obj|CONTROL|Control97|38|571|85|597|||-1||||
+obj|CONTROL|Control104|93|571|140|597|||-1||||
+obj|CONTROL|Control106|114|571|161|597|||-1||||
+obj|CONTROL|Control108|168|571|215|597|||-1||||
+obj|CONTROL|Control109|201|571|248|597|||-1||||
+obj|CONTROL|Control110|238|571|274|590|||-1||||
+obj|CONTROL|Control98|69|573|104|590|||-1||||
+obj|CONTROL|Control105|145|573|180|590|||-1||||
+obj|TEXT|Texte statique81|333|586|452|603|Conditions de cycle||-1||||
+obj|TEXT|Texte statique61|444|587|540|604|||-1||||
+obj|TEXT|Texte statique57|1|596|66|631|Cercle1||-1||||
+obj|TEXT|Texte statique62|425|602|559|619|||-1||||
+obj|TEXT|Texte statique82|333|605|374|622|Silo||-1||||

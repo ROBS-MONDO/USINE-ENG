@@ -94,3 +94,33 @@ java -cp out Banbury1.B1_Main 192.168.10.100 --period 1000 --recipes-dir \\srv-b
 * Pulsante **Recettes** della barra in basso: apre l'editor.
 * `--period` = ciclo di lettura in ms (consigliato 1000 su macchina in produzione).
 * Tutto in sola lettura: nessuna scrittura sul PLC.
+
+## Altre schermate WinCC (Process, Display, Production, Settings, Temperatures, Components, Govoni...)
+```bash
+java -cp out Banbury1.B1_Main 192.168.10.100 --period 1000      # pulsanti della barra in basso -> schermate
+java -cp out Banbury1.B1_Main --demo --screen 005_Display --snapshot display.png [--overlay]
+```
+* `screens/*.b1s` sono i layout estratti dai `.Pdl` del progetto WinCC `Mondo(210623)` (posizione, testo, campo di valore
+  con il suo tag `DBxDBWn`). Vanno copiati nel classpath (Eclipse lo fa da solo) oppure in `C:\_tools\Banbury1\screens`.
+* Lampade nelle schermate generiche: disegnate "non collegate" (barra diagonale) finche' il bit non e' confermato.
+* Campi di valore: valore grezzo x fattore (`B1Screen.SCALE`: pressione `DBW70/72` x0.01, energia `DBW34` x0.1: ipotesi).
+* Non ricostruiti: controlli WinCC (trend, allarmi, tabelle di fase) -> riquadro tratteggiato `[controllo WinCC]`.
+
+## Valori PLC (tasto F3 o pulsante "Valori PLC")
+Tabella live (solo lettura) di tutte le parole di DB110/DB150/DB201: dec, hex, bit, ASCII, numero di variazioni,
+chiave del sinottico che la usa e **dove la usa il WinCC** (schermata + etichetta). Righe gialle = cambiate negli ultimi 5 s.
+E' lo strumento per completare `b1_tags.properties`: si cerca la parola che cambia e si legge cosa mostra il WinCC.
+
+## Indirizzi confermati dal WinCC (progetto Mondo(210623))
+| Campo | Indirizzo | Nota |
+|---|---|---|
+| Pressione consegna / barra alta | DB110.DBW70 | scala x0.01 (ipotesi) |
+| Pressione attuale | DB110.DBW72 | scala x0.01 (ipotesi) |
+| Giri consegna / attuali / corrente | DBW58 / DBW60 / DBW62 | |
+| Temperatura (riquadro / barra alta) | DBW100 / DBW104 | |
+| Miscele totali / fatte | DBW210 / DBW212 | "da fare" = totale - fatte |
+| Passi ciclo | DBW234 | |
+| % pistone | DBW86 / DBW106 / DBW108 | |
+| SEQ | DB150.DBW0 / DBW2 | |
+| Ricetta: temp. sicurezza / porta scarico / tempo sicurezza / energia max / temp. riavvio | DB201.DBW28 / 30 / 32 / 34 / 38 | |
+| Lampade 001 | bit **ipotizzati** (vedi b1_tags.properties) | da confrontare con il WinCC |

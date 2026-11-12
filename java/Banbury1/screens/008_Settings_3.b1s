@@ -1,0 +1,73 @@
+screen|008_Settings_3|1024|768
+obj|PIC|GO_logo2|0|60|1024|648|||-1||||background5.jpg
+obj|TEXT|ST_title0|0|60|1024|648|Line speed||-1||||
+obj|TEXT|ST_title501|5|65|1015|90|Timers||-1||91DCFF||
+obj|TEXT|ST_title1|5|95|365|120|Temps pour remettre à zéro valve porte décharg. Séquence fermeture||-1||91DCFF||
+obj|IO|IO_value1|370|95|465|120||T081|-1|99999|||
+obj|TEXT|ST_unit1|465|95|505|120|s||-1||||
+obj|TEXT|ST_title18|515|95|875|120|Réserve (dans PLC pour retard EV piston pneumatique BAS)||-1||91DCFF||
+obj|IO|IO_value18|880|95|975|120||T121|-1|99999|||
+obj|TEXT|ST_unit18|975|95|1015|120|°C||-1||||
+obj|TEXT|ST_title2|5|125|365|150|Retard ouverture porte décharg. Ligne soupape pressione||-1||91DCFF||
+obj|IO|IO_value2|370|125|465|150||T082|-1|99999|||
+obj|TEXT|ST_unit2|465|125|505|150|s||-1||||
+obj|TEXT|ST_title19|515|125|875|150|PLC réserve||-1||91DCFF||
+obj|IO|IO_value19|880|125|975|150||T122|-1|99999|||
+obj|TEXT|ST_unit19|975|125|1015|150|s||-1||||
+obj|TEXT|ST_title3|5|155|365|210|Délai ouverture verrou - fermeture porte déchargement - séquence d'ouverture||-1||91DCFF||
+obj|IO|IO_value3|370|155|465|180||T083|-1|99999|||
+obj|TEXT|ST_unit3|465|155|505|180|s||-1||||
+obj|TEXT|ST_title20|515|155|875|180|Réserve (injecteur 1 timeout)||-1||91DCFF||
+obj|IO|IO_value20|880|155|975|180||T123|-1|99999|||
+obj|TEXT|ST_unit20|975|155|1015|180|s||-1||||
+obj|TEXT|ST_title21|515|185|875|210|Réserve (injecteur 2 timeout)||-1||91DCFF||
+obj|IO|IO_value21|880|185|975|210||T124|-1|99999|||
+obj|TEXT|ST_unit21|975|185|1015|210|s||-1||||
+obj|TEXT|ST_title4|5|215|365|240|Eau de refroidissement malaxeur pression basse||-1||91DCFF||
+obj|IO|IO_value4|370|215|465|240||T085|-1|99999|||
+obj|TEXT|ST_unit4|465|215|505|240|s||-1||||
+obj|TEXT|ST_title22|515|215|875|240|Réserve (SB cycle automatique)||-1||91DCFF||
+obj|IO|IO_value22|880|215|975|240||T126|-1|99999|||
+obj|TEXT|ST_unit22|975|215|1015|240|s||-1||||
+obj|TEXT|ST_title5|5|245|365|270|Nettoyage air ||-1||91DCFF||
+obj|IO|IO_value5|370|245|465|270||T086|-1|99999|||
+obj|TEXT|ST_unit5|465|245|505|270|s||-1||||
+obj|TEXT|ST_title23|515|245|875|270|Réserve (rétard nouvelle recette)||-1||91DCFF||
+obj|IO|IO_value23|880|245|975|270||T127|-1|99999|||
+obj|TEXT|ST_unit23|975|245|1015|270|s||-1||||
+obj|TEXT|ST_title6|5|275|365|300|Timeout insertion blocage piston en nettoyage||-1||91DCFF||
+obj|IO|IO_value6|370|275|465|300||T088|-1|99999|||
+obj|TEXT|ST_unit6|465|275|505|300|s||-1||||
+obj|TEXT|ST_title7|5|305|365|330|Timeout déblocage piston en nettoyage||-1||91DCFF||
+obj|IO|IO_value7|370|305|465|330||T089|-1|99999|||
+obj|TEXT|ST_unit7|465|305|505|330|s||-1||||
+obj|TEXT|ST_title8|5|335|365|360|Timeout position haute piston pneumatique||-1||91DCFF||
+obj|IO|IO_value8|370|335|465|360||T090|-1|99999|||
+obj|TEXT|ST_unit8|465|335|505|360|s||-1||||
+obj|TEXT|ST_title9|5|365|365|390|Timeout position basse piston pneumatique||-1||91DCFF||
+obj|IO|IO_value9|370|365|465|390||T091|-1|99999|||
+obj|TEXT|ST_unit9|465|365|505|390|s||-1||||
+obj|TEXT|ST_title10|5|395|365|420|PLC réserve||-1||91DCFF||
+obj|IO|IO_value10|370|395|465|420||T099|-1|99999|||
+obj|TEXT|ST_unit10|465|395|505|420|s||-1||||
+obj|TEXT|ST_title11|5|425|365|450|Température max. rotors||-1||91DCFF||
+obj|IO|IO_value11|370|425|465|450||T100|-1|99999|||
+obj|TEXT|ST_unit11|465|425|505|450|s||-1||||
+obj|TEXT|ST_title12|5|455|365|480|Tolérance température rotors||-1||91DCFF||
+obj|IO|IO_value12|370|455|465|480||T101|-1|99999|||
+obj|TEXT|ST_unit12|465|455|505|480|s||-1||||
+obj|TEXT|ST_title13|5|485|365|510|Température max. shells||-1||91DCFF||
+obj|IO|IO_value13|370|485|465|510||T102|-1|99999|||
+obj|TEXT|ST_unit13|465|485|505|510|s||-1||||
+obj|TEXT|ST_title14|5|515|365|540|Tolérance température shells||-1||91DCFF||
+obj|IO|IO_value14|370|515|465|540||T103|-1|99999|||
+obj|TEXT|ST_unit14|465|515|505|540|s||-1||||
+obj|TEXT|ST_title15|5|545|365|570|Température max. pistons||-1||91DCFF||
+obj|IO|IO_value15|370|545|465|570||T104|-1|99999|||
+obj|TEXT|ST_unit15|465|545|505|570|s||-1||||
+obj|TEXT|ST_title16|5|575|365|600|Tolérance température pistons||-1||91DCFF||
+obj|IO|IO_value16|370|575|465|600||T105|-1|99999|||
+obj|TEXT|ST_unit16|465|575|505|600|s||-1||||
+obj|TEXT|ST_title17|5|605|365|630|Réserve (dans PLC pour retard EV piston pneumatique HAUT)||-1||91DCFF||
+obj|IO|IO_value17|370|605|465|630||T120|-1|99999|||
+obj|TEXT|ST_unit17|465|605|505|630|s||-1||||
