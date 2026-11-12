@@ -151,3 +151,14 @@ Clair_fonce`. Nbr_sequence/Num_sequence = DB150 DBW0/DBW2 (SEQ del sinottico).
 blocchi, di notte. **Parte in prova** (`@Execute = 0`: solo conteggi). Retention minima 7 giorni; tocca solo `Date_record`
 di `Datas_B1` e `Datas_B2`. Contiene, commentati, l'indice consigliato e il job di SQL Server Agent (creato disabilitato).
 Non provato su SQL Server: prima prova a secco e backup.
+
+## Chi scrive Datas_B1 / Datas_B2 (dalla cache SQL, 12/11/2026)
+* `INSERT INTO [Datas_B1] values(@1..@21)` e `INSERT INTO [Datas_B2] values(@1..@21)`: **senza elenco di colonne**
+  (21 valori posizionali, tutti passati come testo, JDBC) ogni ~2 s, login `Banbury2` da DESKTOP-1BHBR06.
+  Ordine delle 21 colonne di Datas_B1: Date_record, Time_record, Num_lot, Suffixe, Num_melange, Type_melange,
+  Num_passage, Code_quasar, Nom_melange, Couleur, Nbr_sequence, Num_sequence, Mode, Temps_cycle, Temperature,
+  Amperage, Vitesse, Position_piston, Porte_charge, Porte_decharge, Clair_fonce.
+* **Non aggiungere colonne** a Datas_B1/B2: l'INSERT posizionale smetterebbe di funzionare.
+* Un lettore periodico (:00 e :30) legge 15 di quelle colonne da entrambe le tabelle (probabile trasferimento verso
+  un altro sistema): la pulizia a 15 giorni (job DELETE-DATA) lo lascia indisturbato.
+* Esiste anche `INSERT INTO [Consommation] values(@1..@10)` (consumi della bilancia): nessuna pulizia automatica.
