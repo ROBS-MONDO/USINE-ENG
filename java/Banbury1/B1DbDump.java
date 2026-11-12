@@ -1,5 +1,10 @@
 package Banbury1;
 
+import java.io.BufferedReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -10,21 +15,29 @@ import java.util.List;
  * Si lancia accanto al Runtime WinCC: stampa i DB una volta, poi ogni
  * variazione, cosi' si associa ogni indirizzo al valore mostrato dal sinottico.
  *
- * Uso: java B1DbDump <ip> [-r rack] [-s slot] [-p porta] [-i ms] [--once] [DB...]
+ * Uso: java Banbury1.B1DbDump <ip> [-r rack] [-s slot] [-p porta] [-i ms]
+ *                              [-o file.txt] [--once] [DB...]
  * Default: rack 0, slot 2, DB110, ciclo 500 ms.
+ *
+ * Note: ogni riga scritta nella console (e invio) viene registrata con l'ora,
+ * es. "porta carico aperta" oppure "Runtime: temp 93 rpm 33".
  */
 public class B1DbDump {
 
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+    private static final int MAX_DB_SIZE = 1024;
+
+    private static PrintWriter file;
 
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
-            System.err.println("Uso: java B1DbDump <ip> [-r rack] [-s slot] [-p porta] [-i ms] [--once] [DB...]");
+            System.err.println("Uso: java Banbury1.B1DbDump <ip> [-r rack] [-s slot] [-p porta] [-i ms] [-o file.txt] [--once] [DB...]");
             System.exit(2);
         }
         String host = args[0];
         int rack = 0, slot = 2, port = 102, interval = 500;
         boolean once = false;
+        String outFile = null;
         List<Integer> dbs = new ArrayList<>();
         for (int i = 1; i < args.length; i++) {
             switch (args[i]) {
@@ -32,6 +45,7 @@ public class B1DbDump {
                 case "-s": slot = Integer.parseInt(args[++i]); break;
                 case "-p": port = Integer.parseInt(args[++i]); break;
                 case "-i": interval = Integer.parseInt(args[++i]); break;
+                case "-o": outFile = args[++i]; break;
                 case "--once": once = true; break;
                 default: {
                     // tollera "DB201", "db201", "DB201." ecc.
@@ -47,37 +61,47 @@ public class B1DbDump {
         if (dbs.isEmpty()) {
             dbs.add(110);
         }
-
-        // Dimensioni note dal DB110 esportato (256 byte); gli altri DB: 256 di default.
-        int[] sizes = new int[dbs.size()];
-        for (int i = 0; i < sizes.length; i++) {
-            sizes[i] = dbs.get(i) == 110 ? 256 : 256;
+        if (outFile != null) {
+            file = new PrintWriter(new FileWriter(outFile, true), true);
+            println("# Log su file: " + outFile);
+        }
+        if (!once) {
+            startNoteReader();
         }
 
         try (S7ReadClient plc = new S7ReadClient(host, port, rack, slot, 3000)) {
             plc.connect();
-            System.out.println("# Connesso a " + host + " rack " + rack + " slot " + slot + " (SOLA LETTURA)");
+            println("# Connesso a " + host + " rack " + rack + " slot " + slot + " (SOLA LETTURA)");
+
+            int[] sizes = new int[dbs.size()];
+            for (int i = 0; i < sizes.length; i++) {
+                sizes[i] = detectSize(plc, dbs.get(i));
+                println("# DB" + dbs.get(i) + ": " + (sizes[i] > 0
+                        ? sizes[i] + " byte leggibili" : "NON leggibile (assente o protetto)"));
+            }
 
             byte[][] prev = new byte[dbs.size()][];
             boolean first = true;
             while (true) {
                 for (int k = 0; k < dbs.size(); k++) {
+                    if (sizes[k] <= 0) {
+                        continue;
+                    }
                     int db = dbs.get(k);
                     byte[] cur;
                     try {
                         cur = plc.readDb(db, 0, sizes[k]);
-                    } catch (java.io.IOException e) {
+                    } catch (IOException e) {
                         String msg = e.getMessage() != null ? e.getMessage() : e.toString();
-                        System.out.println("# DB" + db + ": " + msg);
+                        println("# DB" + db + ": " + msg);
                         if (!msg.startsWith("Lettura DB")) {
-                            // connessione persa: riconnette e rilegge da zero
                             reconnect(plc);
                             first = true;
                             break;
                         }
                         continue;
                     }
-                    if (first) {
+                    if (first || prev[k] == null) {
                         printAll(db, cur);
                     } else {
                         printChanges(db, prev[k], cur);
@@ -90,7 +114,63 @@ public class B1DbDump {
                 }
                 Thread.sleep(interval);
             }
+        } finally {
+            if (file != null) {
+                file.close();
+            }
         }
+    }
+
+    /** Lunghezza massima leggibile del DB (pari), 0 se non leggibile. */
+    private static int detectSize(S7ReadClient plc, int db) throws IOException {
+        if (canRead(plc, db, MAX_DB_SIZE)) {
+            return MAX_DB_SIZE;
+        }
+        if (!canRead(plc, db, 2)) {
+            return 0;
+        }
+        int lo = 2, hi = MAX_DB_SIZE; // lo leggibile, hi no
+        while (hi - lo > 2) {
+            int mid = ((lo + hi) / 2) & ~1;
+            if (mid <= lo) {
+                mid = lo + 2;
+            }
+            if (canRead(plc, db, mid)) {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        return lo;
+    }
+
+    private static boolean canRead(S7ReadClient plc, int db, int size) throws IOException {
+        try {
+            plc.readDb(db, 0, size);
+            return true;
+        } catch (IOException e) {
+            String m = e.getMessage();
+            if (m != null && m.startsWith("Lettura DB")) {
+                return false;
+            }
+            throw e;
+        }
+    }
+
+    private static void startNoteReader() {
+        Thread t = new Thread(() -> {
+            try (BufferedReader r = new BufferedReader(new InputStreamReader(System.in))) {
+                String line;
+                while ((line = r.readLine()) != null) {
+                    if (!line.trim().isEmpty()) {
+                        println(LocalTime.now().format(TS) + "  >>> NOTA: " + line.trim());
+                    }
+                }
+            } catch (IOException ignored) {
+            }
+        }, "note-reader");
+        t.setDaemon(true);
+        t.start();
     }
 
     private static void reconnect(S7ReadClient plc) throws InterruptedException {
@@ -98,23 +178,23 @@ public class B1DbDump {
             try {
                 Thread.sleep(2000);
                 plc.connect();
-                System.out.println("# Riconnesso");
+                println("# Riconnesso");
                 return;
-            } catch (java.io.IOException e) {
-                System.out.println("# Riconnessione fallita: " + e.getMessage());
+            } catch (IOException e) {
+                println("# Riconnessione fallita: " + e.getMessage());
             }
         }
     }
 
     private static void printAll(int db, byte[] d) {
-        System.out.println("# --- DB" + db + " (" + d.length + " byte) ---");
+        println("# --- DB" + db + " (" + d.length + " byte) ---");
         for (int off = 0; off + 1 < d.length; off += 2) {
             int v = S7ReadClient.int16(d, off);
             if (v != 0) {
-                System.out.println(format(db, off, v));
+                println(format(db, off, v));
             }
         }
-        System.out.println("# (stampate solo le parole diverse da 0; poi appaiono le variazioni)");
+        println("# (stampate solo le parole diverse da 0; poi appaiono le variazioni)");
     }
 
     private static void printChanges(int db, byte[] a, byte[] b) {
@@ -122,9 +202,16 @@ public class B1DbDump {
             int va = S7ReadClient.int16(a, off);
             int vb = S7ReadClient.int16(b, off);
             if (va != vb) {
-                System.out.println(LocalTime.now().format(TS) + "  " + format(db, off, vb)
+                println(LocalTime.now().format(TS) + "  " + format(db, off, vb)
                         + "   (era " + va + ")");
             }
+        }
+    }
+
+    private static synchronized void println(String s) {
+        System.out.println(s);
+        if (file != null) {
+            file.println(s);
         }
     }
 
@@ -137,7 +224,9 @@ public class B1DbDump {
         StringBuilder sb = new StringBuilder();
         for (int i = 15; i >= 0; i--) {
             sb.append(((v >> i) & 1) != 0 ? '1' : '0');
-            if (i == 8) sb.append('_');
+            if (i == 8) {
+                sb.append('_');
+            }
         }
         return sb.toString();
     }
