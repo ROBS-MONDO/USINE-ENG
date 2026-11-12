@@ -13,6 +13,10 @@ direttamente i DB **110**, **150**, **201** (e `Cmd_HMI` = DB3).
 | `B1Tags.java`, `b1_tags.properties` | mappa chiave -> indirizzo S7 (modificabile senza ricompilare) |
 | `B1Source.java`, `B1PlcSource.java`, `B1DemoSource.java` | sorgente dati: PLC reale o demo |
 | `DB_MAP.md` | ipotesi sulla mappa dei DB |
+| `B1RecipeEditor.java` | **editor ricette** per postazione ufficio |
+| `B1Recipe*.java`, `B1FileRecipeRepository.java` | modello, layout DB201, codec, archivio su file |
+| `b1_recipe_layout.properties` | descrizione del formato ricetta nel DB201 (modificabile) |
+| `B1RecipeSelfTest.java` | test automatici (codec, validazione, archivio, conflitti) |
 
 ## Uso
 ```bash
@@ -61,3 +65,19 @@ java -cp out Banbury1.B1_Main --snapshot out.png --demo # salva un'immagine
 * Il file `b1_tags.properties` si cerca in `C:\_tools\Banbury1\` oppure nella cartella corrente.
 * Campi senza indirizzo mostrano `--`; le lampade non collegate hanno una barra diagonale.
 * I pulsanti di comando sono disegnati ma **non scrivono nel PLC**.
+
+## Editor ricette
+```bash
+java -cp out Banbury1.B1RecipeEditor --dir \\srv-bambury\Mondo\RecipesB1 --plc 192.168.10.100
+java -cp out Banbury1.B1RecipeSelfTest        # test automatici
+```
+* Una ricetta = un file `{uid}.b1recipe` nella cartella dell'archivio (condivisa di rete per piu' postazioni).
+  Salvataggio atomico + controllo di revisione: se un'altra postazione ha salvato prima, il salvataggio e' rifiutato.
+* **Importa dal PLC**: legge DB201 (sola lettura) e lo mostra nell'editor, utile per confrontare il layout con la
+  schermata `Vue recette` del WinCC.
+* Struttura DB201 (dal dump): testata 52 byte (n. ricetta @2, nome STRING[32] @4, parametri) + 11 fasi da 30 byte.
+  I campi con `(?)` sono ipotesi: si correggono in `b1_recipe_layout.properties` senza ricompilare.
+* Validazione come nel WinCC: nome valido, operazione in ogni fase, fase di scarico, limiti; le fasi dopo lo
+  scarico sono residui e non vengono eseguite.
+* **Invio al PLC non attivo**: il codec e' pronto (`B1RecipeCodec.encode`) ma la scrittura va abilitata solo dopo la
+  conferma del layout e con un client di scrittura dedicato (la CPU e' F).
