@@ -135,7 +135,13 @@ java -cp out Banbury1.B1LabelSelfTest          # test del parser e della costruz
   l'anno corrente e il precedente.
 * I dati NON vanno al PLC: vanno al database SQL tramite `B1SqlLabelStore`, configurato in `b1_label_sql.properties`
   (tabella, colonne, INSERT o UPDATE). Finche' `enabled=false` o `table` e' vuota e' in **PROVA**: mostra l'SQL, non scrive.
-* Valori scritti come testo, come nei campi del WinCC e in `Datas_B2`: passaggio `1er/2eme/3eme/4eme`,
+* Valori scritti come testo, come nei campi del WinCC e in `Datas_B2`: passaggio `1er/2ème/3ème/4ème` (come in `Datas_B1`),
   type `SUP/INF/STS/NET/MEL.MERE`, couleur `---/Clair/Foncé/Medium`; `Num_lot` = `AA/LOTTO` (es. `26/0703`).
 * Password: variabile d'ambiente `B1_SQL_PASSWORD` (non nel file ne' nel codice). Ogni lettura e' registrata in
   `C:\_tools\Banbury1\label_log.txt`.
+
+## Datas_B1 (DATA_BAMBURY) - struttura osservata
+Log con una riga ogni ~2 s: `Date_record, Time_record, Num_lot (26/9004), Suffixe, Num_melange, Type_melange (INF),
+Num_passage (4ème), Code_quasar, Nom_melange, Couleur, Nbr_sequence (10), Num_sequence (23), Mode (Manu/Auto),
+Temps_cycle, Temperature, Amperage, Vitesse, Position_piston (Bas), Porte_charge (Ferme), Porte_decharge (Ferme),
+Clair_fonce`. Nbr_sequence/Num_sequence = DB150 DBW0/DBW2 (SEQ del sinottico).
