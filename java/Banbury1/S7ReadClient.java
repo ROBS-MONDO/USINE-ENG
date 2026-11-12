@@ -1,4 +1,4 @@
-package banbury1;
+package Banbury1;
 
 import java.io.Closeable;
 import java.io.DataInputStream;

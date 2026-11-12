@@ -13,9 +13,9 @@ direttamente i DB **110**, **150**, **201** (e `Cmd_HMI` = DB3).
 ## Uso
 ```bash
 javac -d out S7ReadClient.java B1DbDump.java
-java -cp out banbury1.B1DbDump <ip-cpu> DB110 DB150 DB201          # rack 0, slot 2, ciclo 500 ms
-java -cp out banbury1.B1DbDump <ip-cpu> -r 0 -s 2 -i 300 DB110
-java -cp out banbury1.B1DbDump <ip-cpu> --once DB110
+java -cp out Banbury1.B1DbDump <ip-cpu> DB110 DB150 DB201          # rack 0, slot 2, ciclo 500 ms
+java -cp out Banbury1.B1DbDump <ip-cpu> -r 0 -s 2 -i 300 DB110
+java -cp out Banbury1.B1DbDump <ip-cpu> --once DB110
 ```
 Se la connessione e' rifiutata prova `-s 3` o `-s 1`. Sulle CPU S7-300/ET200S non serve
 abilitare PUT/GET. Non occorre KEPServer.

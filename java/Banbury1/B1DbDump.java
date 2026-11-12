@@ -1,4 +1,4 @@
-package banbury1;
+package Banbury1;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
