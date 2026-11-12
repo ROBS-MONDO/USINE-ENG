@@ -124,3 +124,18 @@ E' lo strumento per completare `b1_tags.properties`: si cerca la parola che camb
 | SEQ | DB150.DBW0 / DBW2 | |
 | Ricetta: temp. sicurezza / porta scarico / tempo sicurezza / energia max / temp. riavvio | DB201.DBW28 / 30 / 32 / 34 / 38 | |
 | Lampade 001 | bit **ipotizzati** (vedi b1_tags.properties) | da confrontare con il WinCC |
+
+## Lettura ticket (ticket 1 = primo passaggio, ticket 2 = secondo) -> database SQL
+```bash
+java -cp out Banbury1.B1LabelSelfTest          # test del parser e della costruzione SQL
+```
+* Sinottico: pulsante **Etichetta** o **F4**. Il lettore QR lavora da tastiera (keyCode fisico, come in B2).
+* `B1LabelParser` e' il port della logica di `PLC3_Recette` (QR `MQR2` Base32, `RECIPEUID`, correzione tastiera
+  francese AZERTY, ticket "compatti", lotto con lettere). Differenza voluta: l'anno non e' fisso a `26` ma e'
+  l'anno corrente e il precedente.
+* I dati NON vanno al PLC: vanno al database SQL tramite `B1SqlLabelStore`, configurato in `b1_label_sql.properties`
+  (tabella, colonne, INSERT o UPDATE). Finche' `enabled=false` o `table` e' vuota e' in **PROVA**: mostra l'SQL, non scrive.
+* Valori scritti come testo, come nei campi del WinCC e in `Datas_B2`: passaggio `1er/2eme/3eme/4eme`,
+  type `SUP/INF/STS/NET/MEL.MERE`, couleur `---/Clair/Foncé/Medium`; `Num_lot` = `AA/LOTTO` (es. `26/0703`).
+* Password: variabile d'ambiente `B1_SQL_PASSWORD` (non nel file ne' nel codice). Ogni lettura e' registrata in
+  `C:\_tools\Banbury1\label_log.txt`.

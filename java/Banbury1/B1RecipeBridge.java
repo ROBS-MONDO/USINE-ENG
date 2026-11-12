@@ -46,6 +46,10 @@ public final class B1RecipeBridge {
         this.plcIp = plcIp;
     }
 
+    public B1RecipeRepository repo() {
+        return repo;
+    }
+
     public B1RecipeLayout layout() {
         return layout;
     }

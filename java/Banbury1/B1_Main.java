@@ -101,6 +101,11 @@ public class B1_Main extends JFrame {
         final B1RecipeLayout layout = B1RecipeLayout.load(layoutFile);
         final B1RecipeRepository repo = new B1FileRecipeRepository(recipeDir, layout);
         final B1RecipeBridge bridge = new B1RecipeBridge(repo, layout, ip);
+        Path labelCfg = Paths.get("C:\\_tools\\Banbury1\\b1_label_sql.properties");
+        if (!Files.exists(labelCfg) && Files.exists(Paths.get("b1_label_sql.properties"))) {
+            labelCfg = Paths.get("b1_label_sql.properties");
+        }
+        B1LabelDialog.setStore(B1SqlLabelStore.load(labelCfg));
         final B1Tags tagsObj = B1Tags.load(tagFile);
         final B1Source src = demo ? new B1DemoSource()
                 : newPlcSource(tagsObj, ip, layout, period);
@@ -220,6 +225,13 @@ public class B1_Main extends JFrame {
                 }
                 repaint();
             }).start();
+            getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), "label");
+            getActionMap().put("label", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    B1LabelDialog.open((JFrame) SwingUtilities.getWindowAncestor(SynPanel.this), bridge);
+                }
+            });
             getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "raw");
             getActionMap().put("raw", new AbstractAction() {
                 @Override
@@ -852,9 +864,9 @@ public class B1_Main extends JFrame {
                     hits.add(new Hit(x, y, w, h, names[i]));
                 }
             }
-            String[] t = {"Govoni", "B2", "B2 main", "Valori PLC"};
-            int[] tx = {578, 632, 688, 752};
-            int[] tw = {48, 48, 58, 70};
+            String[] t = {"Govoni", "B2", "B2 main", "Valori PLC", "Etichetta"};
+            int[] tx = {578, 632, 688, 752, 826};
+            int[] tw = {48, 48, 58, 70, 66};
             for (int i = 0; i < t.length; i++) {
                 g.setPaint(new GradientPaint(tx[i], 686, Color.WHITE, tx[i], 736, new Color(0xCFCFCF)));
                 g.fillRect(tx[i], 686, tw[i], 50);
@@ -865,6 +877,9 @@ public class B1_Main extends JFrame {
                     hits.add(new Hit(tx[i], 686, tw[i], 50, t[i], () -> B1ScreensWindow.open(src, "301_GovoniSynoptique2Bambury1")));
                 } else if (i == 3) {
                     hits.add(new Hit(tx[i], 686, tw[i], 50, t[i], () -> B1RawViewer.open(src, tags)));
+                } else if (i == 4 && bridge != null) {
+                    hits.add(new Hit(tx[i], 686, tw[i], 50, t[i], () -> B1LabelDialog.open(
+                            (JFrame) SwingUtilities.getWindowAncestor(this), bridge)));
                 } else {
                     hits.add(new Hit(tx[i], 686, tw[i], 50, t[i]));
                 }
