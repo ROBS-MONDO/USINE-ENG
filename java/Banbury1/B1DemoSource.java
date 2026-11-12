@@ -81,6 +81,31 @@ public final class B1DemoSource implements B1Source {
         return "demo";
     }
 
+    /** Parole non nulle del DB201 reale (dump del 12/11/2026, ricetta "gomma2"). */
+    public static final int[][] DB201_DUMP = {
+        {2, 24}, {4, 8198}, {6, 26479}, {8, 28013}, {10, 24882}, {12, 25441}, {14, 29289}, {16, 25455},
+        {18, 28528}, {20, 29042}, {28, 115}, {30, 80}, {32, 600}, {34, 300}, {38, 80}, {42, 1}, {44, 60},
+        {52, 18}, {54, 36}, {56, 900}, {62, 1}, {66, 80}, {72, 12288}, {74, 2},
+        {82, 18}, {84, 33}, {86, 900}, {92, 1}, {96, 90}, {102, 12288}, {104, 2},
+        {112, 18}, {114, 33}, {116, 700}, {122, 1}, {126, 105}, {132, -32768}, {134, 10},
+        {144, 33}, {152, 8},
+    };
+
+    /** Immagine DB201 di esempio con la ricetta "gomma2". */
+    public static byte[] sampleDb201(int size) {
+        byte[] d = new byte[size];
+        for (int[] w : DB201_DUMP) {
+            d[w[0]] = (byte) (w[1] >> 8);
+            d[w[0] + 1] = (byte) w[1];
+        }
+        return d;
+    }
+
+    @Override
+    public byte[] dbImage(int db) {
+        return db == 201 ? sampleDb201(384) : null;
+    }
+
     @Override
     public boolean connected() {
         return true;

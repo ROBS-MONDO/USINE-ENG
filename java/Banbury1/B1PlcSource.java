@@ -11,6 +11,7 @@ public final class B1PlcSource implements B1Source {
     private static final int MAX_DB = 1024;
 
     private final B1Tags tags;
+    private final java.util.Set<Integer> extraDbs;
     private final String host;
     private final int port;
     private final int rack;
@@ -24,7 +25,14 @@ public final class B1PlcSource implements B1Source {
     private final Thread thread;
 
     public B1PlcSource(B1Tags tags, String host, int port, int rack, int slot, int periodMs) {
+        this(tags, host, port, rack, slot, periodMs, new java.util.TreeSet<Integer>());
+    }
+
+    /** extraDbs: DB da leggere anche se nessun tag li usa (es. il DB ricetta). */
+    public B1PlcSource(B1Tags tags, String host, int port, int rack, int slot, int periodMs,
+                       java.util.Set<Integer> extraDbs) {
         this.tags = tags;
+        this.extraDbs = new java.util.TreeSet<>(extraDbs);
         this.host = host;
         this.port = port;
         this.rack = rack;
@@ -40,7 +48,9 @@ public final class B1PlcSource implements B1Source {
             try (S7ReadClient plc = new S7ReadClient(host, port, rack, slot, 3000)) {
                 plc.connect();
                 Map<Integer, Integer> sizes = new HashMap<>();
-                for (int db : tags.dbs()) {
+                java.util.Set<Integer> all = new java.util.TreeSet<>(tags.dbs());
+                all.addAll(extraDbs);
+                for (int db : all) {
                     sizes.put(db, plc.detectDbSize(db, MAX_DB));
                 }
                 connected = true;
@@ -154,6 +164,12 @@ public final class B1PlcSource implements B1Source {
     public String spec(String key) {
         B1Tags.Tag t = tags.get(key);
         return t == null ? "?" : (t.guess ? t.spec + " (ipotesi)" : t.spec);
+    }
+
+    @Override
+    public byte[] dbImage(int db) {
+        byte[] d = connected ? data.get(db) : null;
+        return d == null ? null : d.clone();
     }
 
     @Override

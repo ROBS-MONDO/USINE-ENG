@@ -16,6 +16,7 @@ direttamente i DB **110**, **150**, **201** (e `Cmd_HMI` = DB3).
 | `B1RecipeEditor.java` | **editor ricette** per postazione ufficio |
 | `B1Recipe*.java`, `B1FileRecipeRepository.java` | modello, layout DB201, codec, archivio su file |
 | `b1_recipe_layout.properties` | descrizione del formato ricetta nel DB201 (modificabile) |
+| `B1RecipeBridge.java` | collegamento sinottico <-> editor: confronto ricetta in macchina / archivio |
 | `B1RecipeSelfTest.java` | test automatici (codec, validazione, archivio, conflitti) |
 
 ## Uso
@@ -81,3 +82,15 @@ java -cp out Banbury1.B1RecipeSelfTest        # test automatici
   scarico sono residui e non vengono eseguite.
 * **Invio al PLC non attivo**: il codec e' pronto (`B1RecipeCodec.encode`) ma la scrittura va abilitata solo dopo la
   conferma del layout e con un client di scrittura dedicato (la CPU e' F).
+
+## Collegamento sinottico <-> editor ricette
+```bash
+java -cp out Banbury1.B1_Main 192.168.10.100 --period 1000 --recipes-dir \\srv-bambury\Mondo\RecipesB1
+```
+* Sotto "Ricetta: <nome>" (DB201 della macchina) il sinottico mostra: `= archivio (rev. N)` (verde),
+  `DIVERSA dall'archivio` (arancio) o `non in archivio` (blu). Il confronto ignora il n. ricetta e le fasi
+  dopo lo scarico (residui). Ricalcolo ogni 5 s, in un thread separato.
+* Clic su quell'etichetta: apre l'editor sulla ricetta; se non e' in archivio la importa dal PLC (sola lettura).
+* Pulsante **Recettes** della barra in basso: apre l'editor.
+* `--period` = ciclo di lettura in ms (consigliato 1000 su macchina in produzione).
+* Tutto in sola lettura: nessuna scrittura sul PLC.

@@ -28,6 +28,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -53,10 +54,10 @@ public class B1_Main extends JFrame {
 
     private final SynPanel panel;
 
-    public B1_Main(B1Source src) {
+    public B1_Main(B1Source src, B1RecipeBridge bridge) {
         super("Banbury 1 - MCC-240 T - " + VERSION);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        panel = new SynPanel(src);
+        panel = new SynPanel(src, bridge);
         setContentPane(panel);
         pack();
         setLocationRelativeTo(null);
@@ -66,12 +67,18 @@ public class B1_Main extends JFrame {
         String ip = DEFAULT_IP;
         boolean demo = false;
         String snap = null;
+        int period = 300;
         Path tagFile = DEFAULT_TAGS;
+        Path recipeDir = B1RecipeEditor.DEFAULT_DIR;
+        Path layoutFile = B1RecipeEditor.DEFAULT_LAYOUT;
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "--demo": demo = true; break;
                 case "--snapshot": snap = args[++i]; break;
                 case "--tags": tagFile = Paths.get(args[++i]); break;
+                case "--recipes-dir": recipeDir = Paths.get(args[++i]); break;
+                case "--layout": layoutFile = Paths.get(args[++i]); break;
+                case "--period": period = Integer.parseInt(args[++i]); break;
                 case "--write-tags":
                     B1Tags.writeTemplate(Paths.get(args[++i]));
                     return;
@@ -81,28 +88,40 @@ public class B1_Main extends JFrame {
         if (!new File(tagFile.toString()).exists() && new File("b1_tags.properties").exists()) {
             tagFile = Paths.get("b1_tags.properties");
         }
+        if (!new File(layoutFile.toString()).exists() && new File("b1_recipe_layout.properties").exists()) {
+            layoutFile = Paths.get("b1_recipe_layout.properties");
+        }
+        if (!Files.isDirectory(recipeDir) && !System.getProperty("os.name", "").toLowerCase().contains("win")) {
+            recipeDir = Paths.get("b1_recipes");
+        }
+        final B1RecipeLayout layout = B1RecipeLayout.load(layoutFile);
+        final B1RecipeRepository repo = new B1FileRecipeRepository(recipeDir, layout);
+        final B1RecipeBridge bridge = new B1RecipeBridge(repo, layout, ip);
         final B1Source src = demo ? new B1DemoSource()
-                : newPlcSource(B1Tags.load(tagFile), ip);
+                : newPlcSource(B1Tags.load(tagFile), ip, layout, period);
         if (snap != null) {
             System.setProperty("java.awt.headless", "true");
             for (int i = 0; i < 40 && !src.connected(); i++) {
                 Thread.sleep(100);
             }
             Thread.sleep(700);
-            SynPanel p = new SynPanel(src);
+            SynPanel p = new SynPanel(src, bridge);
             p.setSize(SynPanel.BASE_W, SynPanel.BASE_H);
             BufferedImage img = new BufferedImage(SynPanel.BASE_W, SynPanel.BASE_H, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g = img.createGraphics();
-            p.paint(g);
-            g.dispose();
+            for (int pass = 0; pass < 2; pass++) { // 1a passata: avvia il confronto ricetta
+                Graphics2D g = img.createGraphics();
+                p.paint(g);
+                g.dispose();
+                Thread.sleep(900);
+            }
             ImageIO.write(img, "png", new File(snap));
             src.close();
             System.exit(0);
         }
-        SwingUtilities.invokeLater(() -> new B1_Main(src).setVisible(true));
+        SwingUtilities.invokeLater(() -> new B1_Main(src, bridge).setVisible(true));
     }
 
-    private static B1Source newPlcSource(B1Tags tags, String ip) {
+    private static B1Source newPlcSource(B1Tags tags, String ip, B1RecipeLayout layout, int period) {
         String host = ip;
         int port = 102;
         int c = ip.lastIndexOf(':');
@@ -110,7 +129,9 @@ public class B1_Main extends JFrame {
             host = ip.substring(0, c);
             port = Integer.parseInt(ip.substring(c + 1));
         }
-        return new B1PlcSource(tags, host, port, 0, 2, 300);
+        java.util.Set<Integer> extra = new java.util.TreeSet<>();
+        extra.add(layout.db);
+        return new B1PlcSource(tags, host, port, 0, 2, period, extra);
     }
 
     // =====================================================================
@@ -133,6 +154,7 @@ public class B1_Main extends JFrame {
         private static final Color BORDER = new Color(0x606060);
 
         private final B1Source src;
+        private final B1RecipeBridge bridge;
         private final Font fNormal = new Font("Arial", Font.PLAIN, 14);
         private final Font fBold = new Font("Arial", Font.BOLD, 15);
         private final Font fBig = new Font("Arial", Font.BOLD, 20);
@@ -149,21 +171,32 @@ public class B1_Main extends JFrame {
         private static final class Hit {
             final int x, y, w, h;
             final String name;
+            final Runnable action;
 
             Hit(int x, int y, int w, int h, String name) {
+                this(x, y, w, h, name, null);
+            }
+
+            /** action != null: navigazione (non e' un comando al PLC). */
+            Hit(int x, int y, int w, int h, String name, Runnable action) {
                 this.x = x;
                 this.y = y;
                 this.w = w;
                 this.h = h;
                 this.name = name;
+                this.action = action;
             }
         }
 
-        SynPanel(B1Source src) {
+        SynPanel(B1Source src, B1RecipeBridge bridge) {
             this.src = src;
+            this.bridge = bridge;
             setPreferredSize(new Dimension(BASE_W, BASE_H));
             setDoubleBuffered(true);
             new Timer(60, e -> {
+                if (bridge != null) {
+                    bridge.offer(src.dbImage(bridge.layout().db));
+                }
                 Double rpm = src.num("rpm_act");
                 if (rpm != null && rpm > 0) {
                     rotorAngle += Math.min(rpm, 60) * 0.0105;
@@ -185,7 +218,11 @@ public class B1_Main extends JFrame {
                     int py = (int) ((e.getY() - offY()) / s) + OY;
                     for (Hit h : hits) {
                         if (px >= h.x && px < h.x + h.w && py >= h.y && py < h.y + h.h) {
-                            message = "Comando '" + h.name + "' disattivato: sinottico in SOLA LETTURA";
+                            if (h.action != null) {
+                                h.action.run();
+                                return;
+                            }
+                            message = "'" + h.name + "': non disponibile (sinottico in SOLA LETTURA)";
                             messageUntil = System.currentTimeMillis() + 4000;
                             return;
                         }
@@ -410,16 +447,34 @@ public class B1_Main extends JFrame {
             text(g, "Page", 197, 62, 66, 18, fNormal, Color.WHITE, 0);
             hits.add(new Hit(197, 38, 66, 50, "Imprimer Page"));
 
-            // stato PLC
+            // stato PLC + ricetta in macchina + confronto con archivio
             Boolean conn = src.connected();
             g.setColor(conn ? new Color(0x20B020) : new Color(0xD02020));
             g.fillOval(276, 42, 12, 12);
             text(g, conn ? "PLC connesso" : "PLC non connesso", 292, 38, 190, 20, fNormal, DARK, -1);
-            String st = src.status();
-            text(g, st.length() > 38 ? st.substring(0, 38) + "…" : st, 276, 58, 205, 14, fSmall, DARK, -1);
             String rn = src.str("recipe_name");
-            text(g, "Ricetta: " + (rn == null || rn.isEmpty() ? "--" : rn), 276, 72, 205, 16, fBold, DARK, -1);
-            keyTag(g, "recipe_name", 276, 72);
+            text(g, "Ricetta: " + (rn == null || rn.isEmpty() ? "--" : rn), 276, 55, 205, 18, fBold, DARK, -1);
+            keyTag(g, "recipe_name", 276, 55);
+            if (bridge != null) {
+                B1RecipeBridge.Status st = bridge.status();
+                Color dot;
+                switch (st.state) {
+                    case SAME: dot = new Color(0x20B020); break;
+                    case DIFFERENT: dot = new Color(0xE08000); break;
+                    case NOT_ARCHIVED: dot = new Color(0x2060C0); break;
+                    default: dot = new Color(0x909090);
+                }
+                String line = conn ? st.text : src.status();
+                g.setColor(dot);
+                g.fillOval(276, 74, 10, 10);
+                text(g, line.length() > 34 ? line.substring(0, 34) + "…" : line, 290, 70, 190, 18,
+                        new Font("Arial", Font.PLAIN, 12), DARK, -1);
+                final String openName = rn;
+                hits.add(new Hit(276, 55, 205, 33, "Ricetta", () -> bridge.openEditor(openName)));
+            } else {
+                String st = src.status();
+                text(g, st.length() > 38 ? st.substring(0, 38) + "…" : st, 276, 72, 205, 14, fSmall, DARK, -1);
+            }
 
             label(g, "Pression", 488, 40, 70, 22);
             field(g, 558, 40, 62, 22, "press_top", num("press_top", 1), false, fBig);
@@ -750,8 +805,10 @@ public class B1_Main extends JFrame {
 
         // ---------------- barra pulsanti, allarmi, orologio ----------------
         private void drawBottomBar(Graphics2D g) {
-            String[] names = {"Home", "Processo", "Trend", "Allarmi", "Ricerca", "Display", "Produzione",
-                    "Impostazioni", "Temperature", "Componenti"};
+            // ordine delle schermate WinCC: 001 Synoptic, 002 Process, 003 Trends, 004 Alarms, 005 Display,
+            // 006 Recipes, 007 Production, 008 Settings, 009 Temperatures, 010 Components
+            String[] names = {"Synoptic", "Process", "Trends", "Alarms", "Display", "Recettes", "Production",
+                    "Settings", "Temperatures", "Components"};
             int[] xs = {7, 62, 137, 192, 247, 302, 357, 412, 467, 522};
             for (int i = 0; i < names.length; i++) {
                 int x = xs[i], y = 686, w = 52, h = 52;
@@ -760,7 +817,11 @@ public class B1_Main extends JFrame {
                 g.setColor(new Color(0x808080));
                 g.drawRect(x, y, w - 1, h - 1);
                 icon(g, i, x, y);
-                hits.add(new Hit(x, y, w, h, names[i]));
+                if (i == 5 && bridge != null) {
+                    hits.add(new Hit(x, y, w, h, names[i], () -> bridge.openEditor(null)));
+                } else {
+                    hits.add(new Hit(x, y, w, h, names[i]));
+                }
             }
             String[] t = {"Govoni", "B2", "B2 main"};
             int[] tx = {578, 632, 688};

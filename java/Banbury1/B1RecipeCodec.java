@@ -91,6 +91,27 @@ public final class B1RecipeCodec {
         return err;
     }
 
+    /**
+     * Due ricette sono equivalenti per la macchina se hanno lo stesso nome (senza maiuscole),
+     * la stessa testata e le stesse fasi fino alla fase di scarico compresa (le successive sono residui).
+     */
+    public static boolean sameExecutable(B1Recipe a, B1Recipe b, B1RecipeLayout l) {
+        if (!a.name.trim().equalsIgnoreCase(b.name.trim()) || !a.header.equals(b.header)) {
+            return false;
+        }
+        for (int i = 0; i < l.phaseCount; i++) {
+            B1Recipe.Phase pa = a.phases.get(i);
+            B1Recipe.Phase pb = b.phases.get(i);
+            if (pa.ops != pb.ops || !pa.values.equals(pb.values)) {
+                return false;
+            }
+            if ((pa.ops & (1 << l.dischargeBit)) != 0) {
+                return true;
+            }
+        }
+        return true;
+    }
+
     // ---- primitive ----
     static int word(byte[] d, int off, boolean unsigned) {
         if (off < 0 || off + 2 > d.length) {

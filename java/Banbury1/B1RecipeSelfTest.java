@@ -16,20 +16,10 @@ public final class B1RecipeSelfTest {
         }
     }
 
-    /** Parole non nulle del DB201 reale (dump del 12/11/2026, ricetta "gomma2"). */
-    private static final int[][] DB201_DUMP = {
-        {2, 24}, {4, 8198}, {6, 26479}, {8, 28013}, {10, 24882}, {12, 25441}, {14, 29289}, {16, 25455},
-        {18, 28528}, {20, 29042}, {28, 115}, {30, 80}, {32, 600}, {34, 300}, {38, 80}, {42, 1}, {44, 60},
-        {52, 18}, {54, 36}, {56, 900}, {62, 1}, {66, 80}, {72, 12288}, {74, 2},
-        {82, 18}, {84, 33}, {86, 900}, {92, 1}, {96, 90}, {102, 12288}, {104, 2},
-        {112, 18}, {114, 33}, {116, 700}, {122, 1}, {126, 105}, {132, -32768}, {134, 10},
-        {144, 33}, {152, 8},
-    };
-
     public static void main(String[] a) throws Exception {
         B1RecipeLayout l = B1RecipeLayout.defaults();
         byte[] db = new byte[l.dbSize];
-        for (int[] w : DB201_DUMP) {
+        for (int[] w : B1DemoSource.DB201_DUMP) {
             B1RecipeCodec.putWord(db, w[0], w[1]);
         }
         Path lf = Files.createTempFile("b1layout", ".properties");
@@ -91,6 +81,33 @@ public final class B1RecipeSelfTest {
         repo.delete(r.uid);
         check("cancellazione", repo.list().isEmpty());
 
+        // --- collegamento sinottico <-> archivio ---
+        Path dir2 = Files.createTempDirectory("b1bridge");
+        B1FileRecipeRepository repo2 = new B1FileRecipeRepository(dir2, l);
+        byte[] plc = B1DemoSource.sampleDb201(384);
+        check("senza archivio: 'non in archivio'",
+                B1RecipeBridge.compare(plc, repo2, l).state == B1RecipeBridge.State.NOT_ARCHIVED);
+        B1Recipe arch = B1RecipeCodec.decode(plc, l);
+        arch.uid = java.util.UUID.randomUUID().toString();
+        arch.revision = 0;
+        repo2.save(arch, "test");
+        check("uguale all'archivio",
+                B1RecipeBridge.compare(plc, repo2, l).state == B1RecipeBridge.State.SAME);
+        byte[] resid = plc.clone();
+        B1RecipeCodec.putWord(resid, 52 + 3 * 30 + 2, 99); // fase 4 = residuo dopo lo scarico
+        check("residui dopo lo scarico ignorati",
+                B1RecipeBridge.compare(resid, repo2, l).state == B1RecipeBridge.State.SAME);
+        byte[] changed = plc.clone();
+        B1RecipeCodec.putWord(changed, 52 + 2, 40); // rpm fase 1: 36 -> 40
+        check("fase diversa rilevata",
+                B1RecipeBridge.compare(changed, repo2, l).state == B1RecipeBridge.State.DIFFERENT);
+        byte[] renamed = plc.clone();
+        B1RecipeCodec.writeString(renamed, l.nameOffset, l.nameMax, "ALTRA");
+        check("altro nome: non in archivio",
+                B1RecipeBridge.compare(renamed, repo2, l).state == B1RecipeBridge.State.NOT_ARCHIVED);
+        byte[] none = new byte[384];
+        check("DB vuoto: nessuna ricetta",
+                B1RecipeBridge.compare(none, repo2, l).state == B1RecipeBridge.State.UNKNOWN);
         System.exit(failures == 0 ? 0 : 1);
     }
 }

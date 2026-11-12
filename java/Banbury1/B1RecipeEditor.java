@@ -65,10 +65,18 @@ public class B1RecipeEditor extends JFrame {
     static final Path DEFAULT_LAYOUT = Paths.get("C:\\_tools\\Banbury1\\b1_recipe_layout.properties");
     static final String DEFAULT_PLC = "192.168.10.100";
 
+    private static B1RecipeEditor shared;
+
     private final EditorPanel panel;
+    private final boolean exitOnClose;
 
     public B1RecipeEditor(B1RecipeRepository repo, B1RecipeLayout layout, String plcIp) {
+        this(repo, layout, plcIp, true);
+    }
+
+    private B1RecipeEditor(B1RecipeRepository repo, B1RecipeLayout layout, String plcIp, boolean exitOnClose) {
         super(VERSION);
+        this.exitOnClose = exitOnClose;
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         panel = new EditorPanel(this, repo, layout, plcIp);
         setContentPane(panel);
@@ -79,7 +87,34 @@ public class B1RecipeEditor extends JFrame {
             public void windowClosing(WindowEvent e) {
                 if (panel.confirmDiscard()) {
                     dispose();
-                    System.exit(0);
+                    if (B1RecipeEditor.this.exitOnClose) {
+                        System.exit(0);
+                    } else {
+                        synchronized (B1RecipeEditor.class) {
+                            shared = null;
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Apre l'editor dal sinottico (una sola finestra). Con recipeName seleziona la ricetta in archivio;
+     * se non c'e' la importa dal PLC (sola lettura).
+     */
+    public static void openShared(B1RecipeRepository repo, B1RecipeLayout layout, String plcIp, String recipeName) {
+        SwingUtilities.invokeLater(() -> {
+            synchronized (B1RecipeEditor.class) {
+                if (shared == null || !shared.isDisplayable()) {
+                    shared = new B1RecipeEditor(repo, layout, plcIp, false);
+                    shared.setVisible(true);
+                }
+                shared.setExtendedState(JFrame.NORMAL);
+                shared.toFront();
+                shared.requestFocus();
+                if (recipeName != null && !recipeName.trim().isEmpty()) {
+                    shared.panel.selectByName(recipeName);
                 }
             }
         });
@@ -542,6 +577,33 @@ public class B1RecipeEditor extends JFrame {
             }
         }
 
+        /** Seleziona in archivio la ricetta col nome dato; se manca, la importa dal PLC. */
+        void selectByName(String name) {
+            if (current != null && !dirty && name.trim().equalsIgnoreCase(current.name.trim())) {
+                return;
+            }
+            if (!confirmDiscard()) {
+                return;
+            }
+            refreshList();
+            for (B1RecipeRepository.Entry e : allEntries) {
+                if (e.name.trim().equalsIgnoreCase(name.trim())) {
+                    try {
+                        loading = true;
+                        search.setText("");
+                        list.setSelectedValue(e, true);
+                        loading = false;
+                        show(repo.load(e.uid), false, "Ricetta dall'archivio");
+                    } catch (IOException ex) {
+                        loading = false;
+                        error("Lettura fallita: " + ex.getMessage());
+                    }
+                    return;
+                }
+            }
+            doImport(plcIp);
+        }
+
         private void importFromPlc() {
             if (!confirmDiscard()) {
                 return;
@@ -550,12 +612,24 @@ public class B1RecipeEditor extends JFrame {
             if (ip == null || ip.trim().isEmpty()) {
                 return;
             }
-            final String host = ip.trim();
+            doImport(ip.trim());
+        }
+
+        private void doImport(String hostSpec) {
+            String h = hostSpec;
+            int port = 102;
+            int colon = hostSpec.lastIndexOf(':');
+            if (colon > 0) {
+                h = hostSpec.substring(0, colon);
+                port = Integer.parseInt(hostSpec.substring(colon + 1));
+            }
+            final String host = h;
+            final int portF = port;
             lblStatus.setText("Lettura dal PLC " + host + "...");
             new SwingWorker<B1Recipe, Void>() {
                 @Override
                 protected B1Recipe doInBackground() throws Exception {
-                    try (S7ReadClient plc = new S7ReadClient(host, 0, 2)) {
+                    try (S7ReadClient plc = new S7ReadClient(host, portF, 0, 2, 3000)) {
                         plc.connect();
                         int size = plc.detectDbSize(layout.db, 1024);
                         if (size <= 0) {
