@@ -145,3 +145,9 @@ Log con una riga ogni ~2 s: `Date_record, Time_record, Num_lot (26/9004), Suffix
 Num_passage (4ème), Code_quasar, Nom_melange, Couleur, Nbr_sequence (10), Num_sequence (23), Mode (Manu/Auto),
 Temps_cycle, Temperature, Amperage, Vitesse, Position_piston (Bas), Porte_charge (Ferme), Porte_decharge (Ferme),
 Clair_fonce`. Nbr_sequence/Num_sequence = DB150 DBW0/DBW2 (SEQ del sinottico).
+
+## Pulizia dei dati vecchi (Datas_B1 / Datas_B2)
+`sql/purge_datas_b1_b2.sql` crea `dbo.usp_PurgeDatasLog`: conserva gli ultimi N giorni (default 90) e cancella il resto a
+blocchi, di notte. **Parte in prova** (`@Execute = 0`: solo conteggi). Retention minima 7 giorni; tocca solo `Date_record`
+di `Datas_B1` e `Datas_B2`. Contiene, commentati, l'indice consigliato e il job di SQL Server Agent (creato disabilitato).
+Non provato su SQL Server: prima prova a secco e backup.
