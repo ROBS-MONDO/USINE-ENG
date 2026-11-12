@@ -107,8 +107,14 @@ public class B1_Main extends JFrame {
         }
         B1LabelDialog.setStore(B1SqlLabelStore.load(labelCfg));
         final B1Tags tagsObj = B1Tags.load(tagFile);
+        Path alarmCfg = Paths.get("C:\\_tools\\Banbury1\\b1_alarms.properties");
+        if (!Files.exists(alarmCfg) && Files.exists(Paths.get("b1_alarms.properties"))) {
+            alarmCfg = Paths.get("b1_alarms.properties");
+        }
+        ENGINE = B1AlarmEngine.load(alarmCfg, Paths.get("C:\\_tools\\Banbury1\\b1_alarm_log.csv"));
+        SQL_CONFIG = Files.exists(labelCfg) ? labelCfg : Paths.get("b1_label_sql.properties");
         final B1Source src = demo ? new B1DemoSource()
-                : newPlcSource(tagsObj, ip, layout, period);
+                : newPlcSource(tagsObj, ip, layout, period, ENGINE.dbs());
         if (snap != null && screen != null) {
             System.setProperty("java.awt.headless", "true");
             for (int i = 0; i < 40 && !src.connected(); i++) {
@@ -141,7 +147,12 @@ public class B1_Main extends JFrame {
         SwingUtilities.invokeLater(() -> new B1_Main(src, bridge, tagsObj).setVisible(true));
     }
 
-    private static B1Source newPlcSource(B1Tags tags, String ip, B1RecipeLayout layout, int period) {
+    /** Motore allarmi e configurazione SQL condivisi con le finestre aperte dal sinottico. */
+    static volatile B1AlarmEngine ENGINE = new B1AlarmEngine(new java.util.ArrayList<>(), null);
+    static volatile Path SQL_CONFIG = Paths.get("b1_label_sql.properties");
+
+    private static B1Source newPlcSource(B1Tags tags, String ip, B1RecipeLayout layout, int period,
+                                         java.util.Set<Integer> alarmDbs) {
         String host = ip;
         int port = 102;
         int c = ip.lastIndexOf(':');
@@ -151,6 +162,7 @@ public class B1_Main extends JFrame {
         }
         java.util.Set<Integer> extra = new java.util.TreeSet<>();
         extra.add(layout.db);
+        extra.addAll(alarmDbs);
         return new B1PlcSource(tags, host, port, 0, 2, period, extra);
     }
 
@@ -184,6 +196,7 @@ public class B1_Main extends JFrame {
 
         private boolean overlay;
         private double rotorAngle;
+        private long lastAlarmPoll;
         private double pistonDy;
         private String message = "";
         private long messageUntil;
@@ -216,6 +229,11 @@ public class B1_Main extends JFrame {
             setPreferredSize(new Dimension(BASE_W, BASE_H));
             setDoubleBuffered(true);
             new Timer(60, e -> {
+                long nowMs = System.currentTimeMillis();
+                if (nowMs - lastAlarmPoll >= 1000) {
+                    lastAlarmPoll = nowMs;
+                    ENGINE.poll(src, java.time.LocalDateTime.now());
+                }
                 if (bridge != null) {
                     bridge.offer(src.dbImage(bridge.layout().db));
                 }
@@ -857,6 +875,10 @@ public class B1_Main extends JFrame {
                         "007_Production", "008_Settings", "009_Temperatures", "010_Components"};
                 if (i == 5 && bridge != null) {
                     hits.add(new Hit(x, y, w, h, names[i], () -> bridge.openEditor(null)));
+                } else if (i == 2) {
+                    hits.add(new Hit(x, y, w, h, names[i], () -> B1TrendWindow.open(src, SQL_CONFIG)));
+                } else if (i == 3) {
+                    hits.add(new Hit(x, y, w, h, names[i], () -> B1AlarmWindow.open(src, ENGINE)));
                 } else if (target[i] != null) {
                     final String scr = target[i];
                     hits.add(new Hit(x, y, w, h, names[i], () -> B1ScreensWindow.open(src, scr)));
@@ -964,8 +986,26 @@ public class B1_Main extends JFrame {
             }
             g.setColor(new Color(0xB0B0B0));
             g.drawLine(8, 789, 755, 789);
-            text(g, "Allarmi non ancora collegati (da definire in B1_Alarms)", 38, 792, 600, 18,
-                    new Font("Arial", Font.ITALIC, 11), new Color(0x606060), -1);
+            List<B1AlarmEngine.Event> ev = ENGINE.events();
+            if (ENGINE.definitions().isEmpty()) {
+                text(g, "Nessun allarme definito (b1_alarms.properties): servono numero, testo e bit dei messaggi", 38, 792, 700, 18,
+                        new Font("Arial", Font.ITALIC, 11), new Color(0x606060), -1);
+            } else if (ev.isEmpty()) {
+                text(g, "Nessun allarme", 38, 792, 300, 18, new Font("Arial", Font.PLAIN, 12), new Color(0x206020), -1);
+            }
+            Font fa = new Font("Arial", Font.PLAIN, 12);
+            for (int i = 0; i < Math.min(2, ev.size()); i++) {
+                B1AlarmEngine.Event e = ev.get(i);
+                int y = 791 + i * 18;
+                g.setColor(i % 2 == 0 ? Color.WHITE : new Color(0xF0F0F0));
+                g.fillRect(8, y, 747, 18);
+                Color c = e.active() ? new Color(0xC00000) : Color.BLACK;
+                text(g, e.came.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), 38, y, 70, 18, fa, c, -1);
+                text(g, e.came.format(DateTimeFormatter.ofPattern("HH:mm:ss")), 107, y, 70, 18, fa, c, -1);
+                text(g, String.valueOf(e.def.number), 176, y, 44, 18, fa, c, -1);
+                text(g, e.def.point, 220, y, 80, 18, fa, c, -1);
+                text(g, e.def.text, 300, y, 450, 18, fa, c, -1);
+            }
         }
 
         private void drawClock(Graphics2D g) {

@@ -162,3 +162,18 @@ Non provato su SQL Server: prima prova a secco e backup.
 * Un lettore periodico (:00 e :30) legge 15 di quelle colonne da entrambe le tabelle (probabile trasferimento verso
   un altro sistema): la pulizia a 15 giorni (job DELETE-DATA) lo lascia indisturbato.
 * Esiste anche `INSERT INTO [Consommation] values(@1..@10)` (consumi della bilancia): nessuna pulizia automatica.
+
+## Trend e allarmi (dai controlli WinCC)
+* **Trend** (pulsante Trends): `B1TrendWindow`/`B1TrendChart`. Dal WinCC (`005_Display`, OnlineTrendControl): un andamento
+  "Temperature" (archivio `ProcessValueArchiveB1`, tag `B1_TEMPERATURE`, rosso), finestra 20 minuti, 120 punti, scala 0-200.
+  Due sorgenti, sola lettura: **LIVE** (valori del PLC campionati ogni secondo, memoria 6 ore) e **STORICO** da
+  `dbo.Datas_B1` (Temperature, Amperage, Vitesse, sfondo Auto/Manu come `PLC3_Graph`; connessione = chiavi `jdbc.*` di
+  `b1_label_sql.properties`). Ruler con i valori al passaggio del mouse. `B1TrendSelfTest` prova le funzioni pure.
+  La schermata `003_Trends` nel WinCC non contiene la lista dei tag (si scelgono a runtime): le serie sono quelle di `Datas_B1`.
+* **Allarmi** (pulsante Alarms): `B1AlarmEngine` + `B1AlarmWindow`. Dal controllo WinCC (`004_Alarms`): colonne
+  Date, Time, Nombre, Text1 = "Point d'erreur", Text2 = "Texte du message"; righe alternate bianco/grigio, colori per classe,
+  pagina da 50 messaggi. Il motore legge i bit dal PLC (arrivo/rientro), tiene l'elenco e registra su
+  `b1_alarm_log.csv`. **Le definizioni dei messaggi non sono nel progetto WinCC fornito** (stanno nel database di
+  configurazione di Alarm Logging, file bloccato nell'archivio): vanno inserite in `b1_alarms.properties`
+  (`alarm.<n> = DB110DBX22_3 ; Point d'erreur ; Testo ; classe`). Finche' e' vuoto la lista resta vuota.
+  `B1AlarmSelfTest` prova il motore. Per ottenere l'elenco: WinCC Explorer -> Alarm Logging -> elenco messaggi (screenshot o export).
