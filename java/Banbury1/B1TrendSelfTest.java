@@ -47,16 +47,24 @@ public final class B1TrendSelfTest {
         check("griglia 2 giorni = 6 ore o 12 ore", B1TrendChart.niceTimeStep(2 * 86_400_000L) >= 21_600_000L);
         check("griglia 30 s = 5 s", B1TrendChart.niceTimeStep(30_000L) == 5000L);
 
-        String sql = B1TrendWindow.historySql("dbo.Datas_B1", Arrays.asList("Temperature", "Amperage", "Vitesse"));
-        check("query storico: solo SELECT con parametro data",
-                sql.startsWith("SELECT ") && sql.contains("FROM dbo.Datas_B1")
-                        && sql.contains("WHERE Date_record >= ?") && sql.contains(", Temperature, Amperage, Vitesse")
-                        && !sql.toUpperCase().contains("DELETE") && !sql.toUpperCase().contains("UPDATE"));
-        check("Mode Auto/Manu", B1TrendWindow.isAuto("Auto") && B1TrendWindow.isAuto(" AUTO ") && !B1TrendWindow.isAuto("Manu")
-                && !B1TrendWindow.isAuto(null));
-        check("parse numeri con virgola/punto/spazi",
-                B1TrendWindow.parse("93,5") == 93.5 && B1TrendWindow.parse(" 18 ") == 18.0 && B1TrendWindow.parse("x") == null
-                        && B1TrendWindow.parse(null) == null);
+        check("percentile ignora il picco isolato",
+                B1TrendChart.percentile(new double[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 1000}, 0.9) == 9
+                        && B1TrendChart.percentile(new double[]{}, 0.5) == 0);
+        check("passi come in B2 (finestra 5H): piccolo 30M, grande 75M",
+                B1TrendPanel.compact(B1TrendPanel.smallStep(java.time.Duration.ofHours(5))).equals("30M")
+                        && B1TrendPanel.compact(B1TrendPanel.bigStep(java.time.Duration.ofHours(5))).equals("75M"));
+        check("passi con finestra 15M: 1M e 5M",
+                B1TrendPanel.compact(B1TrendPanel.smallStep(java.time.Duration.ofMinutes(15))).equals("1M")
+                        && B1TrendPanel.compact(B1TrendPanel.bigStep(java.time.Duration.ofMinutes(15))).equals("5M"));
+        check("formato durata: 75M, 2H, 1D",
+                B1TrendPanel.compact(java.time.Duration.ofMinutes(75)).equals("75M")
+                        && B1TrendPanel.compact(java.time.Duration.ofHours(2)).equals("2H")
+                        && B1TrendPanel.compact(java.time.Duration.ofDays(1)).equals("1D"));
+        check("delta MESURE: 00H12M30S", B1TrendPanel.hms(java.time.Duration.ofSeconds(750)).equals("00H12M30S"));
+        check("zoom: da 15 minuti a 48 ore, predefinito 5H",
+                B1TrendPanel.ZOOM_WINDOWS.length == 10 && B1TrendPanel.ZOOM_WINDOWS[0].toMinutes() == 15
+                        && B1TrendPanel.ZOOM_WINDOWS[9].toHours() == 48
+                        && B1TrendPanel.ZOOM_WINDOWS[B1TrendPanel.DEFAULT_ZOOM_INDEX].toHours() == 5);
         System.exit(failures == 0 ? 0 : 1);
     }
 }

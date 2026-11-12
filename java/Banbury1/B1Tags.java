@@ -125,6 +125,7 @@ public final class B1Tags {
         {"rdy_cycles",   "Pronto: n. cicli passi effettuati","DB110.W54.B11"},
         // --- cycle malaxeur ---
         {"cyc_auto",   "Ciclo: auto",       "DB110.W54.B12"},
+        {"mode_auto",  "Modo automatico per il trend (ipotesi: = lampada Auto)", "DB110.W54.B12"},
         {"cyc_cont",   "Ciclo: continuo",   "DB110.W54.B14"},
         {"cyc_susp",   "Ciclo: sospeso",    "DB110.W54.B15"},
         {"cyc_cycle",  "Ciclo: ciclo",      "DB110.W44.B9"},

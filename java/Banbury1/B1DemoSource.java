@@ -38,7 +38,7 @@ public final class B1DemoSource implements B1Source {
 
         String[] on = {"piston_float", "piston_low", "rotors_running", "lube_running", "silos_closed",
                 "door_load_closed", "weight_open", "door_dis_open", "rdy_discharge", "rdy_motor",
-                "rdy_mintime", "rdy_cycles", "cyc_auto", "cyc_cont", "cyc_cycle", "prod_auto_on",
+                "rdy_mintime", "rdy_cycles", "cyc_auto", "mode_auto", "cyc_cont", "cyc_cycle", "prod_auto_on",
                 "prod_auto", "recipe_ok"};
         String[] off = {"piston_high", "piston_blocked", "silos_open", "door_load_open", "weight_closed",
                 "door_dis_closed", "rdy_temp", "rdy_door", "cyc_susp", "pos_load", "decel_load",

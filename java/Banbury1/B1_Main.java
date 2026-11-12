@@ -115,6 +115,16 @@ public class B1_Main extends JFrame {
         SQL_CONFIG = Files.exists(labelCfg) ? labelCfg : Paths.get("b1_label_sql.properties");
         final B1Source src = demo ? new B1DemoSource()
                 : newPlcSource(tagsObj, ip, layout, period, ENGINE.dbs());
+        if (snap != null && "trend".equals(screen)) {
+            B1TrendPanel.snapshot(snap, overlay);
+            System.exit(0);
+        }
+        if (snap == null) {
+            // registrazione in background dei valori del trend (2 giorni, anche a finestra chiusa)
+            Path hist = Files.isDirectory(Paths.get("C:\\_tools\\Banbury1")) ? Paths.get("C:\\_tools\\Banbury1\\b1_trend_history.csv")
+                    : Paths.get("b1_trend_history.csv");
+            B1TrendRecorder.start(src, B1TrendStore.shared(B1TrendRecorder.seriesIds()), demo ? null : hist);
+        }
         if (snap != null && screen != null) {
             System.setProperty("java.awt.headless", "true");
             for (int i = 0; i < 40 && !src.connected(); i++) {
@@ -876,7 +886,7 @@ public class B1_Main extends JFrame {
                 if (i == 5 && bridge != null) {
                     hits.add(new Hit(x, y, w, h, names[i], () -> bridge.openEditor(null)));
                 } else if (i == 2) {
-                    hits.add(new Hit(x, y, w, h, names[i], () -> B1TrendWindow.open(src, SQL_CONFIG)));
+                    hits.add(new Hit(x, y, w, h, names[i], () -> B1TrendWindow.open(src)));
                 } else if (i == 3) {
                     hits.add(new Hit(x, y, w, h, names[i], () -> B1AlarmWindow.open(src, ENGINE)));
                 } else if (target[i] != null) {
