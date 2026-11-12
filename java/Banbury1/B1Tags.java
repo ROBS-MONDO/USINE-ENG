@@ -24,7 +24,8 @@ import java.util.regex.Pattern;
  *   DB201.X41.0        bit 0 del byte 41
  *   DB150.S6           STRING S7 (byte max, byte lunghezza, caratteri)
  *   !DB110.W6.B3       il '!' davanti nega un bit
- *   (vuoto)            non collegato: il campo mostra "--"
+ *   (vuoto)            usa l'indirizzo predefinito del programma
+ *   none               non collegato: il campo mostra "--"
  *
  * Gli indirizzi predefiniti sono IPOTESI dedotte dal dump del 12/11/2026 e dai
  * tag WinCC: vanno confermati sul campo e corretti nel file.
@@ -171,8 +172,14 @@ public final class B1Tags {
             }
         }
         for (String[] d : DEFAULTS) {
-            boolean fromFile = override.containsKey(d[0]);
-            String spec = fromFile ? override.get(d[0]) : d[2];
+            // riga assente o VUOTA = indirizzo predefinito; "none" (o "-") = volutamente non collegato
+            String fileSpec = override.get(d[0]);
+            boolean fromFile = fileSpec != null && !fileSpec.isEmpty();
+            String spec = fromFile ? fileSpec : d[2];
+            if ("none".equalsIgnoreCase(spec) || "-".equals(spec)) {
+                spec = "";
+                fromFile = true;
+            }
             Tag tag = parse(d[0], d[1], spec, !fromFile && !spec.isEmpty());
             if (tag != null) {
                 t.tags.put(d[0], tag);
@@ -246,7 +253,8 @@ public final class B1Tags {
         try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(out, StandardCharsets.UTF_8))) {
             w.println("# Mappa tag Banbury 1 (CPU IM 151-8 F-CPU, 192.168.10.100, rack 0 slot 2)");
             w.println("# Sintassi: chiave = DB110.W80 | DB110.UW80 | DB110.W80*0.1 | DB110.W6.B12 | DB201.X41.0 | DB150.S6 | !DB110.W6.B3");
-            w.println("# Vuoto = non collegato (il sinottico mostra '--'). Le righe preimpostate sono IPOTESI da confermare.");
+            w.println("# Riga vuota = indirizzo predefinito del programma. 'none' = volutamente non collegato (mostra '--').");
+            w.println("# Le righe preimpostate possono essere IPOTESI da confermare (vedi DB_MAP.md).");
             w.println("# Premere F2 nel sinottico per vedere la chiave di ogni campo.");
             w.println();
             for (String[] d : DEFAULTS) {
