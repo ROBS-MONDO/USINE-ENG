@@ -30,6 +30,10 @@ public final class B1TrendRecorder {
                     if (recipe != null && !recipe.isEmpty()) {
                         store.addEvent("recipe", now, recipe);
                     }
+                    Double phase = src.num("phase_no");
+                    if (phase != null) {
+                        store.addEvent("step", now, String.valueOf(phase.intValue()));
+                    }
                     Boolean auto = src.bool("mode_auto");
                     if (auto != null) {
                         store.addEvent("mode", now, auto ? "Auto" : "Manu");

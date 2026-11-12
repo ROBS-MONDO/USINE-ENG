@@ -52,21 +52,23 @@ public final class B1TrendPanel extends JPanel {
     static final Duration TOTAL_HISTORY = Duration.ofDays(2);
     static final int MAX_TEMP = 200;
 
-    private static final Color BG_OUTER = new Color(18, 18, 18);
-    private static final Color GRID_MAJOR = new Color(0, 95, 0);
-    private static final Color GRID_MINOR = new Color(0, 55, 0);
-    private static final Color AXIS_COLOR = new Color(120, 255, 120);
-    private static final Color TEXT_COLOR = new Color(170, 255, 170);
-    private static final Color LINE_COLOR = new Color(0, 255, 80);
-    private static final Color POINT_COLOR = new Color(220, 255, 80);
-    private static final Color VALUE_BOX = new Color(20, 30, 20);
+    // grafica chiara di B1; i pulsanti e le informazioni sono quelli di B2 (PLC3_Graph)
+    private static final Color BG_OUTER = new Color(0xF2, 0xF3, 0xF6);
+    private static final Color GRID_MAJOR = new Color(0xCF, 0xD3, 0xDC);
+    private static final Color GRID_MINOR = new Color(0xE9, 0xEB, 0xF0);
+    private static final Color AXIS_COLOR = new Color(0x60, 0x68, 0x70);
+    private static final Color TEXT_COLOR = new Color(0x20, 0x28, 0x30);
+    private static final Color LINE_COLOR = new Color(0xE0, 0x00, 0x00);
+    private static final Color POINT_COLOR = new Color(0xB0, 0x50, 0x00);
+    private static final Color VALUE_BOX = Color.WHITE;
+    private static final Color BTN_BORDER = new Color(0x80, 0x88, 0x90);
     private static final ZoneId ZONE = ZoneId.systemDefault();
 
     private final B1TrendStore store;
     private final List<B1TrendChart.Series> extra = new ArrayList<>();
     private final Runnable onExit;
 
-    private final JLabel lblTitle = new JLabel("B1 - TREND TEMPERATURE", SwingConstants.LEFT);
+    private final JLabel lblTitle = new JLabel("BANBURY 1 - TREND", SwingConstants.LEFT);
     private final JLabel lblDate = new JLabel("", SwingConstants.RIGHT);
     private final JLabel lblValue = new JLabel("TEMP: --.- \u00b0C", SwingConstants.LEFT);
     private final JLabel lblRange = new JLabel("", SwingConstants.CENTER);
@@ -81,6 +83,10 @@ public final class B1TrendPanel extends JPanel {
     private final JButton btnMeasure = nav("MESURE", this::toggleMeasure);
     private final JButton btnExit = new JButton("EXIT");
     private final List<JCheckBox> chkExtra = new ArrayList<>();
+    private final JCheckBox chkTemp = new JCheckBox("TEMPERATURA", true);
+    private final JCheckBox chkAuto = new JCheckBox("SCALA AUTO", true);
+    private final JCheckBox chkStep = new JCheckBox("STEP", true);
+    private int hoverX = -1;
 
     private long visibleEnd = System.currentTimeMillis();
     private boolean live = true;
@@ -109,22 +115,29 @@ public final class B1TrendPanel extends JPanel {
         add(lblValue);
         add(lblRange);
         add(lblMeasure);
+        chkTemp.setForeground(LINE_COLOR);
+        decorate(chkTemp);
+        add(chkTemp);
         for (B1TrendChart.Series s : extra) {
-            JCheckBox c = new JCheckBox(s.label.toUpperCase(Locale.ROOT).replace("VELOCIT\u00c0 ROTORI", "GIRI"));
-            c.setFont(new Font("Consolas", Font.BOLD, 14));
-            c.setForeground(s.color.brighter());
-            c.setOpaque(false);
-            c.setFocusPainted(false);
-            c.addActionListener(e -> repaint());
+            JCheckBox c = new JCheckBox(s.label.toUpperCase(Locale.ROOT).replace("VELOCIT\u00c0 ROTORI", "GIRI"), true);
+            c.setForeground(s.color.darker());
+            decorate(c);
             chkExtra.add(c);
             add(c);
         }
+        decorate(chkAuto);
+        decorate(chkStep);
+        chkAuto.setForeground(TEXT_COLOR);
+        chkStep.setForeground(POINT_COLOR);
+        add(chkAuto);
+        add(chkStep);
         for (JButton b : new JButton[]{btnBackFast, btnBack, btnForward, btnForwardFast, btnZoomIn, btnZoomOut,
                 btnLive, btnMeasure}) {
             add(b);
         }
         btnExit.setFont(new Font("Arial", Font.BOLD, 20));
         btnExit.setFocusPainted(false);
+        btnExit.setForeground(TEXT_COLOR);
         btnExit.addActionListener(e -> {
             if (onExit != null) {
                 onExit.run();
@@ -191,24 +204,40 @@ public final class B1TrendPanel extends JPanel {
     }
 
     // ------------------------------------------------------------------ interfaccia
+    private void decorate(JCheckBox c) {
+        c.setFont(new Font("Consolas", Font.BOLD, 14));
+        c.setOpaque(false);
+        c.setFocusPainted(false);
+        c.addActionListener(e -> repaint());
+    }
+
     private static void style(JLabel l, int size, Color fg, boolean box) {
         l.setFont(new Font("Consolas", Font.BOLD, size));
         l.setForeground(fg);
         if (box) {
             l.setOpaque(true);
             l.setBackground(VALUE_BOX);
-            l.setBorder(BorderFactory.createLineBorder(GRID_MAJOR, 1));
+            l.setBorder(BorderFactory.createLineBorder(BTN_BORDER, 1));
         }
     }
 
     private static JButton nav(String text, Runnable action) {
-        JButton b = new JButton(text);
+        JButton b = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setPaint(new GradientPaint(0, 0, Color.WHITE, 0, getHeight(),
+                        getModel().isPressed() ? new Color(0xB8, 0xBE, 0xC8) : new Color(0xD4, 0xD8, 0xE0)));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
         b.setFont(new Font("Consolas", Font.BOLD, 15));
         b.setFocusPainted(false);
-        b.setBackground(new Color(28, 36, 28));
+        b.setContentAreaFilled(false);
         b.setForeground(TEXT_COLOR);
-        Border thin = BorderFactory.createLineBorder(new Color(0, 130, 0), 1);
-        b.setBorder(thin);
+        b.setBorder(BorderFactory.createLineBorder(BTN_BORDER, 1));
         b.addActionListener(e -> action.run());
         return b;
     }
@@ -222,10 +251,14 @@ public final class B1TrendPanel extends JPanel {
         lblRange.setBounds(255, 58, 440, 32);
         lblMeasure.setBounds(Math.max(710, w - 330), 58, 300, 32);
         int cx = 22;
+        chkTemp.setBounds(cx, 92, 150, 24);
+        cx += 160;
         for (JCheckBox c : chkExtra) {
             c.setBounds(cx, 92, 150, 24);
             cx += 160;
         }
+        chkAuto.setBounds(cx, 92, 140, 24);
+        chkStep.setBounds(cx + 150, 92, 90, 24);
         int y = h - 60;
         btnBackFast.setBounds(24, y, 100, 42);
         btnBack.setBounds(132, y, 100, 42);
@@ -363,7 +396,20 @@ public final class B1TrendPanel extends JPanel {
     }
 
     private void installMeasureMouse() {
+        addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                hoverX = e.getX();
+                repaint();
+            }
+        });
         addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseExited(MouseEvent e) {
+                hoverX = -1;
+                repaint();
+            }
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (!measureMode || e.getButton() != MouseEvent.BUTTON1) {
@@ -406,19 +452,92 @@ public final class B1TrendPanel extends JPanel {
 
     private void paintChart(Graphics2D g2) {
         Rectangle c = chartBounds();
-        g2.setPaint(new GradientPaint(c.x, c.y, new Color(8, 12, 8), c.x, c.y + c.height, new Color(2, 4, 2)));
+        g2.setPaint(new GradientPaint(c.x, c.y, Color.WHITE, c.x, c.y + c.height, new Color(0xF8, 0xF9, 0xFB)));
         g2.fillRect(c.x, c.y, c.width, c.height);
-        g2.setColor(AXIS_COLOR);
-        g2.setStroke(new BasicStroke(1.5f));
-        g2.drawRect(c.x, c.y, c.width, c.height);
         paintGrid(g2, c);
+        g2.setColor(AXIS_COLOR);
+        g2.setStroke(new BasicStroke(1.2f));
+        g2.drawRect(c.x, c.y, c.width, c.height);
         paintTimeline(g2, c);
         paintAxes(g2, c);
         long to = visibleEnd;
         long from = to - window().toMillis();
         paintExtra(g2, c, from, to);
-        paintTemperature(g2, c, from, to);
+        if (chkTemp.isSelected()) {
+            paintTemperature(g2, c, from, to);
+            if (chkStep.isSelected()) {
+                paintSteps(g2, c, from, to);
+            }
+        }
         paintMeasure(g2, c, from, to);
+        paintRuler(g2, c, from, to);
+    }
+
+    /** Marcatori STEP (come in B2): cambio di fase della ricetta, sul punto della curva di temperatura. */
+    private void paintSteps(Graphics2D g2, Rectangle c, long from, long to) {
+        g2.setFont(new Font("Consolas", Font.BOLD, 12));
+        for (B1TrendStore.Event e : store.events("step")) {
+            if (e.time < from || e.time > to || e.text.isEmpty() || "0".equals(e.text)) {
+                continue;
+            }
+            Double t = store.buffer("temp").nearest(e.time, 120_000);
+            if (t == null) {
+                continue;
+            }
+            int px = c.x + (int) Math.round((e.time - from) / (double) (to - from) * c.width);
+            int py = c.y + c.height - (int) Math.round(Math.max(0, Math.min(MAX_TEMP, t)) / MAX_TEMP * c.height);
+            g2.setColor(new Color(0xFF, 0xB4, 0x3C));
+            g2.fillOval(px - 4, py - 4, 8, 8);
+            g2.setColor(new Color(0xC0, 0x70, 0x00));
+            g2.drawOval(px - 6, py - 6, 12, 12);
+            String label = e.text;
+            int tw = g2.getFontMetrics().stringWidth(label);
+            int tx = Math.min(px + 10, c.x + c.width - tw - 6);
+            int ty = Math.max(py - 8, c.y + 14);
+            g2.setColor(new Color(0xFF, 0xF2, 0xD0, 235));
+            g2.fillRoundRect(tx - 3, ty - 11, tw + 6, 16, 6, 6);
+            g2.setColor(new Color(0x80, 0x45, 0x00));
+            g2.drawString(label, tx, ty);
+        }
+    }
+
+    /** Righello al passaggio del mouse (fuori dalla modalita' MESURE): valori di tutte le serie visibili. */
+    private void paintRuler(Graphics2D g2, Rectangle c, long from, long to) {
+        if (measureMode || hoverX < c.x || hoverX > c.x + c.width) {
+            return;
+        }
+        long t = timeAt(hoverX, c);
+        g2.setColor(new Color(0x40, 0x48, 0x50));
+        g2.setStroke(new BasicStroke(1f));
+        g2.drawLine(hoverX, c.y, hoverX, c.y + c.height);
+        List<String> rows = new ArrayList<>();
+        rows.add(fmt(t, DateTimeFormatter.ofPattern("dd/MM HH:mm:ss")));
+        if (chkTemp.isSelected()) {
+            Double v = store.buffer("temp").nearest(t, 120_000);
+            if (v != null) {
+                rows.add(String.format(Locale.ITALY, "Temperatura: %.1f \u00b0C", v));
+            }
+        }
+        for (int k = 0; k < extra.size(); k++) {
+            if (!chkExtra.get(k).isSelected()) {
+                continue;
+            }
+            Double v = store.buffer(extra.get(k).id).nearest(t, 120_000);
+            if (v != null) {
+                rows.add(String.format(Locale.ITALY, "%s: %.1f %s", extra.get(k).label, v, extra.get(k).unit));
+            }
+        }
+        g2.setFont(new Font("Consolas", Font.PLAIN, 12));
+        int bw = 230;
+        int bx = hoverX + 12 + bw > c.x + c.width ? hoverX - 12 - bw : hoverX + 12;
+        g2.setColor(new Color(255, 255, 225, 240));
+        g2.fillRect(bx, c.y + 6, bw, 16 * rows.size() + 6);
+        g2.setColor(Color.GRAY);
+        g2.drawRect(bx, c.y + 6, bw, 16 * rows.size() + 6);
+        g2.setColor(Color.BLACK);
+        for (int i = 0; i < rows.size(); i++) {
+            g2.drawString(rows.get(i), bx + 6, c.y + 20 + i * 16);
+        }
     }
 
     private void paintGrid(Graphics2D g2, Rectangle c) {
@@ -433,7 +552,7 @@ public final class B1TrendPanel extends JPanel {
     }
 
     private void paintAxes(Graphics2D g2, Rectangle c) {
-        g2.setColor(TEXT_COLOR);
+        g2.setColor(LINE_COLOR);
         g2.setFont(new Font("Consolas", Font.BOLD, 13));
         FontMetrics fm = g2.getFontMetrics();
         for (int i = 0; i <= 10; i++) {
@@ -441,7 +560,7 @@ public final class B1TrendPanel extends JPanel {
             int y = c.y + (int) Math.round(i / 10.0 * c.height);
             g2.drawString(s, c.x - 18 - fm.stringWidth(s), y + 5);
         }
-        g2.setColor(POINT_COLOR);
+        g2.setColor(LINE_COLOR);
         g2.drawString("\u00b0C", c.x - 42, c.y - 10);
         long from = visibleEnd - window().toMillis();
         g2.setColor(TEXT_COLOR);
@@ -470,12 +589,12 @@ public final class B1TrendPanel extends JPanel {
         long to = visibleEnd;
         long from = to - window().toMillis();
         long total = window().toMillis();
-        g2.setColor(new Color(0, 45, 0));
+        g2.setColor(new Color(0xDD, 0xE6, 0xDD));
         g2.fillRect(barX, barY, barW, barH);
         List<B1TrendStore.Event> recipes = store.events("recipe");
         List<B1TrendStore.Event> modes = store.events("mode");
         if (recipes.isEmpty() && modes.isEmpty()) {
-            g2.setColor(new Color(80, 80, 80));
+            g2.setColor(new Color(0x90, 0x98, 0x90));
             g2.drawRect(barX, barY, barW, barH);
             return;
         }
@@ -563,7 +682,7 @@ public final class B1TrendPanel extends JPanel {
             return;
         }
         g2.setColor(LINE_COLOR);
-        g2.setStroke(new BasicStroke(2.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         Point prev = null;
         long prevT = 0;
         Point last = null;
@@ -582,7 +701,7 @@ public final class B1TrendPanel extends JPanel {
             lastV = p[1];
         }
         if (last != null && to - prevT < 30_000) {
-            g2.setColor(POINT_COLOR);
+            g2.setColor(new Color(0xFF, 0xD0, 0x40));
             g2.fillOval(last.x - 5, last.y - 5, 10, 10);
             g2.setColor(LINE_COLOR);
             g2.setStroke(new BasicStroke(2f));
@@ -612,9 +731,9 @@ public final class B1TrendPanel extends JPanel {
             for (int i = 0; i < vals.length; i++) {
                 vals[i] = pts.get(i)[1];
             }
-            double max = B1TrendChart.niceCeil(Math.max(1, B1TrendChart.percentile(vals, 0.995) * 1.1));
+            double max = chkAuto.isSelected() ? TrendScale.autoMax(vals) : s.defMax;
             g2.setStroke(new BasicStroke(1.6f));
-            g2.setColor(s.color.brighter());
+            g2.setColor(s.color);
             Point prev = null;
             long prevT = 0;
             for (double[] p : pts) {
@@ -631,7 +750,7 @@ public final class B1TrendPanel extends JPanel {
             if (!axisDrawn) {
                 axisDrawn = true;
                 g2.setFont(new Font("Consolas", Font.BOLD, 12));
-                g2.setColor(s.color.brighter());
+                g2.setColor(s.color.darker());
                 for (int i = 0; i <= 4; i++) {
                     int y = c.y + c.height - c.height * i / 4;
                     g2.drawString(String.format(Locale.US, "%.0f", max * i / 4.0), c.x + c.width + 6, y + 4);
@@ -651,7 +770,7 @@ public final class B1TrendPanel extends JPanel {
                 continue;
             }
             int x = c.x + (int) Math.round((ms[i] - from) / (double) (to - from) * c.width);
-            g2.setColor(new Color(255, 230, 90));
+            g2.setColor(new Color(0x60, 0x60, 0x00));
             g2.setStroke(new BasicStroke(1.4f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, new float[]{5f, 4f}, 0f));
             g2.drawLine(x, c.y, x, c.y + c.height);
             g2.setStroke(new BasicStroke(1f));
@@ -661,9 +780,9 @@ public final class B1TrendPanel extends JPanel {
             g2.setFont(new Font("Consolas", Font.BOLD, 12));
             int tw = g2.getFontMetrics().stringWidth(t);
             int tx = Math.min(x + 6, c.x + c.width - tw - 4);
-            g2.setColor(new Color(20, 30, 20, 230));
+            g2.setColor(new Color(255, 255, 200, 240));
             g2.fillRect(tx - 3, c.y + 4 + i * 18, tw + 6, 16);
-            g2.setColor(new Color(255, 230, 90));
+            g2.setColor(new Color(0x60, 0x40, 0x00));
             g2.drawString(t, tx, c.y + 16 + i * 18);
         }
     }

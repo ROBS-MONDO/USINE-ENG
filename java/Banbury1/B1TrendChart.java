@@ -2,7 +2,6 @@ package Banbury1;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -101,19 +100,8 @@ public final class B1TrendChart {
         }
     }
 
-    /** Primo valore "tondo" (1, 1.5, 2, 3, 4, 5, 6, 8 x 10^k) maggiore o uguale a x. */
     static double niceCeil(double x) {
-        if (x <= 0) {
-            return 1;
-        }
-        double[] m = {1, 1.5, 2, 3, 4, 5, 6, 8, 10};
-        double p = Math.pow(10, Math.floor(Math.log10(x)));
-        for (double f : m) {
-            if (f * p >= x - 1e-9) {
-                return f * p;
-            }
-        }
-        return 10 * p;
+        return TrendScale.niceCeil(x);
     }
 
     /** Passo "tondo" della griglia del tempo (ms) per avere circa 6-10 divisioni. */
@@ -128,14 +116,7 @@ public final class B1TrendChart {
         return steps[steps.length - 1];
     }
 
-    /** Valore al quantile q (0..1) dell'elenco: ignora i picchi isolati nelle scale automatiche. */
     static double percentile(double[] values, double q) {
-        if (values.length == 0) {
-            return 0;
-        }
-        double[] v = values.clone();
-        Arrays.sort(v);
-        int i = (int) Math.ceil(q * v.length) - 1;
-        return v[Math.max(0, Math.min(v.length - 1, i))];
+        return TrendScale.percentile(values, q);
     }
 }
