@@ -73,12 +73,22 @@ public final class B1RecipeLayout {
         "header.restart_temp = W38 ; Temp. riavvio ; °C ; 1 ; 0 ; 200",
         "header.h42          = W42 ; Parametro testata +42 (?) ;  ; 1 ; ; ",
         "header.h44          = W44 ; Parametro testata +44 (?) ;  ; 1 ; ; ",
-        "phase.p0   = W0  ; Param. +0 (?) ;  ; 1 ; ; ",
-        "phase.rpm  = W2  ; Rotor (?) ; rpm ; 1 ; 0 ; 100",
-        "phase.p4   = W4  ; Param. +4 (?) ;  ; 1 ; ; ",
-        "phase.p10  = W10 ; Param. +10 (?) ;  ; 1 ; ; ",
-        "phase.temp = W14 ; Temp. (?) ; °C ; 1 ; 0 ; 200",
-        "phase.p22  = W22 ; Param. +22 (?) ;  ; 1 ; ; ",
+        // blocco fase = 3 gruppi da 10 byte (parola a bit + 4 INT). Confermato dal WinCC: operazioni (parola a bit)
+        // a offset 20; rotor = DBW58 (36) = fase 1. Gli altri campi sono dedotti dal dump (vedi DB_MAP.md).
+        "phase.set_bits = UW0  ; Bit gruppo 1 (Porte/Piston?) (?) ;  ; 1 ; ; ",
+        "phase.rpm      = W2   ; Rotor ; rpm ; 1 ; 0 ; 100",
+        "phase.timeout  = W4   ; Timeout (?) ; s ; 1 ; 0 ; 9999",
+        "phase.p6       = W6   ; Param. +6 (?) ;  ; 1 ; ; ",
+        "phase.p8       = W8   ; Param. +8 (?) ;  ; 1 ; ; ",
+        "phase.ctrl_bits = UW10 ; Controllo: et=bit0, ou=bit1, skip=bit15 (?) ;  ; 1 ; ; ",
+        "phase.p12      = W12  ; Param. +12 (?) ;  ; 1 ; ; ",
+        "phase.temp     = W14  ; Temp. (?) ; °C ; 1 ; 0 ; 200",
+        "phase.p16      = W16  ; Param. +16 (?) ;  ; 1 ; ; ",
+        "phase.p18      = W18  ; Param. +18 (?) ;  ; 1 ; ; ",
+        "phase.press    = W22  ; Press. (?) ; bar ; 1 ; ; ",
+        "phase.p24      = W24  ; Param. +24 (?) ;  ; 1 ; ; ",
+        "phase.p26      = W26  ; Param. +26 (?) ;  ; 1 ; ; ",
+        "phase.p28      = W28  ; Param. +28 (?) ;  ; 1 ; ; ",
     };
 
     private B1RecipeLayout() {
@@ -89,7 +99,14 @@ public final class B1RecipeLayout {
         for (String line : DEFAULT_LINES) {
             l.applyLine(line);
         }
-        l.opNames.put(15, "Scarico (?)");
+        // bit delle operazioni, CONFERMATI dalla schermata 006_Recipes (btnBitJob): 0-6, poi 13-15
+        String[] ops = {"Gomme", "Add.", "All Black", "Plastif.", "Cerac.", "Silano", "Half Black"};
+        for (int i = 0; i < ops.length; i++) {
+            l.opNames.put(i, ops[i]);
+        }
+        l.opNames.put(13, "Degas");
+        l.opNames.put(14, "Net.");
+        l.opNames.put(15, "Déch. (scarico)");
         return l;
     }
 
@@ -183,7 +200,9 @@ public final class B1RecipeLayout {
         try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(out, StandardCharsets.UTF_8))) {
             w.println("# Layout ricetta Banbury 1 (DB201). I campi con (?) sono IPOTESI da confermare");
             w.println("# confrontando l'editor con la schermata 'Vue recette' del WinCC.");
-            w.println("# Etichette confermate dal WinCC (002_Process): safety_temp, drop_door, safety_time, max_energy, restart_temp.");
+            w.println("# Operazioni (bit della parola a offset 20): CONFERMATE dal WinCC (btnBitJob): 0-6, 13, 14, 15 = Dech.");
+        w.println("# Controlli (btnBitControl): et = bit 0, ou = bit 1, Skip = bit 15 (parola non ancora identificata).");
+        w.println("# Etichette confermate dal WinCC (002_Process): safety_temp, drop_door, safety_time, max_energy, restart_temp.");
             w.println("# Colonne WinCC (006_Recipes): Operazione = Gomme, Add., All Black, Plastif., Cerac., Silano, Half Black, Degas, Net., Dech.;");
             w.println("#   Set = Timeout, Rotor (rpm), Press. (bar), Porte, Piston; Controllo = Skip, Temps (s), Temp. (C), Ener. (kWh), et, ou.");
             w.println("# Campo: chiave = W<offset>|UW<offset> ; Etichetta ; Unita' ; Scala ; Min ; Max");

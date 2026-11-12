@@ -30,7 +30,7 @@ public final class B1RecipeSelfTest {
                         && l2.opsOffset == 20 && l2.dischargeBit == 15 && l2.db == 201
                         && l2.header.size() == l.header.size() && l2.phase.size() == l.phase.size()
                         && l2.phaseField("rpm") != null && l2.phaseField("rpm").offset == 2
-                        && "Scarico (?)".equals(l2.opNames.get(15)));
+                        && "Déch. (scarico)".equals(l2.opNames.get(15)));
         Files.delete(lf);
         B1Recipe r = B1RecipeCodec.decode(db, l);
         check("nome ricetta = gomma2", "gomma2".equals(r.name));
