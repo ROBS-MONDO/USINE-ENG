@@ -164,12 +164,13 @@ Non provato su SQL Server: prima prova a secco e backup.
 * Esiste anche `INSERT INTO [Consommation] values(@1..@10)` (consumi della bilancia): nessuna pulizia automatica.
 
 ## Trend e allarmi (dai controlli WinCC)
-* **Trend** (pulsante Trends): `B1TrendWindow`/`B1TrendChart`. Dal WinCC (`005_Display`, OnlineTrendControl): un andamento
-  "Temperature" (archivio `ProcessValueArchiveB1`, tag `B1_TEMPERATURE`, rosso), finestra 20 minuti, 120 punti, scala 0-200.
-  Due sorgenti, sola lettura: **LIVE** (valori del PLC campionati ogni secondo, memoria 6 ore) e **STORICO** da
-  `dbo.Datas_B1` (Temperature, Amperage, Vitesse, sfondo Auto/Manu come `PLC3_Graph`; connessione = chiavi `jdbc.*` di
-  `b1_label_sql.properties`). Ruler con i valori al passaggio del mouse. `B1TrendSelfTest` prova le funzioni pure.
-  La schermata `003_Trends` nel WinCC non contiene la lista dei tag (si scelgono a runtime): le serie sono quelle di `Datas_B1`.
+* **Trend** (pulsante Trends): `B1TrendWindow` + `B1TrendPanel` (grafica chiara di B1; pulsanti e informazioni come
+  `PLC3_Graph` di B2: << 75M, < 30M, 30M >, 75M >>, ZOOM +/-, LIVE, MESURE, EXIT, TEMPS FENETRE, DELTA P1/P2).
+  Dal WinCC (`005_Display`): andamento "Temperature" rosso, scala 0-200. In piu': caselle Corrente/Giri/Pressione con asse
+  destro e SCALA AUTO (`TrendScale`, 99,5 percentile), marcatori STEP (fase DBW218, ipotesi), righello con i valori,
+  fascia ricetta/MANUALE. I dati li registra `B1TrendRecorder` (1 Hz, dal PLC in sola lettura) in `B1TrendStore` con
+  memoria di 2 giorni su disco (`b1_trend_history.csv`). Il calcolo delle scale e' nella classe separata `TrendScale`
+  (in B2: `PLC3_TrendScale`). `B1TrendSelfTest`/`B1TrendStoreSelfTest` provano le funzioni pure e la persistenza.
 * **Allarmi** (pulsante Alarms): `B1AlarmEngine` + `B1AlarmWindow`. Dal controllo WinCC (`004_Alarms`): colonne
   Date, Time, Nombre, Text1 = "Point d'erreur", Text2 = "Texte du message"; righe alternate bianco/grigio, colori per classe,
   pagina da 50 messaggi. Il motore legge i bit dal PLC (arrivo/rientro), tiene l'elenco e registra su
