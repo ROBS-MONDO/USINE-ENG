@@ -33,7 +33,15 @@ public class B1DbDump {
                 case "-p": port = Integer.parseInt(args[++i]); break;
                 case "-i": interval = Integer.parseInt(args[++i]); break;
                 case "--once": once = true; break;
-                default: dbs.add(Integer.parseInt(args[i].replaceFirst("(?i)^db", "")));
+                default: {
+                    // tollera "DB201", "db201", "DB201." ecc.
+                    String digits = args[i].replaceAll("[^0-9]", "");
+                    if (digits.isEmpty()) {
+                        System.err.println("Argomento non valido: " + args[i]);
+                        System.exit(2);
+                    }
+                    dbs.add(Integer.parseInt(digits));
+                }
             }
         }
         if (dbs.isEmpty()) {
