@@ -5,6 +5,11 @@
    Strategia: conservare gli ultimi @RetentionDays giorni e cancellare il resto A BLOCCHI,
    di notte, cosi' i lock restano brevi e il log delle transazioni non esplode.
 
+   ATTENZIONE (12/11/2026): sul server esiste GIA' il job SQL Agent "DELETE-DATA" (due passi
+   DELETE su Datas_B1/Datas_B2, storico visibile ~18 giorni) e il job "Delete log". NON creare
+   un secondo job: usare questa procedura solo per sostituire il comando di quel job con una
+   cancellazione a blocchi, dopo aver letto il testo completo dei passi (check_delete_data_job.sql).
+
    SICUREZZA
    - La procedura parte in PROVA (@Execute = 0): conta soltanto, non cancella nulla.
    - Retention minima 7 giorni, blocchi da 1.000 a 100.000 righe.
