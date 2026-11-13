@@ -586,6 +586,14 @@ public final class B1TrendPanel extends JPanel {
         g2.setColor(POINT_COLOR);
         String label = "TEMPS FENETRE (" + compact(window()) + ")";
         g2.drawString(label, c.x + (c.width - g2.getFontMetrics().stringWidth(label)) / 2, c.y + c.height + 48);
+        // esito della lettura dello storico SQL (serve a capire perche' ci sono buchi)
+        String st = B1TrendRecorder.sqlStatus;
+        g2.setFont(new Font("Consolas", Font.PLAIN, 11));
+        g2.setColor(st.contains("ERRORE") || st.contains("NON") ? new Color(0xB0, 0x00, 0x00) : new Color(0x60, 0x68, 0x70));
+        if (g2.getFontMetrics().stringWidth(st) > c.width / 2 - 10) {
+            st = st.substring(0, Math.min(st.length(), 70)) + "...";
+        }
+        g2.drawString(st, c.x + c.width - g2.getFontMetrics().stringWidth(st), c.y + c.height + 48);
     }
 
     /** Fascia in basso: ricetta (verde, con il nome) e modo manuale (rosso), come in PLC3_Graph. */

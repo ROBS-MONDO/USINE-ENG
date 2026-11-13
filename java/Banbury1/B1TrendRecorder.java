@@ -11,6 +11,9 @@ import java.util.List;
  */
 public final class B1TrendRecorder {
 
+    /** Esito della lettura dello storico SQL, mostrato nella finestra del trend. */
+    public static volatile String sqlStatus = "Storico SQL: non richiesto";
+
     private final Thread thread;
     private volatile boolean stop;
 
@@ -76,16 +79,21 @@ public final class B1TrendRecorder {
         if (sqlConfig == null) {
             r.thread.start();
         } else {
+            sqlStatus = "Storico SQL: in lettura...";
             Thread t = new Thread(() -> {
                 try {
                     B1TrendSqlHistory.Data d = B1TrendSqlHistory.load(B1TrendSqlHistory.readConfig(sqlConfig));
                     if (d == null) {
+                        sqlStatus = "Storico SQL: NON configurato (jdbc.url/jdbc.user in " + sqlConfig + ")";
                         System.out.println("Trend: storico SQL non configurato (jdbc.url/jdbc.user): solo dati registrati");
                     } else {
                         store.mergeBackfill(d.times, d.values, d.events, System.currentTimeMillis());
+                        sqlStatus = "Storico SQL: " + d.times.length + " righe lette";
                         System.out.println("Trend: " + d.times.length + " righe di storico lette da SQL");
                     }
                 } catch (Exception e) {
+                    String why = String.valueOf(e.getMessage() == null ? e : e.getMessage()).replace('\n', ' ');
+                    sqlStatus = "Storico SQL: ERRORE " + (why.length() > 110 ? why.substring(0, 110) + "..." : why);
                     System.err.println("Trend: storico SQL non disponibile (" + e + "): solo dati registrati");
                 }
                 r.thread.start();
