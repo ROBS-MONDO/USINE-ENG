@@ -1,11 +1,13 @@
 package Banbury1;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
 /**
  * Prova la lettura dello storico del trend (sola SELECT) senza avviare il sinottico:
- * java Banbury1.B1TrendSqlCheck [b1_label_sql.properties]. Stampa quante righe legge o il motivo dell'errore.
+ * java Banbury1.B1TrendSqlCheck [file]. Senza argomento usa C:\\_tools\\Banbury1\\b1_label_sql.properties (come il sinottico), altrimenti la cartella corrente. Stampa quante righe legge o il motivo dell'errore.
  */
 public final class B1TrendSqlCheck {
 
@@ -13,7 +15,12 @@ public final class B1TrendSqlCheck {
     }
 
     public static void main(String[] args) {
-        Properties cfg = B1TrendSqlHistory.readConfig(Paths.get(args.length > 0 ? args[0] : "b1_label_sql.properties"));
+        Path file = args.length > 0 ? Paths.get(args[0]) : Paths.get("C:\\_tools\\Banbury1\\b1_label_sql.properties");
+        if (args.length == 0 && !Files.isReadable(file)) {
+            file = Paths.get("b1_label_sql.properties");
+        }
+        System.out.println("file       : " + file.toAbsolutePath() + (Files.isReadable(file) ? "" : "  (NON TROVATO)"));
+        Properties cfg = B1TrendSqlHistory.readConfig(file);
         System.out.println("jdbc.url   : " + (cfg.getProperty("jdbc.url", "").trim().isEmpty() ? "(vuoto)" : "impostato"));
         System.out.println("jdbc.user  : " + (cfg.getProperty("jdbc.user", "").trim().isEmpty() ? "(vuoto)" : cfg.getProperty("jdbc.user").trim()));
         System.out.println("password   : " + (System.getenv("B1_SQL_PASSWORD") != null ? "da B1_SQL_PASSWORD"
