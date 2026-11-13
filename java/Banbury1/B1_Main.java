@@ -500,8 +500,7 @@ public class B1_Main extends JFrame {
         private void drawTopBar(Graphics2D g) {
             // logo
             box(g, 12, 37, 50, 50, new Color(0xF2F2F2), new Color(0x909090));
-            text(g, "ELI", 12, 40, 50, 24, new Font("Arial", Font.BOLD, 17), new Color(0x1B4F8A), 0);
-            text(g, "AUTOMATION", 12, 62, 50, 14, new Font("Arial", Font.PLAIN, 7), new Color(0x1B4F8A), 0);
+            text(g, "MONDO", 12, 37, 50, 50, new Font("Arial", Font.BOLD, 12), new Color(0x1B4F8A), 0);
             label(g, "MCC-240 T", 80, 38, 102, 24);
             label(g, "Synoptique", 80, 63, 102, 24);
             // Imprimer Page
