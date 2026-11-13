@@ -119,7 +119,7 @@ public final class B1TrendPanel extends JPanel {
         decorate(chkTemp);
         add(chkTemp);
         for (B1TrendChart.Series s : extra) {
-            JCheckBox c = new JCheckBox(s.label.toUpperCase(Locale.ROOT).replace("VELOCIT\u00c0 ROTORI", "GIRI"), true);
+            JCheckBox c = new JCheckBox(s.label.toUpperCase(Locale.ROOT).replace("VELOCIT\u00c0 ROTORI", "GIRI"), false);
             c.setForeground(s.color.darker());
             decorate(c);
             chkExtra.add(c);
