@@ -382,9 +382,17 @@ public final class B1TrendPanel extends JPanel {
         }
     }
 
+    private static final int AXIS_W = 46;
+
     private Rectangle chartBounds() {
         int left = 95;
-        int right = 70;
+        int axes = 0;
+        for (JCheckBox c : chkExtra) {
+            if (c.isSelected()) {
+                axes++;
+            }
+        }
+        int right = 28 + AXIS_W * Math.max(1, axes); // una colonna di scala per ogni serie extra visibile
         int top = 128;
         int bottom = 120;
         return new Rectangle(left, top, Math.max(200, getWidth() - left - right), Math.max(200, getHeight() - top - bottom));
@@ -717,7 +725,7 @@ public final class B1TrendPanel extends JPanel {
 
     /** Serie aggiuntive (corrente, giri, pressione): scala automatica sull'asse destro della prima selezionata. */
     private void paintExtra(Graphics2D g2, Rectangle c, long from, long to) {
-        boolean axisDrawn = false;
+        int axisIdx = 0;
         for (int k = 0; k < extra.size(); k++) {
             if (!chkExtra.get(k).isSelected()) {
                 continue;
@@ -747,16 +755,18 @@ public final class B1TrendPanel extends JPanel {
                 prev = cur;
                 prevT = (long) p[0];
             }
-            if (!axisDrawn) {
-                axisDrawn = true;
-                g2.setFont(new Font("Consolas", Font.BOLD, 12));
-                g2.setColor(s.color.darker());
-                for (int i = 0; i <= 4; i++) {
-                    int y = c.y + c.height - c.height * i / 4;
-                    g2.drawString(String.format(Locale.US, "%.0f", max * i / 4.0), c.x + c.width + 6, y + 4);
-                }
-                g2.drawString(s.unit, c.x + c.width + 6, c.y - 10);
+            // scala propria della serie, in una colonna a destra del grafico, nel colore della curva
+            int ax = c.x + c.width + 6 + axisIdx * AXIS_W;
+            axisIdx++;
+            g2.setFont(new Font("Consolas", Font.BOLD, 12));
+            g2.setColor(s.color.darker());
+            g2.setStroke(new BasicStroke(1f));
+            for (int i = 0; i <= 4; i++) {
+                int y = c.y + c.height - c.height * i / 4;
+                double tick = max * i / 4.0;
+                g2.drawString(String.format(Locale.US, max >= 10 ? "%.0f" : "%.1f", tick), ax, y + 4);
             }
+            g2.drawString(s.unit, ax, c.y - 10);
         }
     }
 
