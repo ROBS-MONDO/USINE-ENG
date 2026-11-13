@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /** Test dell'archivio dei trend (java Banbury1.B1TrendStoreSelfTest). */
@@ -109,6 +110,38 @@ public final class B1TrendStoreSelfTest {
                 && e2.events("recipe").size() == 1 && e2.buffer("a").size() == 1);
         e2.close();
         Files.delete(fe);
+
+        // storico dal database: riempie solo i buchi, il registrato ha la precedenza
+        B1TrendStore bf = new B1TrendStore(ids);
+        long b0 = now - 3_600_000L;
+        for (int i = 0; i < 10; i++) {
+            bf.add(b0 + 1000L * i, new double[]{1, 1}); // registrato: b0 .. b0+9 s
+        }
+        long[] sqlT = new long[20];
+        double[][] sqlV = new double[20][];
+        for (int i = 0; i < 20; i++) {
+            sqlT[i] = b0 - 20_000L + 2000L * i; // SQL: ogni 2 s da b0-20 s a b0+18 s
+            sqlV[i] = new double[]{99, Double.NaN};
+        }
+        List<String[]> sqlEv = new ArrayList<>();
+        sqlEv.add(new String[]{"mode", String.valueOf(b0 - 20_000L), "Manu"});
+        sqlEv.add(new String[]{"mode", String.valueOf(b0 - 10_000L), "Manu"});
+        sqlEv.add(new String[]{"mode", String.valueOf(b0 + 30_000L), "Auto"});
+        bf.mergeBackfill(sqlT, sqlV, sqlEv, now);
+        B1TrendStore.Buffer ba = bf.buffer("a");
+        check("storico SQL: campioni nei buchi aggiunti, nessuno vicino al registrato",
+                ba.firstTime() == b0 - 20_000L && ba.nearest(b0 + 5000L, 100) == 1.0 && ba.size() > 10 && ba.size() < 30);
+        check("storico SQL: serie assente (NaN) non entra", bf.buffer("b").size() == 10);
+        check("storico SQL: eventi consecutivi uguali uniti", bf.events("mode").size() == 2);
+        bf.add(b0 + 500_000L, new double[]{5, 5});
+        check("dopo il recupero la registrazione prosegue", bf.buffer("a").nearest(b0 + 500_000L, 100) == 5.0);
+        check("nome tabella ammesso", B1TrendSqlHistory.validTable("dbo.Datas_B1")
+                && !B1TrendSqlHistory.validTable("x; DROP TABLE y"));
+        check("modo Auto/Manu da Mode", B1TrendSqlHistory.modeText("Auto").equals("Auto")
+                && B1TrendSqlHistory.modeText("Manu").equals("Manu") && B1TrendSqlHistory.modeText(null).equals("Manu"));
+        check("SELECT di sola lettura con le colonne del log", B1TrendSqlHistory.buildSql("dbo.Datas_B1", B1TrendChart.defaultSeries())
+                .startsWith("SELECT ") && B1TrendSqlHistory.buildSql("dbo.Datas_B1", B1TrendChart.defaultSeries()).contains("Amperage")
+                && !B1TrendSqlHistory.buildSql("dbo.Datas_B1", B1TrendChart.defaultSeries()).toUpperCase().contains("DELETE"));
         System.exit(failures == 0 ? 0 : 1);
     }
 }

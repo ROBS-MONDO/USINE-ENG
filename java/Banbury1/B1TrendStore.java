@@ -140,6 +140,46 @@ public final class B1TrendStore {
             return bestD <= maxGapMs ? best : null;
         }
 
+        /**
+         * Inserisce campioni (tempo crescente) nei buchi: un campione nuovo si usa solo se non c'e' gia'
+         * un campione registrato entro gapMs. Ricostruisce il buffer in ordine di tempo.
+         */
+        synchronized int mergeIn(long[] nt, float[] nv, long gapMs, long minTime) {
+            long[] mt = new long[size + nt.length];
+            float[] mv = new float[mt.length];
+            int n = 0;
+            int a = 0;
+            int b = 0;
+            while (a < size || b < nt.length) {
+                if (b < nt.length && nt[b] < minTime) {
+                    b++;
+                    continue;
+                }
+                long ta = a < size ? t[idx(a)] : Long.MAX_VALUE;
+                long tb = b < nt.length ? nt[b] : Long.MAX_VALUE;
+                if (ta <= tb) {
+                    mt[n] = ta;
+                    mv[n++] = v[idx(a++)];
+                } else {
+                    // nuovo campione: scartato se vicino a uno esistente
+                    boolean near = (a < size && ta - tb <= gapMs) || (a > 0 && tb - t[idx(a - 1)] <= gapMs);
+                    if (!near) {
+                        mt[n] = tb;
+                        mv[n++] = nv[b];
+                    }
+                    b++;
+                }
+            }
+            int from = Math.max(0, n - CAPACITY);
+            head = 0;
+            size = n - from;
+            for (int i = 0; i < size; i++) {
+                t[i] = mt[from + i];
+                v[i] = mv[from + i];
+            }
+            return size;
+        }
+
         public synchronized long firstTime() {
             return size == 0 ? -1 : t[head];
         }
@@ -200,6 +240,44 @@ public final class B1TrendStore {
             } catch (IOException e) {
                 closeQuietly();
             }
+        }
+    }
+
+    /**
+     * Riempie i buchi dello storico con dati ricostruiti (es. dal database SQL): campioni = matrice
+     * [riga][serie] (NaN = assente), eventi = {tipo, tempo ms, testo}. I campioni gia' registrati hanno la
+     * precedenza. Da chiamare prima che parta il registratore (i buffer accettano solo tempi crescenti).
+     */
+    public synchronized void mergeBackfill(long[] times, double[][] values, List<String[]> evts, long now) {
+        long min = now - KEEP_MS;
+        for (int s = 0; s < ids.size(); s++) {
+            int n = 0;
+            long[] t = new long[times.length];
+            float[] f = new float[times.length];
+            for (int r = 0; r < times.length; r++) {
+                double v = values[r].length > s ? values[r][s] : Double.NaN;
+                if (!Double.isNaN(v)) {
+                    t[n] = times[r];
+                    f[n++] = (float) v;
+                }
+            }
+            buffers.get(ids.get(s)).mergeIn(java.util.Arrays.copyOf(t, n), java.util.Arrays.copyOf(f, n), 3000, min);
+        }
+        Map<String, List<Event>> add = new LinkedHashMap<>();
+        for (String[] e : evts) {
+            add.computeIfAbsent(e[0], k -> new ArrayList<>()).add(new Event(Long.parseLong(e[1]), e[2]));
+        }
+        for (Map.Entry<String, List<Event>> en : add.entrySet()) {
+            List<Event> all = new ArrayList<>(events.getOrDefault(en.getKey(), new ArrayList<>()));
+            all.addAll(en.getValue());
+            all.sort((x, y) -> Long.compare(x.time, y.time));
+            List<Event> out = new ArrayList<>();
+            for (Event e : all) {
+                if (out.isEmpty() || !out.get(out.size() - 1).text.equals(e.text)) {
+                    out.add(e);
+                }
+            }
+            events.put(en.getKey(), out);
         }
     }
 

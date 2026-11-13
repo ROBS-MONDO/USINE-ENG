@@ -55,6 +55,14 @@ public final class B1TrendRecorder {
 
     /** Avvia la registrazione. file = null: solo memoria (es. demo). */
     public static B1TrendRecorder start(B1Source src, B1TrendStore store, Path file) {
+        return start(src, store, file, null);
+    }
+
+    /**
+     * Come sopra; con sqlConfig riempie prima i buchi dello storico dal database SQL (solo SELECT), poi parte
+     * la registrazione dal PLC. Se il database non risponde si prosegue con i soli dati registrati.
+     */
+    public static B1TrendRecorder start(B1Source src, B1TrendStore store, Path file, Path sqlConfig) {
         List<B1TrendChart.Series> series = B1TrendChart.defaultSeries();
         if (file != null) {
             try {
@@ -65,7 +73,26 @@ public final class B1TrendRecorder {
             }
         }
         B1TrendRecorder r = new B1TrendRecorder(src, store, series);
-        r.thread.start();
+        if (sqlConfig == null) {
+            r.thread.start();
+        } else {
+            Thread t = new Thread(() -> {
+                try {
+                    B1TrendSqlHistory.Data d = B1TrendSqlHistory.load(B1TrendSqlHistory.readConfig(sqlConfig));
+                    if (d == null) {
+                        System.out.println("Trend: storico SQL non configurato (jdbc.url/jdbc.user): solo dati registrati");
+                    } else {
+                        store.mergeBackfill(d.times, d.values, d.events, System.currentTimeMillis());
+                        System.out.println("Trend: " + d.times.length + " righe di storico lette da SQL");
+                    }
+                } catch (Exception e) {
+                    System.err.println("Trend: storico SQL non disponibile (" + e + "): solo dati registrati");
+                }
+                r.thread.start();
+            }, "b1-trend-sql");
+            t.setDaemon(true);
+            t.start();
+        }
         Runtime.getRuntime().addShutdownHook(new Thread(store::close));
         return r;
     }

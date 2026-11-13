@@ -123,7 +123,7 @@ public class B1_Main extends JFrame {
             // registrazione in background dei valori del trend (2 giorni, anche a finestra chiusa)
             Path hist = Files.isDirectory(Paths.get("C:\\_tools\\Banbury1")) ? Paths.get("C:\\_tools\\Banbury1\\b1_trend_history.csv")
                     : Paths.get("b1_trend_history.csv");
-            B1TrendRecorder.start(src, B1TrendStore.shared(B1TrendRecorder.seriesIds()), demo ? null : hist);
+            B1TrendRecorder.start(src, B1TrendStore.shared(B1TrendRecorder.seriesIds()), demo ? null : hist, demo ? null : SQL_CONFIG);
         }
         if (snap != null && screen != null) {
             System.setProperty("java.awt.headless", "true");
