@@ -74,15 +74,15 @@ public final class B1Tags {
     // chiave, descrizione, indirizzo predefinito ("" = non collegato)
     private static final String[][] DEFAULTS = {
         // --- valori ---
-        {"press_top",   "Pressione (barra alta)",                    "DB110.W70*0.01"},
+        {"press_top",   "Pressione (barra alta)",                    "DB110.W70*0.1"},
         {"temp",        "Temperatura camera (barra alta e riquadro)", "DB110.W100"},
         {"speed_top",   "Velocita' rotori (barra alta)",             "DB110.W60"},
         {"cycle_time",  "Tempo ciclo, secondi (mm:ss)",              ""},
         {"mix_total",   "Miscele totali (WinCC: DBW210)",         "DB110.W210"},
         {"mix_done",    "Miscele fatte (WinCC: DBW212)",          "DB110.W212"},
         {"mix_todo",    "Miscele da fare (vuoto = totali - fatte)",  ""},
-        {"press_set",   "Pistone: pressione consegna",               "DB110.W70*0.01"},
-        {"press_act",   "Pistone: pressione attuale",                "DB110.W72*0.01"},
+        {"press_set",   "Pistone: pressione consegna",               "DB110.W70*0.1"},
+        {"press_act",   "Pistone: pressione attuale",                "DB110.W72*0.1"},
         {"piston_pct1", "Pistone: % 1",                              "DB110.W86"},
         {"piston_pct2", "Pistone: % 2 (ipotesi: velocita' discesa)", "DB110.W106"},
         {"piston_pct3", "Pistone: % 3 (ipotesi: velocita' salita)",  "DB110.W108"},
@@ -101,10 +101,10 @@ public final class B1Tags {
         {"num_melange", "NUM MELANGE",                               ""},
         {"recipe_name", "Nome ricetta (stringa)",                    "DB201.S4"},
         // --- lampade piston ---
-        {"piston_high",    "Pistone: posizione alta",   "DB110.W22.B1"},
+        {"piston_high",    "Pistone: posizione alta",   "DB110.W22.B0"},
         {"piston_float",   "Pistone: flottante",        "DB110.W22.B5"},
         {"piston_low",     "Pistone: posizione bassa",  "DB110.W22.B6"},
-        {"piston_blocked", "Pistone: bloccato",         "DB110.W22.B0"},
+        {"piston_blocked", "Pistone: bloccato",         "DB110.W22.B1"},
         {"rotors_running", "Rotori: running",           "DB110.W60"},
         {"lube_running",   "Lubrificazione: running",   ""},
         // --- silos / porte ---
@@ -124,10 +124,10 @@ public final class B1Tags {
         {"rdy_mintime",  "Pronto: tempo min. tra cicli",     "DB110.W54.B10"},
         {"rdy_cycles",   "Pronto: n. cicli passi effettuati","DB110.W54.B11"},
         // --- cycle malaxeur ---
-        {"cyc_auto",   "Ciclo: auto",       "DB110.W54.B12"},
+        {"cyc_auto",   "Ciclo: auto",       "DB110.W54.B14"},
         {"phase_no",   "Fase in corso (WinCC: DBW218, RunningPhaseActual)", "DB110.W218"},
-        {"mode_auto",  "Modo automatico per il trend (ipotesi: = lampada Auto)", "DB110.W54.B12"},
-        {"cyc_cont",   "Ciclo: continuo",   "DB110.W54.B14"},
+        {"mode_auto",  "Modo automatico per il trend (ipotesi: = lampada Auto)", "DB110.W54.B14"},
+        {"cyc_cont",   "Ciclo: continuo",   "DB110.W54.B12"},
         {"cyc_susp",   "Ciclo: sospeso",    "DB110.W54.B15"},
         {"cyc_cycle",  "Ciclo: ciclo",      "DB110.W44.B9"},
         // --- posizioni ---
@@ -136,12 +136,12 @@ public final class B1Tags {
         {"decel_dis",    "Decelerazione scarico",  "DB110.W140.B12"},
         {"pos_dis",      "Posizione scarico",      "DB110.W140.B14"},
         // --- produzione ---
-        {"prod_ready",   "Pronto per produzione",   "DB110.W44.B12"},
+        {"prod_ready",   "Pronto per produzione",   "DB110.W44.B0"},
         {"prod_auto_on", "Ciclo auto ON",           "DB110.W44.B11"},
         {"new_load",     "Caricamento nuova (ipotesi da PDL)", "DB201.X41.0"},
         {"prod_auto",    "Funzionamento produzione auto", "DB110.W44.B1"},
         {"cycle_stopped","Ciclo arrestato",         "DB110.W44.B2"},
-        {"recipe_ok",    "Ricetta valida",          "DB110.W44.B0"},
+        {"recipe_ok",    "Ricetta valida",          "DB110.W44.B12"},
     };
 
     private B1Tags() {

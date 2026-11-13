@@ -47,7 +47,7 @@ public final class B1TrendChart {
         l.add(new Series("temp", "Temperatura", "\u00b0C", new Color(0xFF, 0x00, 0x00), 0, 200, "temp", "Temperature"));
         l.add(new Series("amp", "Corrente", "A", new Color(0x20, 0x60, 0xD0), 0, 400, "current", "Amperage"));
         l.add(new Series("rpm", "Velocit\u00e0 rotori", "rpm", new Color(0x20, 0x9A, 0x20), 0, 100, "rpm_act", "Vitesse"));
-        l.add(new Series("press", "Pressione", "bar", new Color(0xE0, 0x80, 0x00), 0, 16, "press_act", null));
+        l.add(new Series("press", "Pressione", "bar", new Color(0xE0, 0x80, 0x00), 0, 250, "press_act", null));
         return l;
     }
 

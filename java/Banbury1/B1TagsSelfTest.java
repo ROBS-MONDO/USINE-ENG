@@ -18,9 +18,9 @@ public final class B1TagsSelfTest {
 
     public static void main(String[] args) throws Exception {
         B1Tags def = B1Tags.load(null);
-        check("predefinito: pressione = DB110.W70*0.01",
+        check("predefinito: pressione = DB110.W70*0.1",
                 def.get("press_set") != null && def.get("press_set").db == 110 && def.get("press_set").off == 70
-                        && def.get("press_set").scale == 0.01);
+                        && def.get("press_set").scale == 0.1);
         check("predefinito: miscele fatte = DBW212, passi = DBW234",
                 def.get("mix_done").off == 212 && def.get("steps").off == 234);
         check("predefinito: SEQ in DB150", def.get("seq_a").db == 150 && def.get("seq_b").off == 2);

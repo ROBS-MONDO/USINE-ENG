@@ -7,7 +7,7 @@ log SQL `Datas_B1`. **[WinCC]** = letto dal progetto, quindi affidabile; **[dump
 | Indirizzo | Significato | Fonte |
 |---|---|---|
 | DBW58 / 60 / 62 | giri consegna / giri attuali / corrente (A) | WinCC |
-| DBW70 / 72 | pressione consegna / attuale (scala x0,01?) | WinCC (scala ipotesi) |
+| DBW70 / 72 | pressione consegna / attuale (scala x0,1, confermata) | WinCC + foto pannello |
 | DBW74 | posizione pistone (%) | WinCC (Display) |
 | DBW86 / 106 / 108 | % pistone (3 campi) | WinCC |
 | DBW92 / 94 , DBW112 / 114 | temperature "Corps machine" / "Porte déchargement" (due coppie) | WinCC (Temperatures) |
@@ -40,3 +40,12 @@ STRING[8] @12 = lotto ("9004") [dump].
 ## SQL (DATA_BAMBURY)
 `Datas_B1`/`Datas_B2`: 21 colonne, INSERT posizionale ogni ~2 s da DESKTOP-1BHBR06 (login Banbury2); pulizia a 15 giorni
 con il job `DELETE-DATA`. Vedi `README.md`.
+
+## Confronto con le foto del pannello originale (13/11/2026 ~12:10, macchina ferma)
+Valori letti sul pannello: pressione consegna 140.0 bar / attuale 5.5 bar (-> scala DBW70/72 x0.1), % 0/80/80, rotori 34 rpm consegna / 0 rpm / 0 A,
+lotto 26/0729R, SEQ 15/0, totale 500 / fatti 122 / da fare 378, ciclo 5:00 mm:ss (= 300 s; tag ancora da trovare, cercare 300 in Valori PLC),
+"Mixing" 4:37 (= 277 s, uguale al "Time (s)" della fase 1), tempo ciclo ricetta 2:27 (= 147 s). Pagina Process: ricetta S.TAPIS SPORT-IMPACT,
+safety time 600 s, safety temp 120 C, max energy 30.0 kWh, restart temp 90 C, drop door 17 s.
+Lampade (accesa = chiara): pistone = SOLO "posizione alta"; malaxeur pret = tutte tranne "moteur principal OK"; cycle malaxeur = SOLO "continuo";
+produzione = SOLO "ricetta valida". Il programma mostrava invece accese Bloque, Auto, Pret pour production e (rdy) moteur OK:
+corretti per scambio di bit (piston_high/blocked, cyc_auto/cyc_cont, prod_ready/recipe_ok); le 3 lampade "malaxeur pret" ancora da verificare con Cattura A/B.

@@ -103,7 +103,7 @@ java -cp out Banbury1.B1_Main --demo --screen 005_Display --snapshot display.png
 * `screens/*.b1s` sono i layout estratti dai `.Pdl` del progetto WinCC `Mondo(210623)` (posizione, testo, campo di valore
   con il suo tag `DBxDBWn`). Vanno copiati nel classpath (Eclipse lo fa da solo) oppure in `C:\_tools\Banbury1\screens`.
 * Lampade nelle schermate generiche: disegnate "non collegate" (barra diagonale) finche' il bit non e' confermato.
-* Campi di valore: valore grezzo x fattore (`B1Screen.SCALE`: pressione `DBW70/72` x0.01, energia `DBW34` x0.1: ipotesi).
+* Campi di valore: valore grezzo x fattore (`B1Screen.SCALE`: pressione `DBW70/72` x0.1 (confermata dal confronto con le foto del pannello: 140.0 bar), energia `DBW34` x0.1: ipotesi).
 * Non ricostruiti: controlli WinCC (trend, allarmi, tabelle di fase) -> riquadro tratteggiato `[controllo WinCC]`.
 
 ## Valori PLC (tasto F3 o pulsante "Valori PLC")
@@ -114,8 +114,8 @@ E' lo strumento per completare `b1_tags.properties`: si cerca la parola che camb
 ## Indirizzi confermati dal WinCC (progetto Mondo(210623))
 | Campo | Indirizzo | Nota |
 |---|---|---|
-| Pressione consegna / barra alta | DB110.DBW70 | scala x0.01 (ipotesi) |
-| Pressione attuale | DB110.DBW72 | scala x0.01 (ipotesi) |
+| Pressione consegna / barra alta | DB110.DBW70 | scala x0.1 (confermata dal confronto con il pannello) |
+| Pressione attuale | DB110.DBW72 | scala x0.1 (confermata dal confronto con il pannello) |
 | Giri consegna / attuali / corrente | DBW58 / DBW60 / DBW62 | |
 | Temperatura (riquadro / barra alta) | DBW100 / DBW104 | |
 | Miscele totali / fatte | DBW210 / DBW212 | "da fare" = totale - fatte |

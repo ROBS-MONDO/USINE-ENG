@@ -60,8 +60,8 @@ public final class B1Screen {
     static final Map<String, Double> SCALE = new HashMap<>();
 
     static {
-        SCALE.put("DB110DBW70", 0.01);
-        SCALE.put("DB110DBW72", 0.01);
+        SCALE.put("DB110DBW70", 0.1);
+        SCALE.put("DB110DBW72", 0.1);
         SCALE.put("DB201DBW34", 0.1);
     }
 
