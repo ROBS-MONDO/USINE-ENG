@@ -174,7 +174,7 @@ Non provato su SQL Server: prima prova a secco e backup.
   **Buchi di registrazione** (modulo B1 chiuso): all'avvio `B1TrendSqlHistory` legge con una SELECT (sola lettura)
   gli ultimi 2 giorni di `dbo.Datas_B1` (Temperature, Amperage, Vitesse, Mode, Nom_melange; come fa `PLC3_Graph` per B2) e
   li inserisce solo nei buchi (`B1TrendStore.mergeBackfill`); la pressione non e' nel log. Servono `jdbc.url` e `jdbc.user`
-  in `b1_label_sql.properties` e la password in `B1_SQL_PASSWORD`; `trend.table` (predefinita `dbo.Datas_B1`), `trend.sql = false` per disattivare. `B1TrendSelfTest`/`B1TrendStoreSelfTest` provano le funzioni pure e la persistenza.
+  in `b1_label_sql.properties` (utente di sola lettura: `sql/create_b1_reader.sql`, da far eseguire a chi amministra SQL; prova: `java Banbury1.B1TrendSqlCheck`) e la password in `B1_SQL_PASSWORD`; `trend.table` (predefinita `dbo.Datas_B1`), `trend.sql = false` per disattivare. `B1TrendSelfTest`/`B1TrendStoreSelfTest` provano le funzioni pure e la persistenza.
 * **Allarmi** (pulsante Alarms): `B1AlarmEngine` + `B1AlarmWindow`. Dal controllo WinCC (`004_Alarms`): colonne
   Date, Time, Nombre, Text1 = "Point d'erreur", Text2 = "Texte du message"; righe alternate bianco/grigio, colori per classe,
   pagina da 50 messaggi. Il motore legge i bit dal PLC (arrivo/rientro), tiene l'elenco e registra su
