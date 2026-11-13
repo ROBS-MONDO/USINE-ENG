@@ -593,7 +593,7 @@ public final class B1TrendPanel extends JPanel {
         if (g2.getFontMetrics().stringWidth(st) > c.width / 2 - 10) {
             st = st.substring(0, Math.min(st.length(), 70)) + "...";
         }
-        g2.drawString(st, c.x + c.width - g2.getFontMetrics().stringWidth(st), c.y + c.height + 48);
+        g2.drawString(st, c.x, c.y + c.height + 48); // a sinistra: a destra c'e' il pulsante EXIT
     }
 
     /** Fascia in basso: ricetta (verde, con il nome) e modo manuale (rosso), come in PLC3_Graph. */
