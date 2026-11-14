@@ -58,6 +58,10 @@ h2{font-family:Georgia,serif;color:var(--navy);font-size:clamp(30px,4vw,46px);li
 .final{background:var(--ivory);text-align:center}.final p{font-size:19px;max-width:660px;margin:0 auto 25px}
 footer{background:var(--navy);color:#e4d5da;padding:25px 0;text-align:center;font-size:12px;letter-spacing:.12em}
 @media(max-width:800px){.hero-grid{grid-template-columns:1fr}.hero-copy{padding:65px 25px 50px}.hero-photo{min-height:330px;background-image:linear-gradient(rgba(66,19,38,.18),rgba(66,19,38,.18)),var(--hero-img)}.benefits,.program-grid{grid-template-columns:1fr 1fr}.network{grid-template-columns:1fr;gap:25px}.network img{height:320px}.take-grid{grid-template-columns:1fr}}
+/* telefono: niente testo che esce a destra (colonne che si restringono, pulsanti e etichette che vanno a capo) */
+html,body{max-width:100%;overflow-x:hidden}
+.hero-grid>*,.network>*,.take-grid>*,.benefits>*,.program-grid>*{min-width:0}
+@media(max-width:800px){.hero-grid{grid-template-columns:minmax(0,1fr)}.eyebrow{width:auto;max-width:100%;line-height:1.4;white-space:normal}.btn{width:auto;max-width:100%;text-align:center;white-space:normal;line-height:1.35}.brand-break .wrap{grid-template-columns:1fr!important}h1,h2{overflow-wrap:break-word}h1{font-size:clamp(30px,8.4vw,52px)}.includes>div{min-width:0}}
 @media(max-width:520px){.wrap{width:min(100% - 32px,1160px)}section{padding:60px 0}.benefits,.program-grid{grid-template-columns:1fr}.hero-copy{padding:55px 20px 42px}.hero-photo{min-height:260px}.price-number{font-size:58px}.includes{grid-template-columns:1fr}.program-card img{height:210px}}
 </style>
 </head>
