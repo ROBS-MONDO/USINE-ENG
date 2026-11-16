@@ -182,3 +182,15 @@ Non provato su SQL Server: prima prova a secco e backup.
   configurazione di Alarm Logging, file bloccato nell'archivio): vanno inserite in `b1_alarms.properties`
   (`alarm.<n> = DB110DBX22_3 ; Point d'erreur ; Testo ; classe`). Finche' e' vuoto la lista resta vuota.
   `B1AlarmSelfTest` prova il motore. Per ottenere l'elenco: WinCC Explorer -> Alarm Logging -> elenco messaggi (screenshot o export).
+
+## Invio ricette al PLC (editor ricette, pulsante "Invia al PLC")
+* `B1RecipeTransfer` + `S7WriteClient` (il client di scrittura e' separato da `S7ReadClient`, che resta di sola lettura).
+* **Anteprima sempre attiva**: legge DB201 e DB110, mostra le parole che cambierebbero (offset, valore vecchio -> nuovo, campo) e i controlli:
+  ricetta valida, rotori fermi (DBW60 = 0), DB invariato, nome che non sovrascrive la testata (lo spazio del nome nel DB201 e' di 22 caratteri,
+  non 32: la testata parte da DBW28).
+* **Scrittura DISABILITATA di default**: `b1_recipe_transfer.properties` deve avere `enabled=true` e `allow_raw_write=true`. Con la scrittura abilitata:
+  anteprima -> conferma scrivendo INVIA -> copia di sicurezza del DB -> scrive solo le parole cambiate -> rilegge e confronta (se diverso ripristina la copia).
+* **Da confermare prima di abilitarla**: la sequenza di trasferimento del WinCC (lampade "Transfert recette habilite" = DBW44 bit 4?, "Start transfert" = DB201.DBX41.0,
+  "Fin transfert" = DB201.DBX563.0 (fuori dal DB di 384 byte), "Recette valide"). Si ricava registrando con `B1DbDump` (DB 110 201 150) mentre dal WinCC originale si invia una ricetta.
+* `B1RecipeTransferSelfTest` (con `host porta` prova la scrittura su un server S7 di prova, mai sul PLC della macchina).
+

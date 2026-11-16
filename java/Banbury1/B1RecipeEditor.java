@@ -414,9 +414,9 @@ public class B1RecipeEditor extends JFrame {
             b.add(button("Salva (Ctrl+S)", this::save));
             b.add(button("Importa dal PLC", this::importFromPlc));
             b.add(button("Esporta CSV", this::exportCsv));
-            JButton send = button("Invia al PLC", () -> { });
-            send.setEnabled(false);
-            send.setToolTipText("Non ancora attivo: da abilitare dopo la conferma del layout DB201");
+            JButton send = button("Invia al PLC", this::sendToPlc);
+            send.setToolTipText("Anteprima di cosa verrebbe scritto nel DB" + layout.db
+                    + " (la scrittura vera e' disabilitata finche' non si abilita b1_recipe_transfer.properties)");
             b.add(send);
             b.setPreferredSize(new Dimension(380, 78));
             bottom.add(b, BorderLayout.EAST);
@@ -613,6 +613,91 @@ public class B1RecipeEditor extends JFrame {
                 return;
             }
             doImport(ip.trim());
+        }
+
+        /** Invio al PLC: legge DB201 e DB110, mostra l'anteprima e (solo se abilitato) scrive con copia di sicurezza e verifica. */
+        private void sendToPlc() {
+            if (current == null) {
+                return;
+            }
+            if (table.isEditing()) {
+                table.getCellEditor().stopCellEditing();
+            }
+            onHeaderEdited();
+            final B1Recipe recipe = current.copy();
+            final B1RecipeTransfer.Config cfg = B1RecipeTransfer.Config.load();
+            final String host = plcIp;
+            lblStatus.setText("Lettura del PLC " + host + " per l'anteprima...");
+            new SwingWorker<B1RecipeTransfer.Plan, Void>() {
+                @Override
+                protected B1RecipeTransfer.Plan doInBackground() throws Exception {
+                    try (S7ReadClient plc = new S7ReadClient(host, 102, 0, 2, 3000)) {
+                        plc.connect();
+                        int size = plc.detectDbSize(layout.db, 1024);
+                        byte[] cur = size > 0 ? plc.readDb(layout.db, 0, size) : null;
+                        byte[] st = null;
+                        try {
+                            int s110 = plc.detectDbSize(110, 512);
+                            st = s110 > 0 ? plc.readDb(110, 0, s110) : null;
+                        } catch (IOException ignored) {
+                            // stato macchina non leggibile: l'anteprima lo segnala
+                        }
+                        return B1RecipeTransfer.plan(recipe, layout, cur, st);
+                    }
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        B1RecipeTransfer.Plan plan = get();
+                        showTransferDialog(plan, cfg, host);
+                    } catch (Exception e) {
+                        Throwable t = e.getCause() != null ? e.getCause() : e;
+                        error("Anteprima invio fallita: " + (t.getMessage() != null ? t.getMessage() : t.toString()));
+                    }
+                }
+            }.execute();
+        }
+
+        private void showTransferDialog(B1RecipeTransfer.Plan plan, B1RecipeTransfer.Config cfg, String host) {
+            JTextArea area = new JTextArea(B1RecipeTransfer.describe(plan, cfg, host), 24, 86);
+            area.setEditable(false);
+            area.setFont(new Font("Monospaced", Font.PLAIN, 12));
+            boolean canWrite = cfg.writeAllowed() && plan.blockers.isEmpty() && !plan.changes.isEmpty();
+            Object[] options = canWrite ? new Object[]{"Annulla", "Scrivi nel PLC"} : new Object[]{"Chiudi"};
+            int r = JOptionPane.showOptionDialog(this, new JScrollPane(area), "Invia al PLC - anteprima",
+                    JOptionPane.DEFAULT_OPTION, canWrite ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE,
+                    null, options, options[0]);
+            lblStatus.setText("Archivio: " + repo.location() + "   |   Utente: " + user + "   |   PLC: " + plcIp
+                    + (cfg.writeAllowed() ? " (scrittura abilitata)" : " (sola lettura)"));
+            if (!canWrite || r != 1) {
+                return;
+            }
+            String typed = JOptionPane.showInputDialog(this, "Stai per scrivere la ricetta nel PLC della macchina.\n"
+                    + "Per confermare scrivi INVIA:", "Conferma", JOptionPane.WARNING_MESSAGE);
+            if (typed == null || !typed.trim().equals("INVIA")) {
+                lblStatus.setText("Invio annullato");
+                return;
+            }
+            lblStatus.setText("Scrittura nel PLC...");
+            new SwingWorker<java.nio.file.Path, Void>() {
+                @Override
+                protected java.nio.file.Path doInBackground() throws Exception {
+                    return B1RecipeTransfer.execute(plan, cfg, host, 102, plan.current.length);
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        java.nio.file.Path backup = get();
+                        lblStatus.setText("Ricetta inviata e verificata. Copia di sicurezza: " + backup);
+                        JOptionPane.showMessageDialog(EditorPanel.this, "Ricetta inviata e verificata.\nCopia di sicurezza: " + backup);
+                    } catch (Exception e) {
+                        Throwable t = e.getCause() != null ? e.getCause() : e;
+                        error("Invio fallito: " + (t.getMessage() != null ? t.getMessage() : t.toString()));
+                    }
+                }
+            }.execute();
         }
 
         private void doImport(String hostSpec) {

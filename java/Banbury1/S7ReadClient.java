@@ -26,11 +26,11 @@ public class S7ReadClient implements Closeable {
     private final int slot;
     private final int timeoutMs;
 
-    private Socket socket;
-    private DataInputStream in;
-    private OutputStream out;
-    private int pduSize = 240;
-    private int pduRef = 0;
+    protected Socket socket;
+    protected DataInputStream in;
+    protected OutputStream out;
+    protected int pduSize = 240;
+    protected int pduRef = 0;
 
     public S7ReadClient(String host, int rack, int slot) {
         this(host, 102, rack, slot, 3000);
@@ -200,7 +200,7 @@ public class S7ReadClient implements Closeable {
         return "Lettura DB" + db + "[" + start + ".." + (start + len - 1) + "] rifiutata: " + what;
     }
 
-    private byte[] readTpkt() throws IOException {
+    protected byte[] readTpkt() throws IOException {
         byte[] head = new byte[4];
         in.readFully(head);
         if (head[0] != 3) {
