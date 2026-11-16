@@ -25,8 +25,10 @@ public final class B1RecipeRepositories {
     public static B1RecipeRepository open(B1RecipeLayout layout, Path dir) throws IOException {
         Properties p = new Properties();
         Path[] cands = {Paths.get("C:\\_tools\\Banbury1\\b1_recipes_sql.properties"), Paths.get("b1_recipes_sql.properties")};
+        Path used = null;
         for (Path f : cands) {
             if (Files.isReadable(f)) {
+                used = f.toAbsolutePath();
                 try (Reader r = Files.newBufferedReader(f, StandardCharsets.UTF_8)) {
                     p.load(r);
                 } catch (IOException e) {
@@ -35,6 +37,8 @@ public final class B1RecipeRepositories {
                 break;
             }
         }
+        System.out.println("Ricette B1: configurazione " + (used == null ? "NON TROVATA (cercata C:\\_tools\\Banbury1\\b1_recipes_sql.properties e nella cartella corrente)" : used)
+                + ", enabled=" + p.getProperty("enabled", "false").trim());
         if (!"true".equalsIgnoreCase(p.getProperty("enabled", "false").trim())) {
             return new B1FileRecipeRepository(dir, layout);
         }
