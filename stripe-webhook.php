@@ -51,7 +51,7 @@ try {
         $name = tk_clean_name($obj['customer_details']['name'] ?? '');
 
         // Quantita': dall'API Stripe se c'e' la chiave, altrimenti dall'importo pagato
-        $price = max(1, (int)($cfg['stripe']['ticket_price_cents'] ?? 6000));
+        $price = max(1, (int)($cfg['stripe']['ticket_price_cents'] ?? 3000));
         $qty = 0;
         $apiKey = $cfg['stripe']['api_key'] ?? '';
         if ($apiKey !== '') {

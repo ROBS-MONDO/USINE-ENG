@@ -13,7 +13,7 @@ return [
     'stripe' => [
         'webhook_secret'  => '',   // "Signing secret" del webhook, inizia con whsec_
         'payment_link_id' => '',   // ID del Payment Link del biglietto da 60 euro, inizia con plink_
-        'ticket_price_cents' => 6000,
+        'ticket_price_cents' => 3000,
         'api_key' => '',           // facoltativa: chiave "restricted" con sola lettura su Checkout Sessions (rk_live_...), per contare i biglietti con precisione
     ],
 
