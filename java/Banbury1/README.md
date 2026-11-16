@@ -207,3 +207,11 @@ Non provato su SQL Server: prima prova a secco e backup.
 * `B1SqlRecipeRepositorySelfTest` prova salvataggio, rilettura, conflitto, nome duplicato ed eliminazione su H2 (modalita' SQL Server), con `h2.jar` nel classpath.
 * Le ricette B2 (`Recipes`, `RecipesSteps`) restano separate: sono un'altra struttura (passi con pressore e portella).
 
+## Importazione delle ricette dal database WinCC (Q131014)
+* `sql/export_wincc_recipes.sql` (sola lettura, su una copia del database) produce `recipes_out.txt`; `B1WinccRecipeImport recipes_out.txt` lo converte nel formato B1
+  (anteprima senza `--apply`; con `--apply` salva nell'archivio ricette, file o SQL come configurato; salta i nomi gia' presenti; adatta i nomi a ASCII e max 22 caratteri).
+* Corrispondenze: testata `NUM_DATA1..5` = tempo sicurezza, temp. sicurezza, energia max (kWh, x10 nel PLC), porte de dechargement, temp. riavvio (`NUM_DATA6` = tempo ciclo, non nel DB201);
+  fasi: parametri 1..9 = operazioni, timeout, rotor, pressione, bit set, bit controllo, tempo fase, temperatura, energia (valori gia' grezzi come nel PLC).
+* Verifica sul database del backup (2014-2020): 27 ricette su 28 valide (la 28esima, "lando", ha rotor 0 in una fase); la fase 1 di "S.TAPIS SPORT-IMPACT" coincide con la foto della pagina Process
+  (timeout 30, rotor 33, pressione 20,0, tempo 20).
+
