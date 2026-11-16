@@ -105,8 +105,7 @@ public final class B1Tags {
         {"piston_float",   "Pistone: flottante",        "none"},
         {"piston_low",     "Pistone: posizione bassa",  "DB110.W22.B1"},
         {"piston_blocked", "Pistone: bloccato",         "none"},
-        {"piston_down",    "Pistone: freccia in basso (discesa, osservato)", "DB110.W22.B5"},
-        {"piston_up",      "Pistone: freccia in alto (salita, ipotesi)",     "DB110.W22.B6"},
+        {"piston_move",    "Pistone: in movimento (osservato: si accende in salita e in discesa)", "DB110.W22.B5"},
         {"rotors_running", "Rotori: running",           "DB110.W60"},
         {"lube_running",   "Lubrificazione: running",   ""},
         // --- silos / porte ---

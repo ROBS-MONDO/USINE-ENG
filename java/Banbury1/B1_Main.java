@@ -483,8 +483,26 @@ public class B1_Main extends JFrame {
             hits.add(new Hit(x, y, w, h, name));
         }
 
-        private void bigArrow(Graphics2D g, int x, int y, boolean up, String key) {
-            boolean lit = Boolean.TRUE.equals(src.bool(key));
+        /**
+         * Frecce del pistone: il bit osservato (piston_move) indica solo "in movimento", sia in salita sia in discesa.
+         * La direzione si ricava dall'ultimo fine corsa raggiunto: partito dal basso = sale, partito dall'alto = scende.
+         * (Se si trova il bit vero della direzione si sostituisce questo calcolo.)
+         */
+        private int pistonLastEnd; // 0 sconosciuto, 1 alto, 2 basso
+
+        private boolean pistonArrowLit(boolean up) {
+            if (Boolean.TRUE.equals(src.bool("piston_high"))) {
+                pistonLastEnd = 1;
+            } else if (Boolean.TRUE.equals(src.bool("piston_low"))) {
+                pistonLastEnd = 2;
+            }
+            if (!Boolean.TRUE.equals(src.bool("piston_move"))) {
+                return false;
+            }
+            return up ? pistonLastEnd == 2 : pistonLastEnd == 1;
+        }
+
+        private void bigArrow(Graphics2D g, int x, int y, boolean up, boolean lit) {
             Polygon p = new Polygon();
             if (up) {
                 p.addPoint(x, y + 30); p.addPoint(x + 28, y + 30); p.addPoint(x + 14, y);
@@ -574,8 +592,8 @@ public class B1_Main extends JFrame {
             lampRow(g, 13, 173, 42, 160, "piston_float", LampKind.GREEN, "Flottant");
             lampRow(g, 13, 203, 42, 160, "piston_low", LampKind.GREEN, "Position basse");
             lampRow(g, 13, 233, 42, 160, "piston_blocked", LampKind.GREEN, "Bloqu\u00e9");
-            bigArrow(g, 218, 143, true, "piston_up");
-            bigArrow(g, 218, 196, false, "piston_down");
+            bigArrow(g, 218, 143, true, pistonArrowLit(true));
+            bigArrow(g, 218, 196, false, pistonArrowLit(false));
             arrowButton(g, 12, 263, 38, 26, false, "Pistone consegna -");
             field(g, 57, 262, 98, 26, "press_set", num("press_set", 1), true, fBig);
             unit(g, "bar", 157, 262, 38, 26);
