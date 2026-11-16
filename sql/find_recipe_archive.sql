@@ -1,13 +1,14 @@
 -- Trova dove si trova l'ARCHIVIO RICETTE di Banbury 1 (SOLA LETTURA: solo viste di sistema, nessuna modifica).
 -- Il WinCC di B1 legge le ricette da un database SQL con le stored procedure sp_GetRecipeParams, sp_GetPhaseParams,
 -- sp_GetSubRecipeParams e sp_GetTextList (script di WinCC: scriptlib\dbhandling*.bmo, recipe.bmo, productionlist.bmo).
+-- (COLLATE DATABASE_DEFAULT evita l'errore 451 quando i database hanno collation diverse, es. Latin1_General e French)
 -- Eseguire in SSMS su ogni server che puo' contenerlo: srv-bambury, SRV-BI e il PC WinCC di B1 (SQL Server locale).
 
 SET NOCOUNT ON;
 
 -- 1) In quale database stanno le stored procedure delle ricette
 DECLARE @sql nvarchar(max) = N'';
-SELECT @sql += N'UNION ALL SELECT ''' + REPLACE(name, '''', '''''') + N''' AS database_name, p.name AS procedura, '
+SELECT @sql += N'UNION ALL SELECT ''' + REPLACE(name, '''', '''''') + N''' COLLATE DATABASE_DEFAULT AS database_name, p.name COLLATE DATABASE_DEFAULT AS procedura, '
              + N'p.create_date, p.modify_date FROM ' + QUOTENAME(name) + N'.sys.procedures p '
              + N'WHERE p.name IN (''sp_GetRecipeParams'', ''sp_GetPhaseParams'', ''sp_GetSubRecipeParams'', ''sp_GetTextList'') '
 FROM sys.databases
@@ -17,7 +18,7 @@ EXEC (@sql);
 
 -- 2) Tabelle con "recipe", "ricett", "phase" o "production" nel nome, in tutti i database
 SET @sql = N'';
-SELECT @sql += N'UNION ALL SELECT ''' + REPLACE(name, '''', '''''') + N''' AS database_name, s.name AS schema_name, t.name AS tabella '
+SELECT @sql += N'UNION ALL SELECT ''' + REPLACE(name, '''', '''''') + N''' COLLATE DATABASE_DEFAULT AS database_name, s.name COLLATE DATABASE_DEFAULT AS schema_name, t.name COLLATE DATABASE_DEFAULT AS tabella '
              + N'FROM ' + QUOTENAME(name) + N'.sys.tables t JOIN ' + QUOTENAME(name) + N'.sys.schemas s ON s.schema_id = t.schema_id '
              + N'WHERE t.name LIKE ''%recipe%'' OR t.name LIKE ''%ricett%'' OR t.name LIKE ''%phase%'' OR t.name LIKE ''%production%'' '
 FROM sys.databases
