@@ -115,6 +115,8 @@ public class B1RecipeEditor extends JFrame {
                 shared.requestFocus();
                 if (recipeName != null && !recipeName.trim().isEmpty()) {
                     shared.panel.selectByName(recipeName);
+                } else {
+                    shared.panel.autoImportIfEmpty();
                 }
             }
         });
@@ -155,7 +157,11 @@ public class B1RecipeEditor extends JFrame {
         } catch (Exception ignored) {
         }
         final String plcIp = plc;
-        SwingUtilities.invokeLater(() -> new B1RecipeEditor(repo, layout, plcIp).setVisible(true));
+        SwingUtilities.invokeLater(() -> {
+            B1RecipeEditor ed = new B1RecipeEditor(repo, layout, plcIp);
+            ed.setVisible(true);
+            ed.panel.autoImportIfEmpty();
+        });
     }
 
     /** Immagine dell'editor con una ricetta di esempio (verifica grafica senza schermo). */
@@ -600,6 +606,18 @@ public class B1RecipeEditor extends JFrame {
                     }
                     return;
                 }
+            }
+            doImport(plcIp);
+        }
+
+        /** Archivio ancora vuoto: parte dalla ricetta in macchina (lettura dal PLC, sola lettura) invece di mostrare un editor vuoto. */
+        void autoImportIfEmpty() {
+            try {
+                if (!repo.list().isEmpty() || dirty || current != null && current.name != null && !current.name.isEmpty()) {
+                    return;
+                }
+            } catch (IOException e) {
+                return;
             }
             doImport(plcIp);
         }

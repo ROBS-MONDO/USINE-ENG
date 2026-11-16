@@ -225,6 +225,7 @@ public class B1_Main extends JFrame {
 
         private boolean overlay;
         private double rotorAngle;
+        private long lastRotorNanos;
         private long lastAlarmPoll;
         private double pistonDy;
         private String message = "";
@@ -268,9 +269,13 @@ public class B1_Main extends JFrame {
                 if (bridge != null) {
                     bridge.offer(src.dbImage(bridge.layout().db));
                 }
+                // rotazione dei rotori alla velocita' reale (giri/min), calcolata sul tempo trascorso
+                long tNow = System.nanoTime();
+                double dt = lastRotorNanos == 0 ? 0 : Math.min(0.25, (tNow - lastRotorNanos) / 1e9);
+                lastRotorNanos = tNow;
                 Double rpm = src.num("rpm_act");
                 if (rpm != null && rpm > 0) {
-                    rotorAngle += Math.min(rpm, 60) * 0.0105;
+                    rotorAngle += rpm * 2 * Math.PI / 60.0 * dt;
                 }
                 repaint();
             }).start();
@@ -786,6 +791,12 @@ public class B1_Main extends JFrame {
                 g.fill(new Ellipse2D.Double(cx - 24, cy - 11, 48, 22));
                 g.setColor(new Color(0x303030));
                 g.draw(new Ellipse2D.Double(cx - 24, cy - 11, 48, 22));
+                if (k == 0) { // segno su un'estremita' della pala: senza, la rotazione non si vede (la forma e' simmetrica)
+                    g.setColor(new Color(0xF0F0F0));
+                    g.fillOval(cx + 13, cy - 4, 9, 9);
+                    g.setColor(new Color(0x202020));
+                    g.drawOval(cx + 13, cy - 4, 9, 9);
+                }
                 g.setTransform(old);
             }
             g.setColor(new Color(0x404040));
