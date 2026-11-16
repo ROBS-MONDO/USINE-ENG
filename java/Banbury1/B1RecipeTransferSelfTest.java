@@ -25,30 +25,39 @@ public final class B1RecipeTransferSelfTest {
             B1RecipeCodec.putWord(cur, w[0], w[1]);
         }
         B1Recipe r = B1RecipeCodec.decode(cur, l);
-        B1RecipeTransfer.Plan same = B1RecipeTransfer.plan(r, l, cur, new byte[256]);
+        byte[] idle = new byte[256];
+        B1RecipeCodec.putWord(idle, 44, 0x100A); // a riposo: trasferimento abilitato (bit 12)
+        B1RecipeTransfer.Plan same = B1RecipeTransfer.plan(r, l, cur, idle);
         check("ricetta uguale al PLC: nessuna parola da scrivere", same.changes.isEmpty() && same.blockers.isEmpty());
 
         B1Recipe r2 = r.copy();
         r2.phases.get(0).values.put("rpm", 40);
         r2.header.put("safety_time", r.header.get("safety_time") + 5);
-        B1RecipeTransfer.Plan p = B1RecipeTransfer.plan(r2, l, cur, new byte[256]);
+        B1RecipeTransfer.Plan p = B1RecipeTransfer.plan(r2, l, cur, idle);
         check("2 parole cambiate (rpm fase 1, tempo sicurezza)", p.changes.size() == 2 && p.blockers.isEmpty());
         check("descrizioni dei campi", p.changes.stream().anyMatch(c -> c.what.contains("Fase 1"))
                 && p.changes.stream().anyMatch(c -> c.what.startsWith("Testata")));
 
-        byte[] running = new byte[256];
+        byte[] running = idle.clone();
         B1RecipeCodec.putWord(running, 60, 33);
         B1RecipeTransfer.Plan pr = B1RecipeTransfer.plan(r2, l, cur, running);
         check("rotori in movimento: invio bloccato", !pr.blockers.isEmpty());
 
+        byte[] notEnabled = new byte[256];
+        check("PLC che non abilita il trasferimento (DBW44 bit 12 = 0): invio bloccato",
+                !B1RecipeTransfer.plan(r2, l, cur, notEnabled).blockers.isEmpty());
+        byte[] busy = idle.clone();
+        B1RecipeCodec.putWord(busy, 44, 0x1006);
+        check("trasferimento gia' in corso (bit 2): invio bloccato", !B1RecipeTransfer.plan(r2, l, cur, busy).blockers.isEmpty());
+
         B1Recipe longName = r2.copy();
         longName.name = "0123456789012345678901234567890";
-        B1RecipeTransfer.Plan pl2 = B1RecipeTransfer.plan(longName, l, cur, new byte[256]);
+        B1RecipeTransfer.Plan pl2 = B1RecipeTransfer.plan(longName, l, cur, idle);
         check("nome troppo lungo (sovrascriverebbe la testata): bloccato", !pl2.blockers.isEmpty());
 
         B1Recipe bad = r2.copy();
         bad.name = "";
-        check("ricetta non valida: invio bloccato", !B1RecipeTransfer.plan(bad, l, cur, new byte[256]).blockers.isEmpty());
+        check("ricetta non valida: invio bloccato", !B1RecipeTransfer.plan(bad, l, cur, idle).blockers.isEmpty());
         check("DB non letto: invio bloccato", !B1RecipeTransfer.plan(r2, l, null, null).blockers.isEmpty());
 
         B1RecipeTransfer.Config off = new B1RecipeTransfer.Config();
@@ -72,12 +81,14 @@ public final class B1RecipeTransferSelfTest {
             on.enabled = true;
             on.allowRawWrite = true;
             on.backupDir = bk;
+            on.handshake = a.length < 3 || !a[2].equals("raw"); // "raw": senza lo scambio con il PLC (server senza logica)
+            on.waitSeconds = 20;
             byte[] live;
             try (S7ReadClient c = new S7ReadClient(host, port, 0, 2, 3000)) {
                 c.connect();
                 live = c.readDb(201, 0, l.dbSize);
             }
-            B1RecipeTransfer.Plan pl = B1RecipeTransfer.plan(r2, l, live, new byte[256]);
+            B1RecipeTransfer.Plan pl = B1RecipeTransfer.plan(r2, l, live, idle);
             Path backup = B1RecipeTransfer.execute(pl, on, host, port, l.dbSize);
             byte[] after;
             try (S7ReadClient c = new S7ReadClient(host, port, 0, 2, 3000)) {

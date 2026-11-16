@@ -15,18 +15,34 @@ import java.util.Properties;
 /**
  * Invio di una ricetta al PLC (DB201): anteprima, controlli, copia di sicurezza, scrittura e verifica.
  * La scrittura e' DISABILITATA di default: servono sia {@code enabled=true} sia {@code allow_raw_write=true} in
- * b1_recipe_transfer.properties. Prima di abilitarla va confermata la sequenza di trasferimento del WinCC
- * (lampade "Transfert recette habilite", "Start transfert" = DB201.DBX41.0, "Fin transfert", "Recette valide").
+ * b1_recipe_transfer.properties. La sequenza e' quella del WinCC originale, ricavata dal registro B1DbDump di due invii
+ * (Start = DB201.DBX41.0, parole della ricetta, Fine = DB201.DBX383.0, risposta del PLC in DB110.DBW44).
  */
 public final class B1RecipeTransfer {
 
     private B1RecipeTransfer() {
     }
 
+    // Sequenza di trasferimento osservata sul WinCC originale (registro B1DbDump del 16/11/2026, due invii):
+    //  1. a riposo DB110.DBW44 = 0x100A (bit 12 = trasferimento abilitato, bit 3 = ricetta valida);
+    //  2. il WinCC pone DB201.DBX41.0 = 1 (Start transfert): il PLC porta DBW44 a 0x0006 (bit 2 = trasferimento in corso);
+    //  3. il WinCC scrive le parole cambiate della ricetta (testata, fasi), poi il numero ricetta (DBW2);
+    //  4. il WinCC pone DBX383.0 = 1 (parola DB201.DBW382 = 1, fine trasferimento);
+    //  5. dopo circa 9 s il PLC riporta DBW44 a 0x100A e azzera DBW40 e DBW382.
+    static final int W44 = 44;
+    static final int BIT_ENABLED = 12;
+    static final int BIT_BUSY = 2;
+    static final int START_WORD = 40; // DBX41.0 = bit 0 della parola
+    static final int END_WORD = 382;  // DBX383.0 = bit 0 della parola
+
     /** Impostazioni (file b1_recipe_transfer.properties). */
     public static final class Config {
         public boolean enabled;
         public boolean allowRawWrite;
+        /** Sequenza di trasferimento osservata dal WinCC (consigliata). false = solo scrittura delle parole (prove). */
+        public boolean handshake = true;
+        /** Attesa massima della risposta del PLC, in secondi. */
+        public int waitSeconds = 60;
         public Path backupDir = Paths.get("C:\\_tools\\Banbury1\\Recipes\\backup");
 
         public static Config load() {
@@ -39,6 +55,12 @@ public final class B1RecipeTransfer {
                         p.load(r);
                         c.enabled = "true".equalsIgnoreCase(p.getProperty("enabled", "false").trim());
                         c.allowRawWrite = "true".equalsIgnoreCase(p.getProperty("allow_raw_write", "false").trim());
+                        c.handshake = !"false".equalsIgnoreCase(p.getProperty("handshake", "true").trim());
+                        try {
+                            c.waitSeconds = Integer.parseInt(p.getProperty("wait_seconds", "60").trim());
+                        } catch (NumberFormatException ignored) {
+                            // resta 60
+                        }
                         String bd = p.getProperty("backup_dir", "").trim();
                         if (!bd.isEmpty()) {
                             c.backupDir = Paths.get(bd);
@@ -131,9 +153,13 @@ public final class B1RecipeTransfer {
             if (rpm != 0) {
                 p.blockers.add("Rotori in movimento (" + rpm + " rpm): invio consentito solo a macchina ferma");
             }
-            boolean enabledBit = ((S7ReadClient.int16(db110, 44) >> 4) & 1) != 0;
-            if (!enabledBit) {
-                p.warnings.add("Il PLC non segnala 'Transfert recette habilite' (DB110.DBW44 bit 4, ipotesi dal WinCC)");
+            int w44 = S7ReadClient.int16(db110, W44);
+            if (((w44 >> BIT_ENABLED) & 1) == 0) {
+                p.blockers.add("Il PLC non abilita il trasferimento (DB110.DBW44 bit 12 = 0, DBW44 = 0x"
+                        + Integer.toHexString(w44 & 0xFFFF).toUpperCase() + ")");
+            }
+            if (((w44 >> BIT_BUSY) & 1) != 0) {
+                p.blockers.add("Trasferimento ricetta gia' in corso nel PLC (DB110.DBW44 bit 2 = 1)");
             }
         } else {
             p.warnings.add("Stato macchina (DB110) non letto: controllo rotori fermi non eseguito");
@@ -197,18 +223,22 @@ public final class B1RecipeTransfer {
         }
         sb.append("\n");
         if (cfg.writeAllowed()) {
-            sb.append("Scrittura ABILITATA. Prima dell'invio il DB attuale viene salvato in ").append(cfg.backupDir)
-                    .append(" e dopo l'invio viene riletto e confrontato.\n");
+            sb.append("Scrittura ABILITATA. Sequenza: copia di sicurezza di DB").append(p.db).append(" in ").append(cfg.backupDir)
+                    .append("\n  1) Start transfert (DB201.DBX41.0) e attesa della presa in carico (DB110.DBW44 bit 2)")
+                    .append("\n  2) scrittura delle parole cambiate, numero ricetta per ultimo")
+                    .append("\n  3) fine trasferimento (DB201.DBX383.0) e attesa che il PLC chiuda lo scambio (fino a ")
+                    .append(cfg.waitSeconds).append(" s)\n  4) rilettura e confronto del DB.\n");
         } else {
             sb.append("Scrittura DISABILITATA (modalita' anteprima): per abilitarla servono enabled=true e allow_raw_write=true\n")
-                    .append("in b1_recipe_transfer.properties, dopo aver confermato la sequenza di trasferimento del WinCC.\n");
+                    .append("in b1_recipe_transfer.properties. La sequenza di trasferimento e' quella del WinCC (registro del 16/11/2026).\n");
         }
         return sb.toString();
     }
 
     /**
-     * Esegue l'invio: rilegge il DB e rifiuta se e' cambiato dopo l'anteprima, salva la copia di sicurezza, scrive solo
-     * le parole cambiate, rilegge e confronta (se diverso prova a ripristinare la copia). Ritorna il percorso del backup.
+     * Esegue l'invio con la sequenza del WinCC: controlla, salva la copia di sicurezza, pone Start, scrive le parole cambiate
+     * (numero ricetta per ultimo), pone la fine, attende che il PLC chiuda lo scambio e rilegge il DB per confrontarlo.
+     * Ritorna il percorso della copia di sicurezza.
      */
     public static Path execute(Plan p, Config cfg, String host, int port, int sizeLimit) throws IOException {
         if (!cfg.writeAllowed()) {
@@ -226,38 +256,111 @@ public final class B1RecipeTransfer {
             if (!java.util.Arrays.equals(now, p.current)) {
                 throw new IOException("Il DB" + p.db + " nel PLC e' cambiato dopo l'anteprima: annullato, rifare l'anteprima");
             }
+            if (cfg.handshake) {
+                byte[] st = plc.readDb(110, 0, 64);
+                int w44 = S7ReadClient.int16(st, W44);
+                if (((w44 >> BIT_ENABLED) & 1) == 0 || ((w44 >> BIT_BUSY) & 1) != 0) {
+                    throw new IOException("Il PLC non e' pronto al trasferimento (DB110.DBW44 = 0x"
+                            + Integer.toHexString(w44 & 0xFFFF).toUpperCase() + ")");
+                }
+                if (S7ReadClient.int16(st, 60) != 0) {
+                    throw new IOException("Rotori in movimento: invio annullato");
+                }
+            }
             Files.createDirectories(cfg.backupDir);
             Path backup = cfg.backupDir.resolve("DB" + p.db + "_" + LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".bin");
             Files.write(backup, now);
-            // si scrivono solo le parole cambiate, unite quando adiacenti
-            int i = 0;
-            while (i < p.changes.size()) {
-                int start = p.changes.get(i).offset;
-                int end = start + 2;
-                int j = i + 1;
-                while (j < p.changes.size() && p.changes.get(j).offset == end) {
-                    end += 2;
-                    j++;
-                }
-                if (end > sizeLimit) {
-                    throw new IOException("Scrittura fuori dal DB (" + end + " > " + sizeLimit + ")");
-                }
-                byte[] part = new byte[end - start];
-                System.arraycopy(p.image, start, part, 0, part.length);
-                plc.writeDb(p.db, start, part);
-                i = j;
+
+            if (cfg.handshake) {
+                setBit0(plc, p.db, START_WORD, now); // Start transfert
+                waitFor(plc, cfg, () -> ((S7ReadClient.int16(plc.readDb(110, 0, 64), W44) >> BIT_BUSY) & 1) != 0,
+                        "il PLC non ha preso in carico il trasferimento (DB110.DBW44 bit 2)", 8);
+            }
+            writeChanges(plc, p, sizeLimit);
+            if (cfg.handshake) {
+                setBit0(plc, p.db, END_WORD, plc.readDb(p.db, 0, p.current.length)); // Fine transfert
+                waitFor(plc, cfg, () -> {
+                    int w44 = S7ReadClient.int16(plc.readDb(110, 0, 64), W44);
+                    byte[] d = plc.readDb(p.db, 0, p.current.length);
+                    boolean closed = (S7ReadClient.int16(d, START_WORD) & 1) == 0 && (S7ReadClient.int16(d, END_WORD) & 1) == 0;
+                    return ((w44 >> BIT_ENABLED) & 1) != 0 && ((w44 >> BIT_BUSY) & 1) == 0 && closed;
+                }, "il PLC non ha chiuso il trasferimento (DB110.DBW44 / DB201.DBW40 / DBW382): la copia di sicurezza e' "
+                        + backup, cfg.waitSeconds);
             }
             byte[] after = plc.readDb(p.db, 0, p.image.length);
-            if (!java.util.Arrays.equals(after, p.image)) {
-                try {
-                    plc.writeDb(p.db, 0, now);
-                } catch (IOException ignored) {
-                    // ripristino fallito: l'errore sotto lo segnala
+            // le due parole di scambio (Start, Fine) tornano a 0 e non fanno parte della ricetta
+            byte[] expect = p.image.clone();
+            for (int w : new int[]{START_WORD, END_WORD}) {
+                if (w + 1 < expect.length) {
+                    expect[w] = after[w];
+                    expect[w + 1] = after[w + 1];
                 }
-                throw new IOException("Verifica fallita dopo la scrittura: ripristinata la copia di sicurezza " + backup);
+            }
+            if (!java.util.Arrays.equals(after, expect)) {
+                throw new IOException("Verifica fallita: il DB" + p.db + " dopo l'invio non coincide con la ricetta. "
+                        + "Copia di sicurezza: " + backup);
             }
             return backup;
         }
+    }
+
+    /** Scrive le parole cambiate (unite quando adiacenti); il numero ricetta (DBW2) per ultimo, come fa il WinCC. */
+    private static void writeChanges(S7WriteClient plc, Plan p, int sizeLimit) throws IOException {
+        List<int[]> ranges = new ArrayList<>();
+        int i = 0;
+        while (i < p.changes.size()) {
+            int start = p.changes.get(i).offset;
+            int end = start + 2;
+            int j = i + 1;
+            while (j < p.changes.size() && p.changes.get(j).offset == end) {
+                end += 2;
+                j++;
+            }
+            if (end > sizeLimit) {
+                throw new IOException("Scrittura fuori dal DB (" + end + " > " + sizeLimit + ")");
+            }
+            ranges.add(new int[]{start, end});
+            i = j;
+        }
+        ranges.sort((x, y) -> {
+            boolean ax = x[0] <= 3 && x[1] <= 4;
+            boolean ay = y[0] <= 3 && y[1] <= 4;
+            if (ax != ay) {
+                return ax ? 1 : -1; // l'intervallo del solo numero ricetta (DBW2) va in coda
+            }
+            return Integer.compare(x[0], y[0]);
+        });
+        for (int[] r : ranges) {
+            byte[] part = new byte[r[1] - r[0]];
+            System.arraycopy(p.image, r[0], part, 0, part.length);
+            plc.writeDb(p.db, r[0], part);
+        }
+    }
+
+    /** Pone a 1 il bit 0 del byte basso della parola (DBX(w+1).0), lasciando invariato il resto. */
+    private static void setBit0(S7WriteClient plc, int db, int word, byte[] image) throws IOException {
+        byte[] two = {image[word], (byte) (image[word + 1] | 1)};
+        plc.writeDb(db, word, two);
+    }
+
+    private interface Cond {
+        boolean ok() throws IOException;
+    }
+
+    private static void waitFor(S7WriteClient plc, Config cfg, Cond c, String error, int seconds) throws IOException {
+        long end = System.currentTimeMillis() + seconds * 1000L;
+        while (System.currentTimeMillis() < end) {
+            if (c.ok()) {
+                return;
+            }
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Interrotto");
+            }
+        }
+        throw new IOException("Timeout: " + error);
     }
 }

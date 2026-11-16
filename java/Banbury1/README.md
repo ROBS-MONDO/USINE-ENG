@@ -190,7 +190,10 @@ Non provato su SQL Server: prima prova a secco e backup.
   non 32: la testata parte da DBW28).
 * **Scrittura DISABILITATA di default**: `b1_recipe_transfer.properties` deve avere `enabled=true` e `allow_raw_write=true`. Con la scrittura abilitata:
   anteprima -> conferma scrivendo INVIA -> copia di sicurezza del DB -> scrive solo le parole cambiate -> rilegge e confronta (se diverso ripristina la copia).
-* **Da confermare prima di abilitarla**: la sequenza di trasferimento del WinCC (lampade "Transfert recette habilite" = DBW44 bit 4?, "Start transfert" = DB201.DBX41.0,
-  "Fin transfert" = DB201.DBX563.0 (fuori dal DB di 384 byte), "Recette valide"). Si ricava registrando con `B1DbDump` (DB 110 201 150) mentre dal WinCC originale si invia una ricetta.
+* **Sequenza del WinCC (dal registro B1DbDump del 16/11/2026, due invii)**: a riposo `DB110.DBW44 = 0x100A` (bit 12 = trasferimento abilitato); Start = `DB201.DBX41.0`
+  (il PLC porta `DBW44` a `0x0006`, bit 2 = in corso); si scrivono le parole cambiate della ricetta, il numero ricetta (`DBW2`) per ultimo; Fine = `DB201.DBX383.0` (`DBW382 = 1`);
+  dopo circa 9 s il PLC azzera `DBW40` e `DBW382` e riporta `DBW44` a `0x100A`. `execute` la ripete e rilegge il DB.
+* Layout DB201 **confermato** dagli stessi invii (valori cambiati nel registro): testata `W28` temp. sicurezza, `W30` porte de dechargement, `W38` temp. riavvio; fasi (30 byte da `W52`):
+  `+2` rotor, `+4` timeout, `+10` bit di controllo, `+14` temperatura, `+22` pressione.
 * `B1RecipeTransferSelfTest` (con `host porta` prova la scrittura su un server S7 di prova, mai sul PLC della macchina).
 

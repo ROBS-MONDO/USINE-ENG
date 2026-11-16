@@ -60,3 +60,10 @@ Orologio del pannello = orologio del PC + circa 3 min 27 s (ricavato dalla tempe
 * DBW24 (porte): 0x80AA (chiuse) -> 0x8055 (aperte) a 11:15:05-11:15:12: coppie aperta/chiusa, coerente con la mappa attuale (push rod B3/B4, porta scarico B0/B1).
 * DBW234 conta le fasi/step (45, 30, 25, 23 nelle foto).
 * Ancora da trovare: Cycle malaxeur auto / cycle, produzione cycle auto ON / ricetta valida, silos chiuso, "Bloque", bit della direzione del pistone.
+
+## Invio ricetta dal WinCC (registro del 16/11/2026 13:29, due invii della stessa ricetta con valori diversi)
+* Scambio: `DB110.DBW44` 0x100A -> 0x0006 (il PLC prende in carico), `DB201.DBW40` bit 0 = Start (DBX41.0), `DB201.DBW382` bit 0 = Fine (DBX383.0), dopo ~9 s tutto torna a riposo.
+* Parole scritte (solo quelle diverse): `W28, W30, W38` (testata); fase 1 `W54` rpm, `W56` timeout, `W66` temp.; fase 2 `W86` timeout, `W96` temp.; fase 3 `W114` rpm, `W116` timeout, `W122` controllo,
+  `W126` temp., `W134` press.; fase 4 `W144` rpm, `W146` timeout; per ultimo `W2` (n. ricetta) e `W382` (fine). Ordine di scrittura = indirizzi crescenti a gruppi (~150 ms).
+* Il WinCC indica "Fin transfert" a `DB201.DBX563.0`, ma il flag che cambia nel registro e' `DBX383.0`: l'indirizzo del WinCC non e' quello del DB reale di 384 byte.
+
