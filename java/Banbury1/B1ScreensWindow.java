@@ -116,6 +116,8 @@ public class B1ScreensWindow extends JFrame {
             this.src = src;
             this.top = B1Screen.load("100_TopBar");
             setPreferredSize(new Dimension(W, H));
+            javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
+            javax.swing.ToolTipManager.sharedInstance().setInitialDelay(300);
             show(first);
             new Timer(500, e -> repaint()).start();
             getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "ov");
@@ -196,6 +198,13 @@ public class B1ScreensWindow extends JFrame {
                 }
             }
         };
+
+        @Override
+        public String getToolTipText(MouseEvent e) {
+            B1BottomBar.Btn b = B1BottomBar.at(barButtons(), (int) (e.getX() / scaleX()) - BAR_X,
+                    (int) (e.getY() / scaleY()) - BAR_Y);
+            return b == null ? null : B1BottomBar.tooltip(b.name);
+        }
 
         private java.util.List<B1BottomBar.Btn> barButtons() {
             if (barButtons == null) {

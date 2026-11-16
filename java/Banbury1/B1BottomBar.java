@@ -62,6 +62,39 @@ final class B1BottomBar {
     private B1BottomBar() {
     }
 
+    /** Descrizione mostrata fermando il mouse su un pulsante (come i suggerimenti del WinCC). */
+    static String tooltip(String name) {
+        switch (name) {
+            case "Synoptic": return "SYNOPTIC - sinottico principale";
+            case "Process": return "PROCESS - processo e fasi";
+            case "Trends": return "TREND - andamento temperatura, corrente, giri, pressione";
+            case "Alarms": return "ALARMS - elenco allarmi";
+            case "Display": return "LARGE VIEW - vista ingrandita";
+            case "Recettes": return "RECIPES - editor ricette";
+            case "Production": return "PRODUCTION - lista di produzione";
+            case "Settings": return "SETTINGS - impostazioni";
+            case "Temperatures": return "TEMPERATURES - temperature";
+            case "Components": return "COMPONENTS - componenti";
+            case "Govoni": return "GOVONI - sinottico bilance e silos";
+            case "B2": return "B2 - Banbury 2 (non ancora collegato)";
+            case "B2 main": return "B2 MAIN - Banbury 2 principale (non ancora collegato)";
+            case "Valori PLC": return "VALORI PLC - indirizzi e valori letti dal PLC";
+            case "Etichetta": return "ETICHETTA - lettura etichetta QR della ricetta";
+            case "EXIT": return "EXIT - chiude questa finestra";
+            default: return name;
+        }
+    }
+
+    /** Pulsante sotto il punto (px, py) della barra (coordinate relative alla barra), oppure null. */
+    static Btn at(List<Btn> buttons, int px, int py) {
+        for (Btn b : buttons) {
+            if (b.contains(px, py)) {
+                return b;
+            }
+        }
+        return null;
+    }
+
     /** Elenco dei pulsanti con la loro azione (null = non disponibile in sola lettura). */
     static List<Btn> buttons(Env env) {
         B1Source src = env.src();

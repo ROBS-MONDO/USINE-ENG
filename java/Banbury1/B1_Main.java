@@ -256,6 +256,8 @@ public class B1_Main extends JFrame {
             this.tags = tags;
             setPreferredSize(new Dimension(BASE_W, BASE_H));
             setDoubleBuffered(true);
+            javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
+            javax.swing.ToolTipManager.sharedInstance().setInitialDelay(300);
             new Timer(60, e -> {
                 long nowMs = System.currentTimeMillis();
                 if (nowMs - lastAlarmPoll >= 1000) {
@@ -902,6 +904,17 @@ public class B1_Main extends JFrame {
 
         // ---------------- barra pulsanti, allarmi, orologio ----------------
         private List<B1BottomBar.Btn> barButtons;
+
+        @Override
+        public String getToolTipText(MouseEvent e) {
+            if (barButtons == null) {
+                return null;
+            }
+            int px = (int) (e.getX() / scaleX()) + OX;
+            int py = (int) (e.getY() / scaleY()) + OY;
+            B1BottomBar.Btn b = B1BottomBar.at(barButtons, px, py - 686);
+            return b == null ? null : B1BottomBar.tooltip(b.name);
+        }
 
         private final B1BottomBar.Env barEnv = new B1BottomBar.Env() {
             @Override
