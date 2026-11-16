@@ -298,11 +298,30 @@ public class B1ScreensWindow extends JFrame {
             fit(g, o.text.trim(), o.l, o.t + dy, o.w(), o.h(), Color.BLACK, center ? 0 : -1, false);
         }
 
+        /** Campi senza tag nel WinCC (valori dinamici) collegati per nome: schermata/oggetto -> chiave B1Tags (mm:ss). */
+        private final java.util.Map<String, String> timeFields = java.util.Map.of(
+                "005_Display/IO_value7", "cycle_time",
+                "005_Display/IO_value8", "mix_time");
+
+        /** Lampade collegate per nome: schermata/oggetto -> chiave B1Tags (bit confermati con il registro continuo). */
+        private final java.util.Map<String, String> lampKeys = java.util.Map.of(
+                "005_Display/GO_logo9", "piston_high",
+                "005_Display/GO_logo5", "piston_float",
+                "005_Display/GO_logo4", "piston_low");
+
         private void drawIo(Graphics2D g, B1Screen.Obj o, int dy) {
             g.setColor(GRAY);
             g.fillRect(o.l, o.t + dy, o.w(), o.h());
             bevel(g, o.l, o.t + dy, o.w(), o.h());
             String v = null;
+            String timeKey = o.tag.isEmpty() ? timeFields.get(contentName + "/" + o.name) : null;
+            if (timeKey != null) {
+                Double sec = src.num(timeKey);
+                if (sec != null) {
+                    long s = Math.max(0, sec.longValue());
+                    v = String.format("%d:%02d", s / 60, s % 60);
+                }
+            }
             if (!o.tag.isEmpty() && o.tag.startsWith("DB")) {
                 Double raw = src.raw(o.tag);
                 if (raw != null) {
@@ -343,6 +362,13 @@ public class B1ScreensWindow extends JFrame {
             if (o.w() > 900 && o.h() > 500) {
                 return;
             }
+            if ("005_Display".equals(contentName) && o.w() > 200 && o.h() > 150) {
+                // il controllo della schermata Display e' il trend con la sola temperatura (WinCC: finestra 20 minuti)
+                B1MiniTrend.paint(g, o.l, o.t + dy, o.w(), o.h(), 20L * 60_000L);
+                g.setColor(new Color(0x909090));
+                g.drawRect(o.l, o.t + dy, o.w() - 1, o.h() - 1);
+                return;
+            }
             g.setColor(new Color(0xF4F4F4));
             g.fillRect(o.l, o.t + dy, o.w(), o.h());
             g.setColor(new Color(0x909090));
@@ -365,12 +391,17 @@ public class B1ScreensWindow extends JFrame {
                 default: bright = new Color(0x3CFF3C); dark = new Color(0x0C4A0C);
             }
             int x = o.l, y = o.t + dy, w = Math.min(o.w(), 25), h = Math.min(o.h(), 25);
+            String key = lampKeys.get(contentName + "/" + o.name);
+            Boolean state = key == null ? null : src.bool(key);
             g.setColor(new Color(0x404040));
             g.fillRect(x, y, w, h);
-            g.setPaint(new GradientPaint(x, y, dark.brighter(), x + w, y, dark));
+            g.setPaint(Boolean.TRUE.equals(state) ? new GradientPaint(x, y, bright, x + w, y, bright.darker())
+                    : new GradientPaint(x, y, dark.brighter(), x + w, y, dark));
             g.fillRect(x + 2, y + 2, w - 4, h - 4);
-            g.setColor(new Color(255, 255, 255, 120));
-            g.drawLine(x + 3, y + h - 4, x + w - 4, y + 3); // non collegata
+            if (key == null) {
+                g.setColor(new Color(255, 255, 255, 120));
+                g.drawLine(x + 3, y + h - 4, x + w - 4, y + 3); // non collegata
+            }
             tagOverlay(g, o, dy);
         }
 
