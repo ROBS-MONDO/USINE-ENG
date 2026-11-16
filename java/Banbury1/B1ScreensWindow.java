@@ -234,11 +234,11 @@ public class B1ScreensWindow extends JFrame {
         private static final int DISPLAY_SHIFT = -200;
 
         private boolean skipObject(B1Screen.Obj o) {
-            return "005_Display".equals(contentName) && (o.name.equals("IO_value4") || o.name.equals("ST_unit4"));
+            return "005_Display".equals(drawingScreen) && (o.name.equals("IO_value4") || o.name.equals("ST_unit4"));
         }
 
         private int shiftX(B1Screen.Obj o) {
-            if ("005_Display".equals(contentName) && o.l >= 820
+            if ("005_Display".equals(drawingScreen) && o.l >= 820
                     && (o.name.equals("IO_value5") || o.name.equals("ST_unit5")
                     || o.name.equals("IO_value9") || o.name.equals("ST_unit9"))) {
                 return DISPLAY_SHIFT;
@@ -247,6 +247,7 @@ public class B1ScreensWindow extends JFrame {
         }
 
         private void drawScreen(Graphics2D g, B1Screen sc, int dy) {
+            drawingScreen = sc.name;
             for (B1Screen.Obj o : sc.objects) {
                 if (skipObject(o)) {
                     continue;
@@ -333,7 +334,39 @@ public class B1ScreensWindow extends JFrame {
         /** Campi senza tag nel WinCC (valori dinamici) collegati per nome: schermata/oggetto -> chiave B1Tags (mm:ss). */
         private final java.util.Map<String, String> timeFields = java.util.Map.of(
                 "005_Display/IO_value7", "cycle_time",
-                "005_Display/IO_value8", "mix_time");
+                "005_Display/IO_value8", "mix_time",
+                "100_TopBar/IO_value1", "cycle_time");
+
+        /**
+         * Pannello in alto (uguale a quello del sinottico): i campi sono collegati alle stesse chiavi di B1Tags
+         * del sinottico, cosi' i due pannelli mostrano sempre gli stessi valori. Oggetto -> chiave.
+         */
+        private final java.util.Map<String, String> topBarKeys = java.util.Map.of(
+                "100_TopBar/IO_value2", "press_top",
+                "100_TopBar/IO_value5", "speed_top",
+                "100_TopBar/IO_value7", "temp",
+                "100_TopBar/IO_value4", "mix_total",
+                "100_TopBar/IO_value3", "mix_done",
+                "100_TopBar/IO_value6", "mix_todo");
+
+        private String drawingScreen = "";
+
+        /** Valore da mostrare per i campi del pannello in alto (come B1_Main); null = non collegato. */
+        private String topBarValue(B1Screen.Obj o) {
+            String key = topBarKeys.get(drawingScreen + "/" + o.name);
+            if (key == null) {
+                return null;
+            }
+            Double v = src.num(key);
+            if (v == null && key.equals("mix_todo") && src.num("mix_total") != null && src.num("mix_done") != null) {
+                v = src.num("mix_total") - src.num("mix_done");
+            }
+            if (v == null) {
+                return null;
+            }
+            int dec = o.fmt.contains(".") ? o.fmt.length() - o.fmt.indexOf('.') - 1 : 0;
+            return String.format(LOC, "%." + dec + "f", v);
+        }
 
         /** Lampade collegate per nome: schermata/oggetto -> chiave B1Tags (bit confermati con il registro continuo). */
         private final java.util.Map<String, String> lampKeys = java.util.Map.of(
@@ -346,7 +379,11 @@ public class B1ScreensWindow extends JFrame {
             g.fillRect(o.l, o.t + dy, o.w(), o.h());
             bevel(g, o.l, o.t + dy, o.w(), o.h());
             String v = null;
-            String timeKey = o.tag.isEmpty() ? timeFields.get(contentName + "/" + o.name) : null;
+            String timeKey = o.tag.isEmpty() ? timeFields.get(drawingScreen + "/" + o.name) : null;
+            String topVal = topBarValue(o);
+            if (topVal != null) {
+                v = topVal;
+            }
             if (timeKey != null) {
                 Double sec = src.num(timeKey);
                 if (sec != null) {
@@ -354,7 +391,7 @@ public class B1ScreensWindow extends JFrame {
                     v = String.format("%d:%02d", s / 60, s % 60);
                 }
             }
-            if (!o.tag.isEmpty() && o.tag.startsWith("DB")) {
+            if (topVal == null && !o.tag.isEmpty() && o.tag.startsWith("DB")) {
                 Double raw = src.raw(o.tag);
                 if (raw != null) {
                     double sc = B1Screen.SCALE.getOrDefault(o.tag, 1.0);
