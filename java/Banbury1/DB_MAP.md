@@ -74,3 +74,14 @@ Orologio del pannello = orologio del PC + circa 3 min 27 s (ricavato dalla tempe
 * **Push rod / poids presseur** (DBW24): coppie (aperto, chiuso) = (B0,B1) porta scarico, (B2,B3) poids presseur; 0x..55 = aperti, 0x..AA = chiusi.
 * **Silos** (DBW6): B10 e B11 sono sempre a 1; silos "ferme" = B11 (acceso nelle foto e a macchina ferma). Il bit di silos "aperto" non e' stato osservato: non collegato.
 * Ancora da trovare: cycle malaxeur Auto e Cycle, produzione cycle auto ON e recette valide, "Bloque".
+
+## Layout DB201 CONFERMATO dal database ricette del WinCC (Q131014, copia del 2014-2025) - correzione importante
+Tabelle `A_RECIPE_PHASE_PARAMS` (parametri) e `A_RECIPE_PHASE_PARAMS_TAGS` (variabile PLC di ogni parametro per ogni fase): **10 fasi da 30 byte a partire da DBW42** (non 11 da DBW52).
+Per la fase p (p = 1..10, base = 42 + 30 x (p-1)), offset dall'inizio del blocco:
+| +0 | JOBS_word (operazioni, parola a bit) | +2 | JOBS_timeout (s) | +10 | SETS_word (bit porte/pistone) |
+| +12 | ROTOR1_speed (rpm) | +14 | pressure (valore x10, bar) | +20 | CONTROLS_word (et, ou, skip) |
+| +22 | PHASE_timout (tempo fase, s) | +24 | PHASE_temperature (C) | +26 | PHASE_energy (x10) |
+Prima l'ordine era sfalsato di una fase: la "parola operazioni" letta a +20 dalla base 52 era in realta' la JOBS_word della fase successiva; "timeout" a +4 era la pressione (900 = 90,0 bar);
+"press" a +22 era il JOBS_timeout della fase dopo; DBW42/DBW44 (che pensavamo "parametri di testata") sono JOBS_word e JOBS_timeout della fase 1.
+Testata (D_RECIPES.NUM_DATA1..10, da A_PARAMS): confermati W28 temp. sicurezza, W30 porte de dechargement, W32 tempo sicurezza, W34 energia max (x10), W38 temp. riavvio.
+Ricette B1 nel database (copia del backup): 28 (D_RECIPES), con 2610 valori di fase; struttura database: D_RECIPES, D_RECIPE_PHASE_PARAMS (valore per fase e parametro), A_* (definizioni).

@@ -26,26 +26,29 @@ public final class B1RecipeSelfTest {
         l.writeTemplate(lf);
         B1RecipeLayout l2 = B1RecipeLayout.load(lf);
         check("layout riletto dal file = predefinito",
-                l2.phaseBase == 52 && l2.phaseSize == 30 && l2.phaseCount == 11 && l2.nameOffset == 4
-                        && l2.opsOffset == 20 && l2.dischargeBit == 15 && l2.db == 201
+                l2.phaseBase == 42 && l2.phaseSize == 30 && l2.phaseCount == 10 && l2.nameOffset == 4
+                        && l2.opsOffset == 0 && l2.dischargeBit == 15 && l2.db == 201
                         && l2.header.size() == l.header.size() && l2.phase.size() == l.phase.size()
-                        && l2.phaseField("rpm") != null && l2.phaseField("rpm").offset == 2
+                        && l2.phaseField("rpm") != null && l2.phaseField("rpm").offset == 12
                         && "D\u00e9ch. (scarico)".equals(l2.opNames.get(15)));
         Files.delete(lf);
         B1Recipe r = B1RecipeCodec.decode(db, l);
         check("nome ricetta = gomma2", "gomma2".equals(r.name));
         check("n. ricetta = 24", r.recipeNo == 24);
-        check("fase 1: rpm 36, temp 80, ops 0x3000",
-                r.phases.get(0).values.get("rpm") == 36 && r.phases.get(0).values.get("temp") == 80
-                        && r.phases.get(0).ops == 0x3000);
-        check("fase 3: temp 105, ops 0x8000 (scarico)",
-                r.phases.get(2).values.get("temp") == 105 && r.phases.get(2).ops == 0x8000);
+        check("fase 1: gomme, timeout 60, rpm 36, pressione 900 (90.0 bar), temp 80",
+                r.phases.get(0).ops == 1 && r.phases.get(0).values.get("timeout") == 60
+                        && r.phases.get(0).values.get("rpm") == 36 && r.phases.get(0).values.get("press") == 900
+                        && r.phases.get(0).values.get("temp") == 80);
+        check("fase 3: temp 105, pressione 700",
+                r.phases.get(2).values.get("temp") == 105 && r.phases.get(2).values.get("press") == 700);
+        check("fase 4: operazione di scarico (0x8000), timeout 10",
+                r.phases.get(3).ops == 0x8000 && r.phases.get(3).values.get("timeout") == 10);
         check("validazione ricetta reale: nessun errore", B1RecipeCodec.validate(r, l).isEmpty());
 
         byte[] again = B1RecipeCodec.encode(r, l, db);
         boolean same = true;
-        for (int i = 0; i < 52 + 11 * 30; i++) {
-            if (i >= 6 && i < 38) {
+        for (int i = 0; i < 42 + 10 * 30; i++) {
+            if (i >= 6 && i < 28) {
                 continue; // area nome: i residui oltre la lunghezza vengono azzerati
             }
             same &= again[i] == db[i];
@@ -55,7 +58,7 @@ public final class B1RecipeSelfTest {
 
         B1Recipe bad = r.copy();
         bad.name = "";
-        bad.phases.get(2).ops = 0x1000;
+        bad.phases.get(3).ops = 0x1000;
         List<String> e = B1RecipeCodec.validate(bad, l);
         System.out.println("      messaggi: " + e);
         check("nome vuoto segnalato", e.stream().anyMatch(m -> m.startsWith("Nome ricetta")));
@@ -68,7 +71,7 @@ public final class B1RecipeSelfTest {
         check("salvataggio file e rev 1", r.revision == 1 && repo.list().size() == 1);
         B1Recipe back = repo.load(r.uid);
         check("rilettura da file uguale", back.name.equals("gomma2")
-                && back.phases.get(1).values.get("rpm") == 33 && back.phases.get(2).ops == 0x8000);
+                && back.phases.get(1).values.get("rpm") == 33 && back.phases.get(3).ops == 0x8000);
         B1Recipe other = repo.load(r.uid);
         repo.save(back, "utente A");
         boolean conflict = false;
@@ -94,11 +97,11 @@ public final class B1RecipeSelfTest {
         check("uguale all'archivio",
                 B1RecipeBridge.compare(plc, repo2, l).state == B1RecipeBridge.State.SAME);
         byte[] resid = plc.clone();
-        B1RecipeCodec.putWord(resid, 52 + 3 * 30 + 2, 99); // fase 4 = residuo dopo lo scarico
+        B1RecipeCodec.putWord(resid, 42 + 4 * 30 + 12, 99); // fase 5 = residuo dopo lo scarico (fase 4)
         check("residui dopo lo scarico ignorati",
                 B1RecipeBridge.compare(resid, repo2, l).state == B1RecipeBridge.State.SAME);
         byte[] changed = plc.clone();
-        B1RecipeCodec.putWord(changed, 52 + 2, 40); // rpm fase 1: 36 -> 40
+        B1RecipeCodec.putWord(changed, 42 + 12, 40); // rpm fase 1: 36 -> 40
         check("fase diversa rilevata",
                 B1RecipeBridge.compare(changed, repo2, l).state == B1RecipeBridge.State.DIFFERENT);
         byte[] renamed = plc.clone();

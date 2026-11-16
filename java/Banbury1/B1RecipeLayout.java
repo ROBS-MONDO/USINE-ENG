@@ -55,10 +55,10 @@ public final class B1RecipeLayout {
     public int recipeNoOffset = 2;
     public int nameOffset = 4;
     public int nameMax = 32;
-    public int phaseBase = 52;
+    public int phaseBase = 42;
     public int phaseSize = 30;
-    public int phaseCount = 11;
-    public int opsOffset = 20;
+    public int phaseCount = 10;
+    public int opsOffset = 0;
     public int dischargeBit = 15;
 
     public final List<Field> header = new ArrayList<>();
@@ -71,24 +71,19 @@ public final class B1RecipeLayout {
         "header.safety_time  = W32 ; Tempo sicurezza ; s ; 1 ; 0 ; 3600",
         "header.max_energy   = W34 ; Energia max ; kWh ; 0.1 ; 0 ; 999.9",
         "header.restart_temp = W38 ; Temp. riavvio ; \u00b0C ; 1 ; 0 ; 200",
-        "header.h42          = W42 ; Parametro testata +42 (?) ;  ; 1 ; ; ",
-        "header.h44          = W44 ; Parametro testata +44 (?) ;  ; 1 ; ; ",
-        // blocco fase = 3 gruppi da 10 byte (parola a bit + 4 INT). Confermato dal WinCC: operazioni (parola a bit)
-        // a offset 20; rotor = DBW58 (36) = fase 1. Gli altri campi sono dedotti dal dump (vedi DB_MAP.md).
-        "phase.set_bits = UW0  ; Bit gruppo 1 (Porte/Piston?) (?) ;  ; 1 ; ; ",
-        "phase.rpm      = W2   ; Rotor ; rpm ; 1 ; 0 ; 100",
-        "phase.timeout  = W4   ; Timeout (?) ; s ; 1 ; 0 ; 9999",
-        "phase.p6       = W6   ; Param. +6 (?) ;  ; 1 ; ; ",
-        "phase.p8       = W8   ; Param. +8 (?) ;  ; 1 ; ; ",
-        "phase.ctrl_bits = UW10 ; Controllo: et=bit0, ou=bit1, skip=bit15 (?) ;  ; 1 ; ; ",
-        "phase.p12      = W12  ; Param. +12 (?) ;  ; 1 ; ; ",
-        "phase.temp     = W14  ; Temp. (?) ; \u00b0C ; 1 ; 0 ; 200",
-        "phase.p16      = W16  ; Param. +16 (?) ;  ; 1 ; ; ",
-        "phase.p18      = W18  ; Param. +18 (?) ;  ; 1 ; ; ",
-        "phase.press    = W22  ; Press. (?) ; bar ; 1 ; ; ",
-        "phase.p24      = W24  ; Param. +24 (?) ;  ; 1 ; ; ",
-        "phase.p26      = W26  ; Param. +26 (?) ;  ; 1 ; ; ",
-        "phase.p28      = W28  ; Param. +28 (?) ;  ; 1 ; ; ",
+        // Confermato dal database ricette del WinCC (Q131014: A_RECIPE_PHASE_PARAMS_TAGS) e dai due invii registrati il 16/11/2026:
+        // 10 fasi da 30 byte a partire da DBW42; per ogni fase (offset dall'inizio del blocco):
+        //   +0 JOBS_word (operazioni, parola a bit)  +2 JOBS_timeout (s)  +10 SETS_word (bit Porte/Piston)
+        //   +12 ROTOR1_speed (rpm)  +14 pressure (x10, bar)  +20 CONTROLS_word (et/ou/skip)
+        //   +22 PHASE_timout (s)  +24 PHASE_temperature (C)  +26 PHASE_energy (x10)
+        "phase.timeout   = W2   ; Timeout (s) ; s ; 1 ; 0 ; 9999",
+        "phase.set_bits  = UW10 ; Set: porte e pistone (bit) ;  ; 1 ; ; ",
+        "phase.rpm       = W12  ; Rotor ; rpm ; 1 ; 5 ; 50",
+        "phase.press     = W14  ; Press. ; bar ; 0.1 ; 0 ; 500",
+        "phase.ctrl_bits = UW20 ; Controllo: et=bit0, ou=bit1, skip=bit15 ;  ; 1 ; ; ",
+        "phase.time      = W22  ; Tempo fase ; s ; 1 ; 0 ; 99999",
+        "phase.temp      = W24  ; Temperatura ; \u00b0C ; 1 ; 0 ; 600",
+        "phase.energy    = W26  ; Energia ; kWh ; 0.1 ; 0 ; 1000",
     };
 
     private B1RecipeLayout() {
@@ -198,10 +193,10 @@ public final class B1RecipeLayout {
 
     public void writeTemplate(Path out) throws IOException {
         try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(out, StandardCharsets.UTF_8))) {
-            w.println("# Layout ricetta Banbury 1 (DB201). I campi con (?) sono IPOTESI da confermare");
-            w.println("# confrontando l'editor con la schermata 'Vue recette' del WinCC.");
-            w.println("# Operazioni (bit della parola a offset 20): CONFERMATE dal WinCC (btnBitJob): 0-6, 13, 14, 15 = Dech.");
-        w.println("# Controlli (btnBitControl): et = bit 0, ou = bit 1, Skip = bit 15 (parola non ancora identificata).");
+            w.println("# Layout ricetta Banbury 1 (DB201), CONFERMATO dal database ricette del WinCC (tabelle A_RECIPE_PHASE_PARAMS/_TAGS).");
+            w.println("# 10 fasi da 30 byte a partire da DBW42. Per ogni fase: +0 operazioni, +2 timeout, +10 set, +12 rotor, +14 pressione (x10), +20 controllo, +22 tempo, +24 temp., +26 energia (x10).");
+            w.println("# Operazioni (bit della parola a offset 0 del blocco fase): CONFERMATE dal WinCC (btnBitJob): 0-6, 13, 14, 15 = Dech.");
+        w.println("# Controlli (btnBitControl): et = bit 0, ou = bit 1, Skip = bit 15 (parola a offset 20, CONTROLS_word).");
         w.println("# Etichette confermate dal WinCC (002_Process): safety_temp, drop_door, safety_time, max_energy, restart_temp.");
             w.println("# Colonne WinCC (006_Recipes): Operazione = Gomme, Add., All Black, Plastif., Cerac., Silano, Half Black, Degas, Net., Dech.;");
             w.println("#   Set = Timeout, Rotor (rpm), Press. (bar), Porte, Piston; Controllo = Skip, Temps (s), Temp. (C), Ener. (kWh), et, ou.");
