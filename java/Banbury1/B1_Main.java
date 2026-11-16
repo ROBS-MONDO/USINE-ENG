@@ -103,7 +103,7 @@ public class B1_Main extends JFrame {
         }
         System.out.println(demo ? "Banbury 1: modo DEMO (valori di esempio)" : "Banbury 1: PLC " + ip + " (sola lettura)");
         final B1RecipeLayout layout = B1RecipeLayout.load(layoutFile);
-        final B1RecipeRepository repo = new B1FileRecipeRepository(recipeDir, layout);
+        final B1RecipeRepository repo = B1RecipeRepositories.open(layout, recipeDir);
         final B1RecipeBridge bridge = new B1RecipeBridge(repo, layout, ip);
         Path labelCfg = Paths.get("C:\\_tools\\Banbury1\\b1_label_sql.properties");
         if (!Files.exists(labelCfg) && Files.exists(Paths.get("b1_label_sql.properties"))) {

@@ -197,3 +197,13 @@ Non provato su SQL Server: prima prova a secco e backup.
   `+2` rotor, `+4` timeout, `+10` bit di controllo, `+14` temperatura, `+22` pressione.
 * `B1RecipeTransferSelfTest` (con `host porta` prova la scrittura su un server S7 di prova, mai sul PLC della macchina).
 
+## Archivio ricette su SQL Server (come B2)
+* `B1SqlRecipeRepository` (interfaccia `B1RecipeRepository`): tabelle `dbo.B1Recipes` (una riga per ricetta: UID, nome unico, numero, revisione, date, utente) e `dbo.B1RecipeValues`
+  (Fase 0 = testata, 1..11 = fasi; chiave = campo, `ops` = bit delle operazioni). Salvataggio in transazione con controllo di revisione: se un'altra postazione ha salvato prima si ottiene un conflitto,
+  nessuna sovrascrittura. Nome ricetta unico (collation del server, non distingue maiuscole).
+* Schema e utente: `sql/create_b1_recipes.sql` (da eseguire a mano nel database `mondo` di srv-bambury; l'utente `b1_recipes` ha accesso solo a queste due tabelle).
+* Attivazione: `b1_recipes_sql.properties` (`enabled=true`, `jdbc.url`, `jdbc.user`; password in `B1_RECIPES_SQL_PASSWORD`). Se l'SQL e' abilitato ma non raggiungibile si usa la cartella di file e lo si segnala
+  nella barra dell'editor. `B1RecipeRepositories.open` sceglie l'archivio all'avvio (sinottico ed editor).
+* `B1SqlRecipeRepositorySelfTest` prova salvataggio, rilettura, conflitto, nome duplicato ed eliminazione su H2 (modalita' SQL Server), con `h2.jar` nel classpath.
+* Le ricette B2 (`Recipes`, `RecipesSteps`) restano separate: sono un'altra struttura (passi con pressore e portella).
+

@@ -146,7 +146,7 @@ public class B1RecipeEditor extends JFrame {
             dir = Paths.get("b1_recipes");
         }
         final B1RecipeLayout layout = B1RecipeLayout.load(layoutFile);
-        final B1RecipeRepository repo = new B1FileRecipeRepository(dir, layout);
+        final B1RecipeRepository repo = B1RecipeRepositories.open(layout, dir);
         if (snap != null) {
             System.setProperty("java.awt.headless", "true");
             snapshot(repo, layout, snap);
