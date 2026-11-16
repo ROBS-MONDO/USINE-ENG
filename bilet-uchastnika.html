@@ -58,6 +58,7 @@ h2{font-family:Georgia,serif;color:var(--navy);font-size:clamp(30px,4vw,46px);li
 .final{background:var(--ivory);text-align:center}.final p{font-size:19px;max-width:660px;margin:0 auto 25px}
 footer{background:var(--navy);color:#e4d5da;padding:25px 0;text-align:center;font-size:12px;letter-spacing:.12em}
 @media(max-width:800px){.hero-grid{grid-template-columns:1fr}.hero-copy{padding:65px 25px 50px}.hero-photo{min-height:330px;background-image:linear-gradient(rgba(66,19,38,.18),rgba(66,19,38,.18)),var(--hero-img)}.benefits,.program-grid{grid-template-columns:1fr 1fr}.network{grid-template-columns:1fr;gap:25px}.network img{height:320px}.take-grid{grid-template-columns:1fr}}
+.fmt-list{max-width:600px;margin:0 auto 28px;display:grid;gap:12px;text-align:left}.fmt{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;border-left:3px solid var(--gold);padding:14px 18px;font-weight:bold;box-shadow:0 8px 24px #12294a0d}.fmt .btn{padding:12px 20px;flex:0 0 auto}@media(max-width:520px){.fmt{flex-direction:column;align-items:stretch;text-align:center}.fmt .btn{width:100%}}
 /* telefono: niente testo che esce a destra (colonne che si restringono, pulsanti e etichette che vanno a capo) */
 html,body{max-width:100%;overflow-x:hidden}
 .hero-grid>*,.network>*,.take-grid>*,.benefits>*,.program-grid>*{min-width:0}
@@ -171,7 +172,12 @@ html,body{max-width:100%;overflow-x:hidden}
   <div class="section-kicker">ТВОЙ МОМЕНТ СИЛЫ</div>
   <h2>Сделай шаг навстречу новому</h2>
   <p>Приходи за опытом, общением, новыми идеями и возможностями. Возможно, именно здесь начнётся твоя следующая большая история.</p>
-  <p><strong>12 декабря 2026 • Люксембург<br>Индивидуальный билет 30 €<br>Формат 1+1 - два участника 40 €<br>Взрослый + ребенок подросток 30 €</strong></p>
+  <p><strong>12 декабря 2026 • Люксембург</strong></p>
+  <div class="fmt-list">
+   <div class="fmt"><span>Индивидуальный билет 30 €</span><a class="btn" href="https://buy.stripe.com/cNiaEZ9iu3Lkb4M1KK7Re06" data-pay="bilet" target="_blank" rel="noopener">ОПЛАТИТЬ</a></div>
+   <div class="fmt"><span>Формат 1+1 - два участника 40 €</span><a class="btn" href="https://buy.stripe.com/14A4gBamy1Dcfl2exw7Re07" data-pay="bilet" target="_blank" rel="noopener">ОПЛАТИТЬ</a></div>
+   <div class="fmt"><span>Взрослый + ребенок подросток 30 €</span><a class="btn" href="https://buy.stripe.com/aFa7sN1Q25Ts0q81KK7Re08" data-pay="bilet" target="_blank" rel="noopener">ОПЛАТИТЬ</a></div>
+  </div>
   <a class="btn" href="https://buy.stripe.com/cNiaEZ9iu3Lkb4M1KK7Re06" data-pay="bilet" target="_blank" rel="noopener">СТАТЬ ЧАСТЬЮ «ЗВЁЗДНОГО ЧАСА»</a>
   <p style="font-size:15px;margin-top:25px;color:var(--blue);font-weight:bold">Мы объединяем — ты раскрываешься.</p>
  </div>

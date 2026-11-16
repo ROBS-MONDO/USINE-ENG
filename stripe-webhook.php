@@ -42,8 +42,14 @@ $obj = $event['data']['object'] ?? [];
 try {
     if ($type === 'checkout.session.completed' || $type === 'checkout.session.async_payment_succeeded') {
         if (($obj['payment_status'] ?? '') !== 'paid') { out(200, 'not paid yet'); }
-        $linkId = $cfg['stripe']['payment_link_id'] ?? '';
-        if ($linkId === '' || ($obj['payment_link'] ?? '') !== $linkId) { out(200, 'other product'); }
+        // Payment Link dei biglietti: ognuno indica quanti biglietti vale un acquisto (es. formato 1+1 = 2) e il suo prezzo
+        $links = $cfg['stripe']['payment_links'] ?? [];
+        if (!$links && !empty($cfg['stripe']['payment_link_id'])) {     // vecchia configurazione: un solo link, un biglietto
+            $links = [$cfg['stripe']['payment_link_id'] => ['tickets' => 1, 'price_cents' => (int)($cfg['stripe']['ticket_price_cents'] ?? 3000)]];
+        }
+        $linkId = (string)($obj['payment_link'] ?? '');
+        if ($linkId === '' || !isset($links[$linkId])) { out(200, 'other product'); }
+        $perUnit = max(1, (int)($links[$linkId]['tickets'] ?? 1));
 
         $sessionId = (string)$obj['id'];
         $email = trim((string)($obj['customer_details']['email'] ?? $obj['customer_email'] ?? ''));
@@ -51,7 +57,7 @@ try {
         $name = tk_clean_name($obj['customer_details']['name'] ?? '');
 
         // Quantita': dall'API Stripe se c'e' la chiave, altrimenti dall'importo pagato
-        $price = max(1, (int)($cfg['stripe']['ticket_price_cents'] ?? 3000));
+        $price = max(1, (int)($links[$linkId]['price_cents'] ?? 3000));
         $qty = 0;
         $apiKey = $cfg['stripe']['api_key'] ?? '';
         if ($apiKey !== '') {
@@ -61,7 +67,7 @@ try {
             foreach (($j['data'] ?? []) as $li) { $qty += (int)($li['quantity'] ?? 0); }
         }
         if ($qty < 1) { $qty = intdiv((int)($obj['amount_total'] ?? 0), $price); }
-        $qty = max(1, min(20, $qty));
+        $qty = max(1, min(20, max(1, $qty) * $perUnit));   // acquisti x biglietti per acquisto
 
         $lock = db()->query("SELECT GET_LOCK(" . db()->quote('lf_' . substr(md5($sessionId), 0, 20)) . ", 20)")->fetchColumn();
         tk_create_for_session($sessionId, (string)($obj['payment_intent'] ?? ''), $name, $email, $qty);

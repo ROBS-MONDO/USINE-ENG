@@ -18,11 +18,11 @@ Dopo il pagamento del biglietto da 60 euro Stripe avvisa il sito, che crea un bi
    - `db`: hostname, nome, utente e password del database (dal pannello Aruba);
    - `smtp.pass`: password della casella `info@luxembourgfestival.com`;
    - `scan.password_hash`: hash della password dello staff. Per crearlo apri sul tuo computer `strumenti/crea-hash-password.html` (non va caricato sul sito), scrivi la password, copia il risultato e incollalo tra gli apici;
-   - `stripe.webhook_secret` e `stripe.payment_link_id`: vedi il punto 3.
+   - `stripe.webhook_secret` e `stripe.payment_links`: vedi il punto 3. In `payment_links` metti i tre ID `plink_...` dei biglietti (individuale 30 €, formato 1+1 40 €, adulto + ragazzo 30 €), con quanti biglietti vale ogni acquisto (1, 2 e 2) e il prezzo in centesimi.
 3. Dopo la configurazione cancella `ticket/make-hash.php`.
 
 ## 3. Stripe
-1. **Payment Link del biglietto da 60 euro**: apri **Payment links**, clicca il link, attiva **Consenti ai clienti di modificare la quantità** (massimo 10) e **Raccogli il nome del cliente**. L'ID del link (`plink_...`) compare nell'indirizzo del browser o nei dettagli.
+1. **Payment Link dei biglietti (tre: individuale 30 €, 1+1 40 €, adulto + ragazzo 30 €)**: apri **Payment links**, clicca il link, attiva **Consenti ai clienti di modificare la quantità** (massimo 10) e **Raccogli il nome del cliente**. L'ID del link (`plink_...`) compare nell'indirizzo del browser o nei dettagli.
 2. **Webhook**: Sviluppatori > **Webhook** > Aggiungi endpoint.
    - URL: `https://www.luxembourgfestival.com/stripe-webhook.php`
    - Eventi: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `charge.refunded`

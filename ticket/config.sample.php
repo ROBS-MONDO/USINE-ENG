@@ -12,8 +12,12 @@ return [
 
     'stripe' => [
         'webhook_secret'  => '',   // "Signing secret" del webhook, inizia con whsec_
-        'payment_link_id' => '',   // ID del Payment Link del biglietto da 60 euro, inizia con plink_
-        'ticket_price_cents' => 3000,
+        // I Payment Link dei biglietti (ID che iniziano con plink_): per ognuno, quanti biglietti vale un acquisto e il prezzo in centesimi.
+        'payment_links' => [
+            'plink_INDIVIDUALE' => ['tickets' => 1, 'price_cents' => 3000],   // biglietto individuale 30 euro
+            'plink_UNO_PIU_UNO' => ['tickets' => 2, 'price_cents' => 4000],   // formato 1+1, due partecipanti, 40 euro
+            'plink_ADULTO_RAGAZZO' => ['tickets' => 2, 'price_cents' => 3000], // adulto + ragazzo, due persone, 30 euro
+        ],
         'api_key' => '',           // facoltativa: chiave "restricted" con sola lettura su Checkout Sessions (rk_live_...), per contare i biglietti con precisione
     ],
 

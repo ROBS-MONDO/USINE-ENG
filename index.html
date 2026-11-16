@@ -382,7 +382,7 @@
   .pay-inner { max-width: 1500px; margin: 0 auto; }
   .pay h2 { margin: 0 0 18px; font-family: "Unbounded", "Montserrat", Arial, sans-serif; font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 2.4rem); line-height: 1.15; text-transform: uppercase; color: #d2a864; }
   .pay-lead { margin: 0 0 40px; max-width: 760px; font-size: clamp(1rem, 1.3vw, 1.2rem); line-height: 1.6; }
-  .pay-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+  .pay-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
   .pay-card { display: flex; flex-direction: column; padding: 26px 18px; border: 1px solid rgba(210, 168, 100, .35); border-radius: 6px; background: rgba(255, 255, 255, .04); }
   .pay-card h3 { margin: 0 0 6px; min-height: 2.7em; font-size: 1.05rem; line-height: 1.3; color: #fff; }
   .pay-card .en { margin: 0 0 22px; min-height: 2.4em; font-size: .85rem; color: rgba(239, 227, 230, .65); }
@@ -794,10 +794,22 @@
         <a class="tier-btn" href="#otbor">Подать заявку</a>
       </div>
       <div class="pay-card">
-        <h3>Билет участника</h3>
-        <p class="en">Participant Ticket</p>
+        <h3>Индивидуальный билет</h3>
+        <p class="en">Individual Ticket</p>
         <p class="amount">30 €</p>
         <a class="tier-btn" href="https://buy.stripe.com/cNiaEZ9iu3Lkb4M1KK7Re06" data-pay="bilet" target="_blank" rel="noopener">Оплатить</a>
+      </div>
+      <div class="pay-card">
+        <h3>Формат 1+1 — два участника</h3>
+        <p class="en">1+1 Ticket (two participants)</p>
+        <p class="amount">40 €</p>
+        <a class="tier-btn" href="https://buy.stripe.com/14A4gBamy1Dcfl2exw7Re07" data-pay="bilet" target="_blank" rel="noopener">Оплатить</a>
+      </div>
+      <div class="pay-card">
+        <h3>Взрослый + ребенок подросток</h3>
+        <p class="en">Adult + Teenager Ticket</p>
+        <p class="amount">30 €</p>
+        <a class="tier-btn" href="https://buy.stripe.com/aFa7sN1Q25Ts0q81KK7Re08" data-pay="bilet" target="_blank" rel="noopener">Оплатить</a>
       </div>
     </div>
     <ul class="pay-methods" aria-label="Способы оплаты">
