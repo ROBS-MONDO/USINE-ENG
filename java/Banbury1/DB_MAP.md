@@ -49,3 +49,14 @@ safety time 600 s, safety temp 120 C, max energy 30.0 kWh, restart temp 90 C, dr
 Lampade (accesa = chiara): pistone = SOLO "posizione alta"; malaxeur pret = tutte tranne "moteur principal OK"; cycle malaxeur = SOLO "continuo";
 produzione = SOLO "ricetta valida". Il programma mostrava invece accese Bloque, Auto, Pret pour production e (rdy) moteur OK:
 corretti per scambio di bit (piston_high/blocked, cyc_auto/cyc_cont, prod_ready/recipe_ok); le 3 lampade "malaxeur pret" ancora da verificare con Cattura A/B.
+
+## Risultati dal registro continuo B1DbDump (16/11/2026, 11:12-11:16) confrontato con le foto del pannello
+Orologio del pannello = orologio del PC + circa 3 min 27 s (ricavato dalla temperatura DBW100 nelle foto e nel registro).
+* **DBW202 (e copia DBW220)** = tempo ciclo in secondi (165 = 2:45 nella foto): conta +1 al secondo. DBW198/204 = tempo di mescola (secondi).
+* **DBW22 pistone** (bit = bit del valore): B0 = posizione alta, B1 = posizione bassa, B2 = flottante (con LOW+FLOAT in fase 4, come nelle foto), B5 = pistone in movimento
+  (si accende sia in salita sia in discesa; la direzione non e' in DB110: si ricava dall'ultimo fine corsa), B3 = impulso breve durante il movimento. "Bloque" non trovato.
+* **DBW54 malaxeur pret**: B0 min temp OK (si spegne a 11:13:42 con la temperatura alta, come la lampada nelle foto), B1 scarico OK, B2 motore OK (spento a macchina ferma nella foto
+  delle 12:10), B3 porta scarico chiusa, B4 tempo min tra cicli, B5 n. cicli passi non effettuati. B12 = ciclo continuo (acceso).
+* DBW24 (porte): 0x80AA (chiuse) -> 0x8055 (aperte) a 11:15:05-11:15:12: coppie aperta/chiusa, coerente con la mappa attuale (push rod B3/B4, porta scarico B0/B1).
+* DBW234 conta le fasi/step (45, 30, 25, 23 nelle foto).
+* Ancora da trovare: Cycle malaxeur auto / cycle, produzione cycle auto ON / ricetta valida, silos chiuso, "Bloque", bit della direzione del pistone.
