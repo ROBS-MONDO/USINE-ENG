@@ -226,3 +226,6 @@ Non provato su SQL Server: prima prova a secco e backup.
   (data/ora, ricetta, UID e revisione dell'archivio, numero ricetta, utente, postazione, esito, parole scritte, copia di sicurezza, messaggio). Un errore nel registro non annulla l'invio.
 * Tabella e permessi in `sql/create_b1_recipes.sql` e `sql/grant_b1_windows_group.sql` (l'utente deve poter fare SELECT e INSERT).
 
+
+## Connessione SQL centralizzata (provider = svc)
+In `b1_recipes_sql.properties` (e nei file analoghi) `provider = svc` fa usare a B1 la classe `SVC.DBBamburyReader.openConnection()` (database Mondo su srv-bambury): URL e credenziali stanno solo li', non nei file di B1. Richiede che la classe sia nel classpath del progetto (stesso progetto Eclipse). Il trend (Datas_B1) usa un altro database: resta con la propria configurazione.

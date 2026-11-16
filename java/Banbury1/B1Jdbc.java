@@ -10,11 +10,17 @@ import java.util.Properties;
  *  - autenticazione Windows (consigliata): {@code auth = windows} nel file di configurazione. Nessuna password in nessun file e in nessuna
  *    variabile d'ambiente: si usa l'account Windows/dominio di chi lancia il programma, e i permessi li assegna il server (gruppo di dominio).
  *    Serve il driver con la libreria nativa mssql-jdbc_auth (dll) raggiungibile da PATH / java.library.path.
+ *  - connessione centralizzata: {@code provider = svc} usa SVC.DBBamburyReader.openConnection() (database Mondo su srv-bambury), le credenziali
+ *    restano solo in quella classe (nessun jdbc.url/utente/password nei file di B1). La classe viene cercata a runtime (reflection).
  *  - utente SQL: jdbc.user + password nella variabile d'ambiente (o, meno sicuro, jdbc.password).
  */
 final class B1Jdbc {
 
     private B1Jdbc() {
+    }
+
+    static boolean svc(Properties cfg) {
+        return "svc".equalsIgnoreCase(cfg.getProperty("provider", "").trim());
     }
 
     static boolean windows(Properties cfg) {
@@ -32,11 +38,17 @@ final class B1Jdbc {
 
     /** Connessione configurata: URL presente e (autenticazione Windows oppure utente). */
     static boolean configured(Properties cfg) {
+        if (svc(cfg)) {
+            return true;
+        }
         return !cfg.getProperty("jdbc.url", "").trim().isEmpty()
                 && (windows(cfg) || !cfg.getProperty("jdbc.user", "").trim().isEmpty());
     }
 
     static Connection open(Properties cfg, String passwordEnv) throws SQLException {
+        if (svc(cfg)) {
+            return openSvc();
+        }
         String url = url(cfg);
         if (url.isEmpty()) {
             throw new SQLException("jdbc.url mancante");
@@ -51,8 +63,26 @@ final class B1Jdbc {
         return DriverManager.getConnection(url, cfg.getProperty("jdbc.user", "").trim(), pwd);
     }
 
+    /** Connessione dalla classe centralizzata SVC.DBBamburyReader (stesso progetto Eclipse). */
+    static Connection openSvc() throws SQLException {
+        try {
+            Class<?> c = Class.forName("SVC.DBBamburyReader");
+            return (Connection) c.getMethod("openConnection").invoke(null);
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("provider=svc: classe SVC.DBBamburyReader non trovata nel classpath", e);
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            Throwable t = e.getCause() != null ? e.getCause() : e;
+            throw new SQLException("provider=svc: " + t.getMessage(), t);
+        } catch (ReflectiveOperationException e) {
+            throw new SQLException("provider=svc: " + e, e);
+        }
+    }
+
     /** Descrizione dell'autenticazione per i messaggi (mai la password). */
     static String describe(Properties cfg, String passwordEnv) {
+        if (svc(cfg)) {
+            return "connessione centralizzata SVC.DBBamburyReader (nessuna credenziale nei file di B1)";
+        }
         if (windows(cfg)) {
             return "autenticazione Windows (nessuna password)";
         }
