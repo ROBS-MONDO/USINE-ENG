@@ -483,14 +483,16 @@ public class B1_Main extends JFrame {
             hits.add(new Hit(x, y, w, h, name));
         }
 
-        private void bigArrow(Graphics2D g, int x, int y, boolean up) {
+        private void bigArrow(Graphics2D g, int x, int y, boolean up, String key) {
+            boolean lit = Boolean.TRUE.equals(src.bool(key));
             Polygon p = new Polygon();
             if (up) {
                 p.addPoint(x, y + 30); p.addPoint(x + 28, y + 30); p.addPoint(x + 14, y);
             } else {
                 p.addPoint(x, y); p.addPoint(x + 28, y); p.addPoint(x + 14, y + 30);
             }
-            g.setPaint(new GradientPaint(x, y, new Color(0xA0A0A0), x + 28, y, new Color(0x606060)));
+            g.setPaint(lit ? new GradientPaint(x, y, new Color(0x7CFF7C), x + 28, y, new Color(0x1FA01F))
+                    : new GradientPaint(x, y, new Color(0xA0A0A0), x + 28, y, new Color(0x606060)));
             g.fillPolygon(p);
             g.setColor(new Color(0x404040));
             g.drawPolygon(p);
@@ -572,8 +574,8 @@ public class B1_Main extends JFrame {
             lampRow(g, 13, 173, 42, 160, "piston_float", LampKind.GREEN, "Flottant");
             lampRow(g, 13, 203, 42, 160, "piston_low", LampKind.GREEN, "Position basse");
             lampRow(g, 13, 233, 42, 160, "piston_blocked", LampKind.GREEN, "Bloqu\u00e9");
-            bigArrow(g, 218, 143, true);
-            bigArrow(g, 218, 196, false);
+            bigArrow(g, 218, 143, true, "piston_up");
+            bigArrow(g, 218, 196, false, "piston_down");
             arrowButton(g, 12, 263, 38, 26, false, "Pistone consegna -");
             field(g, 57, 262, 98, 26, "press_set", num("press_set", 1), true, fBig);
             unit(g, "bar", 157, 262, 38, 26);

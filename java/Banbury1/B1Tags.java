@@ -102,9 +102,11 @@ public final class B1Tags {
         {"recipe_name", "Nome ricetta (stringa)",                    "DB201.S4"},
         // --- lampade piston ---
         {"piston_high",    "Pistone: posizione alta",   "DB110.W22.B0"},
-        {"piston_float",   "Pistone: flottante",        "DB110.W22.B5"},
-        {"piston_low",     "Pistone: posizione bassa",  "DB110.W22.B6"},
-        {"piston_blocked", "Pistone: bloccato",         "DB110.W22.B1"},
+        {"piston_float",   "Pistone: flottante",        "none"},
+        {"piston_low",     "Pistone: posizione bassa",  "DB110.W22.B1"},
+        {"piston_blocked", "Pistone: bloccato",         "none"},
+        {"piston_down",    "Pistone: freccia in basso (discesa, osservato)", "DB110.W22.B5"},
+        {"piston_up",      "Pistone: freccia in alto (salita, ipotesi)",     "DB110.W22.B6"},
         {"rotors_running", "Rotori: running",           "DB110.W60"},
         {"lube_running",   "Lubrificazione: running",   ""},
         // --- silos / porte ---
