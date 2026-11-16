@@ -40,7 +40,7 @@ CREATE TABLE dbo.B1RecipePLC (
     Postazione    NVARCHAR(100) NOT NULL CONSTRAINT DF_B1RecipePLC_Post DEFAULT N'',
     Esito         NVARCHAR(10)  NOT NULL,           -- OK oppure ERRORE
     ParoleScritte INT           NOT NULL CONSTRAINT DF_B1RecipePLC_Parole DEFAULT 0,
-    Backup        NVARCHAR(260) NULL,               -- copia di sicurezza del DB201 prima dell'invio
+    FileBackup    NVARCHAR(260) NULL,               -- copia di sicurezza del DB201 prima dell'invio
     Messaggio     NVARCHAR(400) NULL
 );
 CREATE INDEX IX_B1RecipePLC_DataOra ON dbo.B1RecipePLC (DataOra DESC);

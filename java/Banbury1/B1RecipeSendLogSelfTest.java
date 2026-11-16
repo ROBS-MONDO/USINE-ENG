@@ -53,7 +53,7 @@ public final class B1RecipeSendLogSelfTest {
             st.execute("CREATE TABLE dbo.B1RecipePLC (Id BIGINT IDENTITY(1,1) PRIMARY KEY, DataOra TIMESTAMP NOT NULL, RecipeUID NVARCHAR(36), "
                     + "Nome NVARCHAR(32) NOT NULL, NumRicetta INT NOT NULL DEFAULT 0, Revisione BIGINT NOT NULL DEFAULT 0, "
                     + "Utente NVARCHAR(100) NOT NULL DEFAULT '', Postazione NVARCHAR(100) NOT NULL DEFAULT '', Esito NVARCHAR(10) NOT NULL, "
-                    + "ParoleScritte INT NOT NULL DEFAULT 0, Backup NVARCHAR(260), Messaggio NVARCHAR(400))");
+                    + "ParoleScritte INT NOT NULL DEFAULT 0, FileBackup NVARCHAR(260), Messaggio NVARCHAR(400))");
             B1RecipeSendLog.insertSql(c, e);
             B1RecipeSendLog.insertSql(c, e2);
             try (ResultSet rs = st.executeQuery("SELECT COUNT(*), MAX(Revisione), SUM(CASE WHEN Esito='OK' THEN 1 ELSE 0 END), "

@@ -78,7 +78,7 @@ public final class B1RecipeSendLog {
     /** Inserisce una riga in dbo.B1RecipePLC. */
     static void insertSql(Connection c, Entry e) throws SQLException {
         try (PreparedStatement ps = c.prepareStatement(
-                "INSERT INTO dbo.B1RecipePLC (DataOra, RecipeUID, Nome, NumRicetta, Revisione, Utente, Postazione, Esito, ParoleScritte, Backup, Messaggio) "
+                "INSERT INTO dbo.B1RecipePLC (DataOra, RecipeUID, Nome, NumRicetta, Revisione, Utente, Postazione, Esito, ParoleScritte, FileBackup, Messaggio) "
                         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
             ps.setTimestamp(1, Timestamp.valueOf(e.time));
             ps.setString(2, e.recipeUid);
