@@ -226,8 +226,44 @@ public class B1ScreensWindow extends JFrame {
         }
 
         // ---------------- disegno oggetti ----------------
+        /**
+         * Adattamenti al layout WinCC della schermata Display (nel codice, cosi' valgono con qualsiasi copia del file .b1s):
+         * si toglie il campo velocita' duplicato (DBW58 e la sua unita') e i campi dinamici del rotore (velocita' e corrente)
+         * si avvicinano alle loro descrizioni. Se il file e' gia' stato modificato (oggetti gia' a sinistra) non si sposta di nuovo.
+         */
+        private static final int DISPLAY_SHIFT = -200;
+
+        private boolean skipObject(B1Screen.Obj o) {
+            return "005_Display".equals(contentName) && (o.name.equals("IO_value4") || o.name.equals("ST_unit4"));
+        }
+
+        private int shiftX(B1Screen.Obj o) {
+            if ("005_Display".equals(contentName) && o.l >= 820
+                    && (o.name.equals("IO_value5") || o.name.equals("ST_unit5")
+                    || o.name.equals("IO_value9") || o.name.equals("ST_unit9"))) {
+                return DISPLAY_SHIFT;
+            }
+            return 0;
+        }
+
         private void drawScreen(Graphics2D g, B1Screen sc, int dy) {
             for (B1Screen.Obj o : sc.objects) {
+                if (skipObject(o)) {
+                    continue;
+                }
+                int sx = shiftX(o);
+                if (sx != 0) {
+                    g.translate(sx, 0);
+                }
+                drawObject(g, o, dy);
+                if (sx != 0) {
+                    g.translate(-sx, 0);
+                }
+            }
+        }
+
+        private void drawObject(Graphics2D g, B1Screen.Obj o, int dy) {
+            {
                 switch (o.kind) {
                     case "RECT": strokeShape(g, new Rectangle2D.Double(o.l, o.t + dy, o.w(), o.h())); break;
                     case "ELLIPSE": strokeShape(g, new Ellipse2D.Double(o.l, o.t + dy, o.w(), o.h())); break;
