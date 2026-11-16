@@ -67,3 +67,10 @@ Orologio del pannello = orologio del PC + circa 3 min 27 s (ricavato dalla tempe
   `W126` temp., `W134` press.; fase 4 `W144` rpm, `W146` timeout; per ultimo `W2` (n. ricetta) e `W382` (fine). Ordine di scrittura = indirizzi crescenti a gruppi (~150 ms).
 * Il WinCC indica "Fin transfert" a `DB201.DBX563.0`, ma il flag che cambia nel registro e' `DBX383.0`: l'indirizzo del WinCC non e' quello del DB reale di 384 byte.
 
+
+## Correzioni dal secondo registro (16/11/2026 13:27-13:34, rotori fermati alle 13:33:49) e dalle foto
+* **Malaxeur pret** (DBW54): min temp OK = B0 (si spegne con la temperatura alta, si riaccende a freddo), motore principale OK = B7 (si spegne quando i rotori si fermano, 13:33:49),
+  porta scarico chiusa = B8 (si spegne quando la porta si apre). Scarico OK, tempo minimo e n. cicli (B6, B9, B10) restano sempre a 1 in tutti i registri: assegnati per adiacenza, non confermati.
+* **Push rod / poids presseur** (DBW24): coppie (aperto, chiuso) = (B0,B1) porta scarico, (B2,B3) poids presseur; 0x..55 = aperti, 0x..AA = chiusi.
+* **Silos** (DBW6): B10 e B11 sono sempre a 1; silos "ferme" = B11 (acceso nelle foto e a macchina ferma). Il bit di silos "aperto" non e' stato osservato: non collegato.
+* Ancora da trovare: cycle malaxeur Auto e Cycle, produzione cycle auto ON e recette valide, "Bloque".
