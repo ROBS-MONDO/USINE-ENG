@@ -458,8 +458,34 @@ public final class B1TrendPanel extends JPanel {
         g2.dispose();
     }
 
+    // scala della temperatura (asse sinistro): fissa 0-200, oppure adattata ai valori visibili con SCALA AUTO
+    private double tempLo = 0;
+    private double tempHi = MAX_TEMP;
+    private double tempStep = 20;
+
+    private void updateTempScale(Rectangle c) {
+        if (chkAuto.isSelected()) {
+            long to = visibleEnd;
+            long from = to - window().toMillis();
+            double[] r = B1MiniTrend.scale(store.buffer("temp").downsample(from, to, Math.max(1, c.width)));
+            tempLo = r[0];
+            tempHi = r[1];
+            tempStep = r[2];
+        } else {
+            tempLo = 0;
+            tempHi = MAX_TEMP;
+            tempStep = 20;
+        }
+    }
+
+    private int tempY(Rectangle c, double v) {
+        double clamped = Math.max(tempLo, Math.min(tempHi, v));
+        return c.y + c.height - (int) Math.round((clamped - tempLo) / (tempHi - tempLo) * c.height);
+    }
+
     private void paintChart(Graphics2D g2) {
         Rectangle c = chartBounds();
+        updateTempScale(c);
         g2.setPaint(new GradientPaint(c.x, c.y, Color.WHITE, c.x, c.y + c.height, new Color(0xF8, 0xF9, 0xFB)));
         g2.fillRect(c.x, c.y, c.width, c.height);
         paintGrid(g2, c);
@@ -493,7 +519,7 @@ public final class B1TrendPanel extends JPanel {
                 continue;
             }
             int px = c.x + (int) Math.round((e.time - from) / (double) (to - from) * c.width);
-            int py = c.y + c.height - (int) Math.round(Math.max(0, Math.min(MAX_TEMP, t)) / MAX_TEMP * c.height);
+            int py = tempY(c, t);
             g2.setColor(new Color(0xFF, 0xB4, 0x3C));
             g2.fillOval(px - 4, py - 4, 8, 8);
             g2.setColor(new Color(0xC0, 0x70, 0x00));
@@ -548,11 +574,18 @@ public final class B1TrendPanel extends JPanel {
         }
     }
 
+    private int tempDivisions() {
+        return Math.max(1, (int) Math.round((tempHi - tempLo) / tempStep));
+    }
+
     private void paintGrid(Graphics2D g2, Rectangle c) {
-        for (int i = 0; i <= 20; i++) {
-            int y = c.y + (int) Math.round(i / 20.0 * c.height);
+        int lines = 2 * tempDivisions(); // le righe principali coincidono con i valori dell'asse
+        for (int i = 0; i <= lines; i++) {
+            int y = c.y + (int) Math.round(i / (double) lines * c.height);
             g2.setColor(i % 2 == 0 ? GRID_MAJOR : GRID_MINOR);
             g2.drawLine(c.x, y, c.x + c.width, y);
+        }
+        for (int i = 0; i <= 20; i++) {
             int x = c.x + (int) Math.round(i / 20.0 * c.width);
             g2.setColor(i % 4 == 0 ? GRID_MAJOR : GRID_MINOR);
             g2.drawLine(x, c.y, x, c.y + c.height);
@@ -563,9 +596,10 @@ public final class B1TrendPanel extends JPanel {
         g2.setColor(LINE_COLOR);
         g2.setFont(new Font("Consolas", Font.BOLD, 13));
         FontMetrics fm = g2.getFontMetrics();
-        for (int i = 0; i <= 10; i++) {
-            String s = String.valueOf(MAX_TEMP - i * 20);
-            int y = c.y + (int) Math.round(i / 10.0 * c.height);
+        int nd = tempDivisions();
+        for (int i = 0; i <= nd; i++) {
+            String s = String.valueOf(Math.round(tempHi - i * tempStep));
+            int y = c.y + (int) Math.round(i / (double) nd * c.height);
             g2.drawString(s, c.x - 18 - fm.stringWidth(s), y + 5);
         }
         g2.setColor(LINE_COLOR);
@@ -705,8 +739,7 @@ public final class B1TrendPanel extends JPanel {
         double lastV = 0;
         for (double[] p : pts) {
             int px = c.x + (int) Math.round((p[0] - from) / (double) (to - from) * c.width);
-            double v = Math.max(0, Math.min(MAX_TEMP, p[1]));
-            int py = c.y + c.height - (int) Math.round(v / MAX_TEMP * c.height);
+            int py = tempY(c, p[1]);
             Point cur = new Point(px, py);
             if (prev != null && p[0] - prevT <= 120_000) { // buco di dati: la linea si interrompe
                 g2.drawLine(prev.x, prev.y, cur.x, cur.y);
