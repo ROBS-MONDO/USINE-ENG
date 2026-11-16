@@ -926,12 +926,11 @@ public class B1_Main extends JFrame {
 
             @Override
             public void exit() {
-                // non usato: nel sinottico principale EXIT resta com'era (nessuna azione)
-            }
-
-            @Override
-            public boolean exitEnabled() {
-                return false;
+                // chiude la finestra attuale (il sinottico principale: il programma termina)
+                java.awt.Window w = SwingUtilities.getWindowAncestor(SynPanel.this);
+                if (w != null) {
+                    w.dispatchEvent(new java.awt.event.WindowEvent(w, java.awt.event.WindowEvent.WINDOW_CLOSING));
+                }
             }
         };
 
