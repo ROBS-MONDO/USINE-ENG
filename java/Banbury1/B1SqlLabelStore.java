@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -178,16 +177,10 @@ public final class B1SqlLabelStore implements B1LabelStore {
         }
         List<Object> p = new ArrayList<>();
         String sql = buildSql(l, LocalDateTime.now(), p);
-        String url = cfg.getProperty("jdbc.url", "").trim();
-        String user = cfg.getProperty("jdbc.user", "").trim();
-        String pwd = System.getenv("B1_SQL_PASSWORD");
-        if (pwd == null) {
-            pwd = cfg.getProperty("jdbc.password", "");
-        }
-        if (url.isEmpty()) {
+        if (B1Jdbc.url(cfg).isEmpty()) {
             throw new IllegalStateException("jdbc.url mancante");
         }
-        try (Connection c = DriverManager.getConnection(url, user, pwd);
+        try (Connection c = B1Jdbc.open(cfg, "B1_SQL_PASSWORD");
              PreparedStatement ps = c.prepareStatement(sql)) {
             for (int i = 0; i < p.size(); i++) {
                 ps.setObject(i + 1, p.get(i));
@@ -206,6 +199,8 @@ public final class B1SqlLabelStore implements B1LabelStore {
         sb.append("# Password: meglio nella variabile d'ambiente B1_SQL_PASSWORD (non nel file).\n");
         sb.append("enabled = false\n");
         sb.append("jdbc.url = jdbc:sqlserver://srv-bambury:1433;databaseName=DATA_BAMBURY;encrypt=true;trustServerCertificate=true;loginTimeout=5\n");
+        sb.append("# Consigliato: auth = windows (autenticazione Windows, nessuna password, permessi al gruppo di dominio sul server)\n");
+        sb.append("# auth = windows\n");
         sb.append("jdbc.user =\n");
         sb.append("jdbc.password =\n");
         sb.append("# Tabella di B1 (da confermare: es. dbo.Datas_B1) e modalita' insert|update\n");

@@ -22,9 +22,7 @@ public final class B1TrendSqlCheck {
         System.out.println("file       : " + file.toAbsolutePath() + (Files.isReadable(file) ? "" : "  (NON TROVATO)"));
         Properties cfg = B1TrendSqlHistory.readConfig(file);
         System.out.println("jdbc.url   : " + (cfg.getProperty("jdbc.url", "").trim().isEmpty() ? "(vuoto)" : "impostato"));
-        System.out.println("jdbc.user  : " + (cfg.getProperty("jdbc.user", "").trim().isEmpty() ? "(vuoto)" : cfg.getProperty("jdbc.user").trim()));
-        System.out.println("password   : " + (System.getenv("B1_SQL_PASSWORD") != null ? "da B1_SQL_PASSWORD"
-                : cfg.getProperty("jdbc.password", "").isEmpty() ? "(mancante)" : "da jdbc.password (meglio la variabile d'ambiente)"));
+        System.out.println("accesso    : " + B1Jdbc.describe(cfg, "B1_SQL_PASSWORD"));
         try {
             B1TrendSqlHistory.Data d = B1TrendSqlHistory.load(cfg);
             if (d == null) {

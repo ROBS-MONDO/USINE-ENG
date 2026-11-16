@@ -215,3 +215,9 @@ Non provato su SQL Server: prima prova a secco e backup.
 * Verifica sul database del backup (2014-2020): 27 ricette su 28 valide (la 28esima, "lando", ha rotor 0 in una fase); la fase 1 di "S.TAPIS SPORT-IMPACT" coincide con la foto della pagina Process
   (timeout 30, rotor 33, pressione 20,0, tempo 20).
 
+## Password solo sul server: autenticazione Windows
+* `B1Jdbc` (usata da ricette, storico trend e ticket): con `auth = windows` nei file `*.properties` ci si collega a SQL Server con l'account Windows/dominio di chi lancia il programma
+  (`integratedSecurity=true`): **nessuna password in file o variabili d'ambiente**, i permessi li dà il server a un gruppo di dominio (`sql/grant_b1_windows_group.sql`).
+* Serve la libreria nativa `mssql-jdbc_auth-<versione>.<arch>.dll` (nel pacchetto del driver Microsoft) in una cartella del `PATH` o in `java.library.path` sul PC.
+* Senza `auth = windows` resta l'utente SQL (`jdbc.user`, password in variabile d'ambiente): da usare solo se l'autenticazione Windows non e' possibile.
+

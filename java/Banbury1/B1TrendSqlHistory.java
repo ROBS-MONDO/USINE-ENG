@@ -3,7 +3,6 @@ package Banbury1;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -61,24 +60,18 @@ public final class B1TrendSqlHistory {
 
     /** Legge lo storico; null se il database non e' configurato o disattivato. */
     public static Data load(Properties cfg) throws Exception {
-        String url = cfg.getProperty("jdbc.url", "").trim();
-        String user = cfg.getProperty("jdbc.user", "").trim();
-        if (url.isEmpty() || user.isEmpty() || "false".equalsIgnoreCase(cfg.getProperty("trend.sql", "true").trim())) {
+        if (!B1Jdbc.configured(cfg) || "false".equalsIgnoreCase(cfg.getProperty("trend.sql", "true").trim())) {
             return null;
         }
         String table = cfg.getProperty("trend.table", "dbo.Datas_B1").trim();
         if (!validTable(table)) {
             throw new IllegalArgumentException("trend.table non valida: " + table);
         }
-        String pwd = System.getenv("B1_SQL_PASSWORD");
-        if (pwd == null) {
-            pwd = cfg.getProperty("jdbc.password", "");
-        }
         List<B1TrendChart.Series> series = B1TrendChart.defaultSeries();
         List<long[]> times = new ArrayList<>();
         List<double[]> vals = new ArrayList<>();
         List<String[]> events = new ArrayList<>();
-        try (Connection c = DriverManager.getConnection(url, user, pwd);
+        try (Connection c = B1Jdbc.open(cfg, "B1_SQL_PASSWORD");
              PreparedStatement ps = c.prepareStatement(buildSql(table, series));
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {

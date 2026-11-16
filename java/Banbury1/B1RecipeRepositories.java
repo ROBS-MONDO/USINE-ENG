@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
@@ -39,16 +38,10 @@ public final class B1RecipeRepositories {
         if (!"true".equalsIgnoreCase(p.getProperty("enabled", "false").trim())) {
             return new B1FileRecipeRepository(dir, layout);
         }
-        final String url = p.getProperty("jdbc.url", "").trim();
-        final String user = p.getProperty("jdbc.user", "").trim();
-        String pwd = System.getenv("B1_RECIPES_SQL_PASSWORD");
-        if (pwd == null) {
-            pwd = p.getProperty("jdbc.password", "");
-        }
-        final String password = pwd;
-        String shortUrl = url.replaceAll("(?i);?(user|password)=[^;]*", "");
+        final String shortUrl = B1Jdbc.url(p).replaceAll("(?i);?(user|password)=[^;]*", "");
+        final Properties cfg = p;
         B1SqlRecipeRepository sql = new B1SqlRecipeRepository(
-                () -> DriverManager.getConnection(url, user, password), layout, "SQL Server: " + shortUrl);
+                () -> B1Jdbc.open(cfg, "B1_RECIPES_SQL_PASSWORD"), layout, "SQL Server: " + shortUrl);
         try {
             sql.list(); // prova di connessione e di esistenza delle tabelle
             System.out.println("Ricette B1: archivio SQL Server (" + shortUrl + ")");
