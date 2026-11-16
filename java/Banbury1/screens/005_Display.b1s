@@ -9,16 +9,14 @@ obj|TEXT|ST_title4|10|125|170|175|Temps||-1||D4D0C8||
 obj|IO|IO_value7|170|125|305|175|||-1||||
 obj|TEXT|ST_unit7|305|125|380|175|HH:ss||-1||||
 obj|TEXT|ST_title1|460|125|620|175|Vitesse||-1||D4D0C8||
-obj|IO|IO_value4|620|125|755|175||DB110DBW58|-1|999|||
-obj|TEXT|ST_unit4|755|125|815|175|rpm||-1||||
-obj|IO|IO_value5|820|125|955|175||DB110DBW60|-1|999|||
-obj|TEXT|ST_unit5|955|125|1015|175|rpm||-1||||
+obj|IO|IO_value5|620|125|755|175||DB110DBW60|-1|999|||
+obj|TEXT|ST_unit5|755|125|815|175|rpm||-1||||
 obj|TEXT|ST_title17|10|175|170|225|Malaxage||-1||D4D0C8||
 obj|IO|IO_value8|170|175|305|225|||-1||||
 obj|TEXT|ST_unit8|305|175|380|225|HH:ss||-1||||
 obj|TEXT|ST_title14|460|175|620|225|Courant||-1||D4D0C8||
-obj|IO|IO_value9|820|175|955|225||DB110DBW62|-1|9999|||
-obj|TEXT|ST_unit9|955|175|1015|225|A||-1||||
+obj|IO|IO_value9|620|175|755|225||DB110DBW62|-1|9999|||
+obj|TEXT|ST_unit9|755|175|815|225|A||-1||||
 obj|CONTROL|Control1|5|235|450|635|||-1||||
 obj|TEXT|ST_title15|455|245|1020|295|PISTON||-1||FFFFFF||
 obj|TEXT|ST_title7|455|300|1020|575|Line speed||-1||||
