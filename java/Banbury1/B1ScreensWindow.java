@@ -131,10 +131,16 @@ public class B1ScreensWindow extends JFrame {
                 public void mouseClicked(MouseEvent e) {
                     int x = (int) (e.getX() / scaleX());
                     int y = (int) (e.getY() / scaleY());
-                    if (y >= 650) {
-                        int idx = navIndexAt(x, y);
-                        if (idx >= 0) {
-                            show(SCREENS[idx][0]);
+                    for (B1BottomBar.Btn b : barButtons()) {
+                        if (b.contains(x - BAR_X, y - BAR_Y)) {
+                            if (b.action != null) {
+                                b.action.run();
+                            } else {
+                                message = "'" + b.name + "': non disponibile (sola lettura)";
+                                messageUntil = System.currentTimeMillis() + 4000;
+                                repaint();
+                            }
+                            return;
                         }
                     }
                 }
@@ -156,21 +162,46 @@ public class B1ScreensWindow extends JFrame {
             return Math.max(0.1, getHeight() / (double) H);
         }
 
-        // barra di navigazione: bottoni a due righe
-        private Rectangle2D navRect(int i) {
-            int perRow = 7;
-            int bw = 140, bh = 32;
-            int row = i / perRow, col = i % perRow;
-            return new Rectangle2D.Double(10 + col * (bw + 4), 652 + row * (bh + 4), bw, bh);
-        }
+        // barra pulsanti comune (B1BottomBar), uguale al sinottico: in basso, sopra la riga di stato
+        private static final int BAR_X = 7;
+        private static final int BAR_Y = 700;
+        private java.util.List<B1BottomBar.Btn> barButtons;
 
-        private int navIndexAt(int x, int y) {
-            for (int i = 0; i < SCREENS.length; i++) {
-                if (navRect(i).contains(x, y)) {
-                    return i;
+        private final B1BottomBar.Env barEnv = new B1BottomBar.Env() {
+            @Override
+            public B1Source src() {
+                return src;
+            }
+
+            @Override
+            public B1RecipeBridge bridge() {
+                return B1_Main.BRIDGE;
+            }
+
+            @Override
+            public B1Tags tags() {
+                return B1_Main.TAGS;
+            }
+
+            @Override
+            public java.awt.Window window() {
+                return SwingUtilities.getWindowAncestor(ScreenPanel.this);
+            }
+
+            @Override
+            public void exit() {
+                java.awt.Window w = SwingUtilities.getWindowAncestor(ScreenPanel.this);
+                if (w != null) {
+                    w.dispatchEvent(new java.awt.event.WindowEvent(w, java.awt.event.WindowEvent.WINDOW_CLOSING));
                 }
             }
-            return -1;
+        };
+
+        private java.util.List<B1BottomBar.Btn> barButtons() {
+            if (barButtons == null) {
+                barButtons = B1BottomBar.buttons(barEnv);
+            }
+            return barButtons;
         }
 
         @Override
@@ -204,24 +235,15 @@ public class B1ScreensWindow extends JFrame {
         private void drawNav(Graphics2D g) {
             g.setColor(new Color(0xB4B4B4));
             g.fillRect(0, 648, W, 120);
-            for (int i = 0; i < SCREENS.length; i++) {
-                Rectangle2D r = navRect(i);
-                boolean cur = SCREENS[i][0].equals(contentName);
-                g.setPaint(new GradientPaint(0, (float) r.getY(), cur ? new Color(0xBFD7FF) : Color.WHITE,
-                        0, (float) (r.getY() + r.getHeight()), cur ? new Color(0x86AEEA) : new Color(0xCFCFCF)));
-                g.fill(r);
-                g.setColor(new Color(0x808080));
-                g.draw(r);
-                g.setColor(Color.BLACK);
-                g.setFont(new Font("Arial", Font.PLAIN, 12));
-                FontMetrics fm = g.getFontMetrics();
-                String t = SCREENS[i][1];
-                g.drawString(t, (int) (r.getX() + (r.getWidth() - fm.stringWidth(t)) / 2),
-                        (int) (r.getY() + (r.getHeight() + fm.getAscent()) / 2 - 3));
-            }
+            g.translate(BAR_X, BAR_Y);
+            B1BottomBar.paint(g, barButtons());
+            g.translate(-BAR_X, -BAR_Y);
             g.setColor(new Color(0x404040));
             g.setFont(new Font("Arial", Font.PLAIN, 10));
             String st = src.connected() ? "PLC: " + src.status() : "PLC non connesso - " + src.status();
+            if (System.currentTimeMillis() < messageUntil) {
+                st = message;
+            }
             g.drawString(st + "   |   SOLA LETTURA   |   F2: indirizzi", 10, 765);
         }
 

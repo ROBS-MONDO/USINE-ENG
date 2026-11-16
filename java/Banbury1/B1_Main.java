@@ -58,6 +58,9 @@ public class B1_Main extends JFrame {
         super("Banbury 1 - MCC-240 T - " + VERSION);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         panel = new SynPanel(src, bridge, tags);
+        INSTANCE = this;
+        BRIDGE = bridge;
+        TAGS = tags;
         setContentPane(panel);
         pack();
         setLocationRelativeTo(null);
@@ -159,6 +162,21 @@ public class B1_Main extends JFrame {
 
     /** Motore allarmi e configurazione SQL condivisi con le finestre aperte dal sinottico. */
     static volatile B1AlarmEngine ENGINE = new B1AlarmEngine(new java.util.ArrayList<>(), null);
+    /** Finestra principale (per il pulsante Synoptic delle altre finestre), ricetta e tag condivisi. */
+    static volatile B1_Main INSTANCE;
+    static volatile B1RecipeBridge BRIDGE;
+    static volatile B1Tags TAGS;
+
+    /** Porta in primo piano il sinottico. */
+    static void showMain() {
+        SwingUtilities.invokeLater(() -> {
+            B1_Main m = INSTANCE;
+            if (m != null) {
+                m.setExtendedState(m.getExtendedState() & ~JFrame.ICONIFIED);
+                m.toFront();
+            }
+        });
+    }
     static volatile Path SQL_CONFIG = Paths.get("b1_label_sql.properties");
 
     private static B1Source newPlcSource(B1Tags tags, String ip, B1RecipeLayout layout, int period,
@@ -883,118 +901,51 @@ public class B1_Main extends JFrame {
         }
 
         // ---------------- barra pulsanti, allarmi, orologio ----------------
-        private void drawBottomBar(Graphics2D g) {
-            // ordine delle schermate WinCC: 001 Synoptic, 002 Process, 003 Trends, 004 Alarms, 005 Display,
-            // 006 Recipes, 007 Production, 008 Settings, 009 Temperatures, 010 Components
-            String[] names = {"Synoptic", "Process", "Trends", "Alarms", "Display", "Recettes", "Production",
-                    "Settings", "Temperatures", "Components"};
-            int[] xs = {7, 62, 137, 192, 247, 302, 357, 412, 467, 522};
-            for (int i = 0; i < names.length; i++) {
-                int x = xs[i], y = 686, w = 52, h = 52;
-                g.setPaint(new GradientPaint(x, y, Color.WHITE, x, y + h, new Color(0xCFCFCF)));
-                g.fillRect(x, y, w, h);
-                g.setColor(new Color(0x808080));
-                g.drawRect(x, y, w - 1, h - 1);
-                icon(g, i, x, y);
-                final String[] target = {null, "002_Process", "003_Trends", "004_Alarms", "005_Display", null,
-                        "007_Production", "008_Settings", "009_Temperatures", "010_Components"};
-                if (i == 5 && bridge != null) {
-                    hits.add(new Hit(x, y, w, h, names[i], () -> bridge.openEditor(null)));
-                } else if (i == 2) {
-                    hits.add(new Hit(x, y, w, h, names[i], () -> B1TrendWindow.open(src)));
-                } else if (i == 3) {
-                    hits.add(new Hit(x, y, w, h, names[i], () -> B1AlarmWindow.open(src, ENGINE)));
-                } else if (target[i] != null) {
-                    final String scr = target[i];
-                    hits.add(new Hit(x, y, w, h, names[i], () -> B1ScreensWindow.open(src, scr)));
-                } else {
-                    hits.add(new Hit(x, y, w, h, names[i]));
-                }
-            }
-            String[] t = {"Govoni", "B2", "B2 main", "Valori PLC", "Etichetta"};
-            int[] tx = {578, 632, 688, 752, 826};
-            int[] tw = {48, 48, 58, 70, 66};
-            for (int i = 0; i < t.length; i++) {
-                g.setPaint(new GradientPaint(tx[i], 686, Color.WHITE, tx[i], 736, new Color(0xCFCFCF)));
-                g.fillRect(tx[i], 686, tw[i], 50);
-                g.setColor(new Color(0x808080));
-                g.drawRect(tx[i], 686, tw[i] - 1, 49);
-                text(g, t[i], tx[i], 686, tw[i], 50, new Font("Arial", Font.PLAIN, 11), Color.BLACK, 0);
-                if (i == 0) {
-                    hits.add(new Hit(tx[i], 686, tw[i], 50, t[i], () -> B1ScreensWindow.open(src, "301_GovoniSynoptique2Bambury1")));
-                } else if (i == 3) {
-                    hits.add(new Hit(tx[i], 686, tw[i], 50, t[i], () -> B1RawViewer.open(src, tags)));
-                } else if (i == 4 && bridge != null) {
-                    hits.add(new Hit(tx[i], 686, tw[i], 50, t[i], () -> B1LabelDialog.open(
-                            (JFrame) SwingUtilities.getWindowAncestor(this), bridge)));
-                } else {
-                    hits.add(new Hit(tx[i], 686, tw[i], 50, t[i]));
-                }
-            }
-            g.setPaint(new GradientPaint(932, 685, Color.WHITE, 932, 737, new Color(0xCFCFCF)));
-            g.fillRect(932, 685, 88, 52);
-            g.setColor(new Color(0x808080));
-            g.drawRect(932, 685, 87, 51);
-            g.setColor(new Color(0xD01010));
-            g.fillRect(956, 700, 60, 22);
-            text(g, "EXIT", 956, 700, 60, 22, fBold, Color.WHITE, 0);
-            hits.add(new Hit(932, 685, 88, 52, "EXIT"));
-        }
+        private List<B1BottomBar.Btn> barButtons;
 
-        private void icon(Graphics2D g, int i, int x, int y) {
-            int cx = x + 26, cy = y + 26;
-            g.setStroke(new BasicStroke(2f));
-            switch (i) {
-                case 0:
-                    g.setColor(new Color(0xE0B020));
-                    g.fillPolygon(new int[]{cx - 14, cx + 14, cx}, new int[]{cy, cy, cy - 14}, 3);
-                    g.fillRect(cx - 10, cy, 20, 12);
-                    break;
-                case 1:
-                    g.setColor(new Color(0xC02020));
-                    g.drawOval(cx - 16, cy - 6, 18, 18);
-                    g.drawOval(cx - 2, cy - 14, 18, 18);
-                    break;
-                case 2:
-                    g.setColor(new Color(0x2060C0));
-                    g.drawPolyline(new int[]{cx - 16, cx - 6, cx + 2, cx + 16}, new int[]{cy + 8, cy - 4, cy + 2, cy - 12}, 4);
-                    break;
-                case 3:
-                    g.setColor(new Color(0xD02020));
-                    g.fillRect(cx - 12, cy - 10, 24, 20);
-                    break;
-                case 4:
-                    g.setColor(new Color(0x40A040));
-                    g.drawOval(cx - 12, cy - 12, 16, 16);
-                    g.drawLine(cx + 2, cy + 2, cx + 14, cy + 14);
-                    break;
-                case 5:
-                    g.setColor(new Color(0x2060C0));
-                    g.fillRect(cx - 14, cy - 10, 28, 18);
-                    g.fillRect(cx - 6, cy + 8, 12, 4);
-                    break;
-                case 6:
-                    g.setColor(new Color(0xC02020));
-                    g.fillRect(cx - 10, cy - 12, 20, 24);
-                    break;
-                case 7:
-                    g.setColor(new Color(0xC02020));
-                    g.drawLine(cx - 12, cy + 12, cx + 10, cy - 10);
-                    g.setColor(new Color(0x2060C0));
-                    g.fillOval(cx + 4, cy - 14, 10, 10);
-                    break;
-                case 8:
-                    g.setColor(new Color(0xD02020));
-                    g.fillOval(cx - 14, cy - 2, 12, 12);
-                    g.setColor(new Color(0x2060C0));
-                    g.fillOval(cx + 2, cy - 2, 12, 12);
-                    break;
-                default:
-                    g.setColor(new Color(0x20A020));
-                    g.drawArc(cx - 14, cy - 14, 28, 28, 30, 270);
-                    g.fillPolygon(new int[]{cx + 8, cx + 18, cx + 14}, new int[]{cy - 14, cy - 12, cy - 4}, 3);
+        private final B1BottomBar.Env barEnv = new B1BottomBar.Env() {
+            @Override
+            public B1Source src() {
+                return src;
             }
-            g.setStroke(new BasicStroke(1));
+
+            @Override
+            public B1RecipeBridge bridge() {
+                return bridge;
+            }
+
+            @Override
+            public B1Tags tags() {
+                return tags;
+            }
+
+            @Override
+            public java.awt.Window window() {
+                return SwingUtilities.getWindowAncestor(SynPanel.this);
+            }
+
+            @Override
+            public void exit() {
+                // non usato: nel sinottico principale EXIT resta com'era (nessuna azione)
+            }
+
+            @Override
+            public boolean exitEnabled() {
+                return false;
+            }
+        };
+
+        // barra pulsanti comune (B1BottomBar), uguale in tutte le schermate
+        private void drawBottomBar(Graphics2D g) {
+            if (barButtons == null) {
+                barButtons = B1BottomBar.buttons(barEnv);
+            }
+            g.translate(0, 686);
+            B1BottomBar.paint(g, barButtons);
+            g.translate(0, -686);
+            for (B1BottomBar.Btn b : barButtons) {
+                hits.add(new Hit(b.x, b.y + 686, b.w, b.h, b.name, b.action));
+            }
         }
 
         private void drawAlarms(Graphics2D g) {
