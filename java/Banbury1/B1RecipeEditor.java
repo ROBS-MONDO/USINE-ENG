@@ -706,12 +706,26 @@ public class B1RecipeEditor extends JFrame {
 
                 @Override
                 protected void done() {
+                    B1RecipeSendLog.Entry log = new B1RecipeSendLog.Entry();
+                    log.recipeUid = plan.recipeUid;
+                    log.name = plan.recipeName;
+                    log.recipeNo = plan.recipeNo;
+                    log.revision = plan.recipeRevision;
+                    log.user = user;
+                    log.words = plan.changes.size();
                     try {
                         java.nio.file.Path backup = get();
+                        log.ok = true;
+                        log.backup = String.valueOf(backup);
+                        log.message = "Ricetta inviata e verificata";
+                        B1RecipeSendLog.record(log);
                         lblStatus.setText("Ricetta inviata e verificata. Copia di sicurezza: " + backup);
                         JOptionPane.showMessageDialog(EditorPanel.this, "Ricetta inviata e verificata.\nCopia di sicurezza: " + backup);
                     } catch (Exception e) {
                         Throwable t = e.getCause() != null ? e.getCause() : e;
+                        log.ok = false;
+                        log.message = t.getMessage() != null ? t.getMessage() : t.toString();
+                        B1RecipeSendLog.record(log);
                         error("Invio fallito: " + (t.getMessage() != null ? t.getMessage() : t.toString()));
                     }
                 }

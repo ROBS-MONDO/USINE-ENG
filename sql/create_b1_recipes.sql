@@ -28,6 +28,24 @@ CREATE TABLE dbo.B1RecipeValues (
 );
 GO
 
+-- Registro degli invii al PLC (tracciabilita', come RecipePLC di B2): una riga per ogni invio, riuscito o no
+CREATE TABLE dbo.B1RecipePLC (
+    Id            BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_B1RecipePLC PRIMARY KEY,
+    DataOra       DATETIME2(0)  NOT NULL,
+    RecipeUID     NVARCHAR(36)  NULL,
+    Nome          NVARCHAR(32)  NOT NULL,
+    NumRicetta    INT           NOT NULL CONSTRAINT DF_B1RecipePLC_Num DEFAULT 0,
+    Revisione     BIGINT        NOT NULL CONSTRAINT DF_B1RecipePLC_Rev DEFAULT 0,
+    Utente        NVARCHAR(100) NOT NULL CONSTRAINT DF_B1RecipePLC_Utente DEFAULT N'',
+    Postazione    NVARCHAR(100) NOT NULL CONSTRAINT DF_B1RecipePLC_Post DEFAULT N'',
+    Esito         NVARCHAR(10)  NOT NULL,           -- OK oppure ERRORE
+    ParoleScritte INT           NOT NULL CONSTRAINT DF_B1RecipePLC_Parole DEFAULT 0,
+    Backup        NVARCHAR(260) NULL,               -- copia di sicurezza del DB201 prima dell'invio
+    Messaggio     NVARCHAR(400) NULL
+);
+CREATE INDEX IX_B1RecipePLC_DataOra ON dbo.B1RecipePLC (DataOra DESC);
+GO
+
 -- OPZIONALE: utente dedicato per il programma B1 (consigliato: non usare un account amministrativo sulle postazioni).
 -- Se vuoi usarlo, togli i commenti "-- " alle righe qui sotto e sostituisci <PASSWORD>.
 -- In alternativa assegna gli stessi permessi (GRANT) a un utente gia' esistente.
@@ -39,6 +57,7 @@ GO
 -- CREATE USER [b1_recipes] FOR LOGIN [b1_recipes];
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.B1Recipes TO [b1_recipes];
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.B1RecipeValues TO [b1_recipes];
+-- GRANT SELECT, INSERT ON OBJECT::dbo.B1RecipePLC TO [b1_recipes];
 -- GO
 
 

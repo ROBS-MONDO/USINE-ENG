@@ -221,3 +221,8 @@ Non provato su SQL Server: prima prova a secco e backup.
 * Serve la libreria nativa `mssql-jdbc_auth-<versione>.<arch>.dll` (nel pacchetto del driver Microsoft) in una cartella del `PATH` o in `java.library.path` sul PC.
 * Senza `auth = windows` resta l'utente SQL (`jdbc.user`, password in variabile d'ambiente): da usare solo se l'autenticazione Windows non e' possibile.
 
+## Registro degli invii al PLC (tracciabilita')
+* `B1RecipeSendLog`: ogni invio (riuscito o no) viene registrato in `C:\_tools\Banbury1\b1_invii_ricette.csv` e, se l'archivio ricette e' su SQL Server, anche in `dbo.B1RecipePLC`
+  (data/ora, ricetta, UID e revisione dell'archivio, numero ricetta, utente, postazione, esito, parole scritte, copia di sicurezza, messaggio). Un errore nel registro non annulla l'invio.
+* Tabella e permessi in `sql/create_b1_recipes.sql` e `sql/grant_b1_windows_group.sql` (l'utente deve poter fare SELECT e INSERT).
+

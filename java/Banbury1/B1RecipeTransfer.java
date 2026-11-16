@@ -102,6 +102,11 @@ public final class B1RecipeTransfer {
         public byte[] current;
         public byte[] image;
         public int db;
+        // ricetta inviata (per il registro degli invii)
+        public String recipeUid = "";
+        public String recipeName = "";
+        public int recipeNo;
+        public long recipeRevision;
     }
 
     /**
@@ -111,6 +116,10 @@ public final class B1RecipeTransfer {
     public static Plan plan(B1Recipe r, B1RecipeLayout l, byte[] currentDb, byte[] db110) {
         Plan p = new Plan();
         p.db = l.db;
+        p.recipeUid = r.uid;
+        p.recipeName = r.name == null ? "" : r.name.trim();
+        p.recipeNo = r.recipeNo;
+        p.recipeRevision = r.revision;
         p.current = currentDb;
         for (String e : B1RecipeCodec.validate(r, l)) {
             p.blockers.add("Ricetta non valida: " + e);
