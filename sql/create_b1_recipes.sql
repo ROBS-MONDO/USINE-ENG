@@ -18,7 +18,7 @@ CREATE TABLE dbo.B1Recipes (
 );
 GO
 
--- Valori della ricetta: Fase 0 = testata, 1..11 = fasi; Chiave = nome del campo (es. rpm, timeout, temp, press, ops)
+-- Valori della ricetta: Fase 0 = testata, 1..10 = fasi; Chiave = nome del campo (es. rpm, timeout, temp, press, ops)
 CREATE TABLE dbo.B1RecipeValues (
     RecipeId INT          NOT NULL CONSTRAINT FK_B1RecipeValues_Recipe REFERENCES dbo.B1Recipes(Id),
     Fase     SMALLINT     NOT NULL,
@@ -28,15 +28,19 @@ CREATE TABLE dbo.B1RecipeValues (
 );
 GO
 
--- Utente dell'editor ricette: legge e scrive SOLO queste due tabelle (nessun altro oggetto, nessun DELETE/ALTER altrove)
-USE [master];
-CREATE LOGIN [b1_recipes] WITH PASSWORD = N'<PASSWORD>', CHECK_POLICY = ON, CHECK_EXPIRATION = OFF;
-GO
-USE [mondo];
-CREATE USER [b1_recipes] FOR LOGIN [b1_recipes];
-GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.B1Recipes TO [b1_recipes];
-GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.B1RecipeValues TO [b1_recipes];
-GO
+-- OPZIONALE: utente dedicato per il programma B1 (consigliato: non usare un account amministrativo sulle postazioni).
+-- Se vuoi usarlo, togli i commenti "-- " alle righe qui sotto e sostituisci <PASSWORD>.
+-- In alternativa assegna gli stessi permessi (GRANT) a un utente gia' esistente.
+-- Legge e scrive SOLO queste due tabelle (nessun altro oggetto).
+-- USE [master];
+-- CREATE LOGIN [b1_recipes] WITH PASSWORD = N'<PASSWORD>', CHECK_POLICY = ON, CHECK_EXPIRATION = OFF;
+-- GO
+-- USE [mondo];
+-- CREATE USER [b1_recipes] FOR LOGIN [b1_recipes];
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.B1Recipes TO [b1_recipes];
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.B1RecipeValues TO [b1_recipes];
+-- GO
+
 
 -- Verifica
 -- SELECT * FROM dbo.B1Recipes;
