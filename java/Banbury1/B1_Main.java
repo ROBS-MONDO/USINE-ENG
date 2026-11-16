@@ -277,9 +277,8 @@ public class B1_Main extends JFrame {
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    double s = scale();
-                    int px = (int) ((e.getX() - offX()) / s) + OX;
-                    int py = (int) ((e.getY() - offY()) / s) + OY;
+                    int px = (int) (e.getX() / scaleX()) + OX;
+                    int py = (int) (e.getY() / scaleY()) + OY;
                     for (Hit h : hits) {
                         if (px >= h.x && px < h.x + h.w && py >= h.y && py < h.y + h.h) {
                             if (h.action != null) {
@@ -296,16 +295,13 @@ public class B1_Main extends JFrame {
             requestFocusInWindow();
         }
 
-        private double scale() {
-            return Math.min(getWidth() / (double) BASE_W, getHeight() / (double) BASE_H);
+        // il sinottico riempie tutta la finestra (come il WinCC a schermo intero): scala separata in larghezza e altezza
+        private double scaleX() {
+            return Math.max(0.1, getWidth() / (double) BASE_W);
         }
 
-        private double offX() {
-            return (getWidth() - BASE_W * scale()) / 2;
-        }
-
-        private double offY() {
-            return (getHeight() - BASE_H * scale()) / 2;
+        private double scaleY() {
+            return Math.max(0.1, getHeight() / (double) BASE_H);
         }
 
         // ---------------------------------------------------------------
@@ -316,9 +312,9 @@ public class B1_Main extends JFrame {
             g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             g.setColor(new Color(0xAAAAAA));
             g.fillRect(0, 0, getWidth(), getHeight());
-            double s = getWidth() > 0 ? scale() : 1.0;
-            g.translate(offX(), offY());
-            g.scale(s, s);
+            if (getWidth() > 0) {
+                g.scale(scaleX(), scaleY());
+            }
             g.translate(-OX, -OY);
             hits.clear();
             drawAll(g);

@@ -129,9 +129,8 @@ public class B1ScreensWindow extends JFrame {
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    double s = scale();
-                    int x = (int) ((e.getX() - offX()) / s);
-                    int y = (int) ((e.getY() - offY()) / s);
+                    int x = (int) (e.getX() / scaleX());
+                    int y = (int) (e.getY() / scaleY());
                     if (y >= 650) {
                         int idx = navIndexAt(x, y);
                         if (idx >= 0) {
@@ -148,16 +147,13 @@ public class B1ScreensWindow extends JFrame {
             repaint();
         }
 
-        private double scale() {
-            return Math.max(0.1, Math.min(getWidth() / (double) W, getHeight() / (double) H));
+        // le schermate riempiono tutta la finestra (come il WinCC a schermo intero): scala separata in larghezza e altezza
+        private double scaleX() {
+            return Math.max(0.1, getWidth() / (double) W);
         }
 
-        private double offX() {
-            return (getWidth() - W * scale()) / 2;
-        }
-
-        private double offY() {
-            return (getHeight() - H * scale()) / 2;
+        private double scaleY() {
+            return Math.max(0.1, getHeight() / (double) H);
         }
 
         // barra di navigazione: bottoni a due righe
@@ -184,9 +180,9 @@ public class B1ScreensWindow extends JFrame {
             g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             g.setColor(new Color(0xAAAAAA));
             g.fillRect(0, 0, getWidth(), getHeight());
-            double s = getWidth() > 0 ? scale() : 1.0;
-            g.translate(offX(), offY());
-            g.scale(s, s);
+            if (getWidth() > 0) {
+                g.scale(scaleX(), scaleY());
+            }
             g.setPaint(new GradientPaint(0, 0, new Color(0xC6C6C6), 0, H, new Color(0xE2E2E2)));
             g.fillRect(0, 0, W, H);
             if (content != null) {
