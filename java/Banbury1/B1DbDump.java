@@ -31,6 +31,14 @@ public class B1DbDump {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
+            // senza argomenti: PLC di B1, DB110/201/150 ogni 500 ms, registro con data e ora nel nome
+            String dir = new java.io.File("C:\\_tools\\Banbury1").isDirectory() ? "C:\\_tools\\Banbury1\\" : "";
+            String name = dir + "log_b1_" + java.time.LocalDateTime.now()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".txt";
+            args = new String[]{"192.168.10.100", "-i", "500", "-o", name, "110", "201", "150"};
+            System.out.println("Nessun argomento: uso " + String.join(" ", args));
+        }
+        if (args.length < 1) {
             System.err.println("Uso: java Banbury1.B1DbDump <ip> [-r rack] [-s slot] [-p porta] [-i ms] [-o file.txt] [--once] [DB...]");
             System.exit(2);
         }

@@ -101,6 +101,7 @@ public class B1_Main extends JFrame {
         if (!Files.isDirectory(recipeDir) && !System.getProperty("os.name", "").toLowerCase().contains("win")) {
             recipeDir = Paths.get("b1_recipes");
         }
+        System.out.println(demo ? "Banbury 1: modo DEMO (valori di esempio)" : "Banbury 1: PLC " + ip + " (sola lettura)");
         final B1RecipeLayout layout = B1RecipeLayout.load(layoutFile);
         final B1RecipeRepository repo = new B1FileRecipeRepository(recipeDir, layout);
         final B1RecipeBridge bridge = new B1RecipeBridge(repo, layout, ip);
