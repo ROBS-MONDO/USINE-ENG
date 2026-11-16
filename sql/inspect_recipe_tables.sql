@@ -1,7 +1,7 @@
 -- Guarda (SOLA LETTURA) le tabelle ricette trovate nel database [mondo] su srv-bambury:
 -- colonne, numero di righe e poche righe di esempio. Serve a capire quali contengono le ricette di Banbury 1.
 -- Eseguire in SSMS su srv-bambury (basta una query alla volta se il risultato e' lungo).
-USE [mondo];
+USE [mondo];   -- se il server ha il database con un altro nome (es. [Mondo]) cambia questa riga
 SET NOCOUNT ON;
 
 -- 1) Colonne delle tabelle candidate
@@ -22,8 +22,9 @@ WHERE t.name IN ('Recipes', 'RecipesSteps', 'GOV_RECIPES', 'GOV_RECIPE_COMPONENT
 GROUP BY t.name
 ORDER BY t.name;
 
--- 3) Poche righe di esempio (le piu' recenti non sono garantite: solo per vedere i dati)
-SELECT TOP (5) * FROM dbo.Recipes;
-SELECT TOP (5) * FROM dbo.RecipesSteps;
-SELECT TOP (5) * FROM dbo.GOV_RECIPES;
-SELECT TOP (5) * FROM dbo.GOV_RECIPE_LEGACY_ARCHIVE;
+-- 3) Poche righe di esempio (solo per le tabelle che esistono in questo database)
+IF OBJECT_ID('dbo.Recipes') IS NOT NULL EXEC ('SELECT TOP (5) * FROM dbo.Recipes');
+IF OBJECT_ID('dbo.RecipesSteps') IS NOT NULL EXEC ('SELECT TOP (5) * FROM dbo.RecipesSteps');
+IF OBJECT_ID('dbo.RecipePLC') IS NOT NULL EXEC ('SELECT TOP (5) * FROM dbo.RecipePLC');
+IF OBJECT_ID('dbo.GOV_RECIPES') IS NOT NULL EXEC ('SELECT TOP (5) * FROM dbo.GOV_RECIPES');
+IF OBJECT_ID('dbo.GOV_RECIPE_LEGACY_ARCHIVE') IS NOT NULL EXEC ('SELECT TOP (5) * FROM dbo.GOV_RECIPE_LEGACY_ARCHIVE');
