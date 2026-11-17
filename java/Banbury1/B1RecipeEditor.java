@@ -104,6 +104,11 @@ public class B1RecipeEditor extends JFrame {
      * se non c'e' la importa dal PLC (sola lettura).
      */
     public static void openShared(B1RecipeRepository repo, B1RecipeLayout layout, String plcIp, String recipeName) {
+        openShared(repo, layout, plcIp, recipeName, false);
+    }
+
+    /** Come sopra; con send=true, dopo aver selezionato la ricetta in archivio apre l'anteprima "Envoyer au PLC". */
+    public static void openShared(B1RecipeRepository repo, B1RecipeLayout layout, String plcIp, String recipeName, boolean send) {
         SwingUtilities.invokeLater(() -> {
             synchronized (B1RecipeEditor.class) {
                 if (shared == null || !shared.isDisplayable()) {
@@ -113,7 +118,9 @@ public class B1RecipeEditor extends JFrame {
                 shared.setExtendedState(JFrame.NORMAL);
                 shared.toFront();
                 shared.requestFocus();
-                if (recipeName != null && !recipeName.trim().isEmpty()) {
+                if (send && recipeName != null && !recipeName.trim().isEmpty()) {
+                    shared.panel.selectAndSend(recipeName);
+                } else if (recipeName != null && !recipeName.trim().isEmpty()) {
                     shared.panel.selectByName(recipeName);
                 } else {
                     shared.panel.autoImportIfEmpty();
@@ -608,6 +615,39 @@ public class B1RecipeEditor extends JFrame {
                 }
             }
             doImport(plcIp);
+        }
+
+        /** Download: seleziona la ricetta in archivio (se manca non invia nulla) e apre l'anteprima di invio al PLC. */
+        void selectAndSend(String name) {
+            if (!(current != null && !dirty && name.trim().equalsIgnoreCase(current.name.trim()))) {
+                if (!confirmDiscard()) {
+                    return;
+                }
+                refreshList();
+                B1RecipeRepository.Entry found = null;
+                for (B1RecipeRepository.Entry e : allEntries) {
+                    if (e.name.trim().equalsIgnoreCase(name.trim())) {
+                        found = e;
+                        break;
+                    }
+                }
+                if (found == null) {
+                    error("Recette introuvable dans l'archive : " + name);
+                    return;
+                }
+                try {
+                    loading = true;
+                    search.setText("");
+                    list.setSelectedValue(found, true);
+                    loading = false;
+                    show(repo.load(found.uid), false, "Recette de l'archive");
+                } catch (IOException ex) {
+                    loading = false;
+                    error("\u00c9chec de lecture : " + ex.getMessage());
+                    return;
+                }
+            }
+            sendToPlc();
         }
 
         /** Archivio ancora vuoto: parte dalla ricetta in macchina (lettura dal PLC, sola lettura) invece di mostrare un editor vuoto. */

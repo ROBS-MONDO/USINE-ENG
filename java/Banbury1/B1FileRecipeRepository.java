@@ -54,7 +54,7 @@ public final class B1FileRecipeRepository implements B1RecipeRepository {
                 try {
                     Map<String, String> m = read(p);
                     out.add(new Entry(m.getOrDefault("uid", ""), m.getOrDefault("name", "?"),
-                            m.getOrDefault("modified", ""), m.getOrDefault("modifiedBy", "")));
+                            m.getOrDefault("modified", ""), m.getOrDefault("modifiedBy", ""), i(m.get("recipeNo"))));
                 } catch (IOException e) {
                     // file illeggibile: lo ignora
                 }

@@ -104,6 +104,7 @@ public class B1_Main extends JFrame {
         System.out.println(demo ? "Banbury 1: modo DEMO (valori di esempio)" : "Banbury 1: PLC " + ip + " (sola lettura)");
         final B1RecipeLayout layout = B1RecipeLayout.load(layoutFile);
         final B1RecipeRepository repo = B1RecipeRepositories.open(layout, recipeDir);
+        PRODUCTIONS = B1ProductionRepositories.open(B1ProductionRepositories.DEFAULT_FILE);
         final B1RecipeBridge bridge = new B1RecipeBridge(repo, layout, ip);
         Path labelCfg = Paths.get("C:\\_tools\\Banbury1\\b1_label_sql.properties");
         if (!Files.exists(labelCfg) && Files.exists(Paths.get("b1_label_sql.properties"))) {
@@ -166,6 +167,8 @@ public class B1_Main extends JFrame {
     /** Finestra principale (per il pulsante Synoptic delle altre finestre), ricetta e tag condivisi. */
     static volatile B1_Main INSTANCE;
     static volatile B1RecipeBridge BRIDGE;
+    /** Archivio delle produzioni (pagina Production). */
+    static volatile B1ProductionRepository PRODUCTIONS;
     static volatile B1Tags TAGS;
 
     /** Porta in primo piano il sinottico. */

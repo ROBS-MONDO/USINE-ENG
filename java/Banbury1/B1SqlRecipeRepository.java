@@ -47,12 +47,12 @@ public final class B1SqlRecipeRepository implements B1RecipeRepository {
         List<Entry> out = new ArrayList<>();
         try (Connection c = connections.open();
              PreparedStatement ps = c.prepareStatement(
-                     "SELECT RecipeUID, Nome, Modifica, ModificatoDa FROM dbo.B1Recipes ORDER BY Nome");
+                     "SELECT RecipeUID, Nome, Modifica, ModificatoDa, NumRicetta FROM dbo.B1Recipes ORDER BY Nome");
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Timestamp t = rs.getTimestamp(3);
                 out.add(new Entry(rs.getString(1), rs.getString(2),
-                        t == null ? "" : t.toLocalDateTime().format(TS), rs.getString(4)));
+                        t == null ? "" : t.toLocalDateTime().format(TS), rs.getString(4), rs.getInt(5)));
             }
         } catch (SQLException e) {
             throw new IOException("Archive SQL illisible : " + e.getMessage(), e);

@@ -88,6 +88,9 @@ public class B1ScreensWindow extends JFrame {
     /** Disegna una schermata in un PNG (verifica senza schermo). */
     public static void snapshot(B1Source src, String screen, String out, boolean overlay) throws Exception {
         ScreenPanel p = new ScreenPanel(src, screen);
+        if (p.prodPage != null) {
+            p.prodPage.refreshNow(); // la cattura non aspetta il caricamento in background
+        }
         p.overlay = overlay;
         p.setSize(ScreenPanel.W, ScreenPanel.H);
         BufferedImage img = new BufferedImage(ScreenPanel.W, ScreenPanel.H, BufferedImage.TYPE_INT_RGB);
@@ -112,6 +115,8 @@ public class B1ScreensWindow extends JFrame {
         boolean overlay;
         private String message = "";
         private long messageUntil;
+        /** Pagina Production (solo quando e' la schermata attiva). */
+        private B1ProductionPage prodPage;
 
         ScreenPanel(B1Source src, String first) {
             this.src = src;
@@ -129,11 +134,19 @@ public class B1ScreensWindow extends JFrame {
                     repaint();
                 }
             });
+            addMouseWheelListener(e -> {
+                if (prodPage != null) {
+                    prodPage.wheel(e.getWheelRotation() * 2);
+                }
+            });
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     int x = (int) (e.getX() / scaleX());
                     int y = (int) (e.getY() / scaleY());
+                    if (prodPage != null && prodPage.click(x, y)) {
+                        return;
+                    }
                     for (B1BottomBar.Btn b : barButtons()) {
                         if (b.contains(x - BAR_X, y - BAR_Y)) {
                             if (b.action != null) {
@@ -153,6 +166,13 @@ public class B1ScreensWindow extends JFrame {
         void show(String screen) {
             contentName = screen;
             content = B1Screen.load(screen);
+            if ("007_Production".equals(screen)) {
+                prodPage = new B1ProductionPage(B1_Main.PRODUCTIONS, B1_Main.BRIDGE,
+                        () -> SwingUtilities.getWindowAncestor(ScreenPanel.this), this::repaint);
+                prodPage.refreshAsync();
+            } else {
+                prodPage = null;
+            }
             barButtons = null; // la barra cambia secondo la pagina (es. Production senza i pulsanti Govoni/B2/...)
             repaint();
         }
@@ -185,6 +205,11 @@ public class B1ScreensWindow extends JFrame {
             @Override
             public boolean extraButtons() {
                 return !"007_Production".equals(contentName);
+            }
+
+            @Override
+            public java.util.List<B1BottomBar.Btn> customButtons() {
+                return prodPage == null ? null : prodPage.barButtons();
             }
 
             @Override
@@ -236,6 +261,9 @@ public class B1ScreensWindow extends JFrame {
                 drawScreen(g, content, 0);
                 if ("002_Process".equals(contentName)) {
                     drawProcessTable(g);
+                }
+                if (prodPage != null && "007_Production".equals(contentName)) {
+                    prodPage.paint(g);
                 }
             } else {
                 g.setColor(Color.DARK_GRAY);
@@ -654,16 +682,20 @@ public class B1ScreensWindow extends JFrame {
         }
 
         /** Lampade collegate per nome: schermata/oggetto -> chiave B1Tags (bit confermati con il registro continuo). */
-        private final java.util.Map<String, String> lampKeys = java.util.Map.of(
-                "005_Display/GO_logo9", "piston_high",
-                "005_Display/GO_logo5", "piston_float",
-                "005_Display/GO_logo4", "piston_low",
-                "002_Process/GO_logo6", "prod_ready",
-                "002_Process/GO_logo5", "prod_auto",
-                "002_Process/GO_logo1", "prod_auto_on",
-                "002_Process/GO_logo7", "cycle_stopped",
-                "002_Process/GO_logo3", "new_load",
-                "002_Process/GO_logo4", "recipe_ok");
+        private final java.util.Map<String, String> lampKeys = java.util.Map.ofEntries(
+                java.util.Map.entry("005_Display/GO_logo9", "piston_high"),
+                java.util.Map.entry("005_Display/GO_logo5", "piston_float"),
+                java.util.Map.entry("005_Display/GO_logo4", "piston_low"),
+                java.util.Map.entry("002_Process/GO_logo6", "prod_ready"),
+                java.util.Map.entry("002_Process/GO_logo5", "prod_auto"),
+                java.util.Map.entry("002_Process/GO_logo1", "prod_auto_on"),
+                java.util.Map.entry("002_Process/GO_logo7", "cycle_stopped"),
+                java.util.Map.entry("002_Process/GO_logo3", "new_load"),
+                java.util.Map.entry("002_Process/GO_logo4", "recipe_ok"),
+                java.util.Map.entry("007_Production/GO_logo12", "transfer_enabled"),
+                java.util.Map.entry("007_Production/GO_logo7", "new_load"),
+                java.util.Map.entry("007_Production/GO_logo13", "transfer_end"),
+                java.util.Map.entry("007_Production/GO_logo14", "recipe_ok"));
 
         private void drawIo(Graphics2D g, B1Screen.Obj o, int dy) {
             g.setColor(GRAY);

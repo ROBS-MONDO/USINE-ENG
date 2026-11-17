@@ -158,6 +158,11 @@ public final class B1RecipeBridge {
         }
     }
 
+    /** Download dalla pagina Production: apre l'editor sulla ricetta e l'anteprima di invio al PLC (la scrittura resta protetta come sempre). */
+    public void openEditorAndSend(String name) {
+        B1RecipeEditor.openShared(repo, layout, plcIp, name, true);
+    }
+
     /** Apre (o porta in primo piano) l'editor; con name seleziona/importa la ricetta in macchina. */
     public void openEditor(String name) {
         B1RecipeEditor.openShared(repo, layout, plcIp, name);

@@ -155,6 +155,9 @@ public final class B1Tags {
         {"ph_act_time",   "Fase attuale, attuale: tempo s",            "DB110.W194"},
         {"ph_act_temp",   "Fase attuale, attuale: temperatura",        "DB110.W196"},
         {"ph_act_energy", "Fase attuale, attuale: energia kWh",        "DB110.W198*0.1"},
+        // --- pagina Production: scambio ricetta (log del WinCC del 16/11/2026) ---
+        {"transfer_enabled", "Trasferimento ricetta abilitato (DBW44 bit 12 a riposo)", "DB110.W44.B12"},
+        {"transfer_end",     "Fine trasferimento (DB201.DBX383.0)",                      "DB201.X383.0"},
         // --- posizioni ---
         {"pos_load",     "Posizione carico",       "DB110.W140.B11"},
         {"decel_load",   "Decelerazione carico",   "DB110.W140.B13"},

@@ -43,6 +43,11 @@ final class B1BottomBar {
         default boolean extraButtons() {
             return true;
         }
+
+        /** Pulsanti propri della pagina al posto di Govoni/B2/... (usati se extraButtons() e' false); null = nessuno. */
+        default List<Btn> customButtons() {
+            return null;
+        }
     }
 
     static final class Btn {
@@ -85,6 +90,12 @@ final class B1BottomBar {
             case "B2 main": return "B2 MAIN - Banbury 2 principal (pas encore connect\u00e9)";
             case "Valeurs PLC": return "VALEURS PLC - adresses et valeurs lues dans le PLC";
             case "\u00c9tiquette": return "\u00c9TIQUETTE - lecture de l'\u00e9tiquette QR de la recette";
+            case "Nouvelle": return "NOUVELLE - cr\u00e9er une production";
+            case "Supprimer": return "SUPPRIMER - effacer la production s\u00e9lectionn\u00e9e";
+            case "Modifier": return "MODIFIER - modifier la production s\u00e9lectionn\u00e9e";
+            case "Copier": return "COPIER - nouvelle production \u00e0 partir de la s\u00e9lectionn\u00e9e";
+            case "Enregistrer": return "ENREGISTRER - sauvegarder la production";
+            case "T\u00e9l\u00e9charger": return "T\u00c9L\u00c9CHARGER - envoyer la recette de la production au PLC (aper\u00e7u et confirmation)";
             case "EXIT": return "EXIT - ferme cette fen\u00eatre";
             default: return name;
         }
@@ -142,6 +153,9 @@ final class B1BottomBar {
             }
             l.add(new Btn(tx[i], 0, tw[i], 50, t[i], a));
         }
+        if (!env.extraButtons() && env.customButtons() != null) {
+            l.addAll(env.customButtons());
+        }
         l.add(new Btn(932, 0, 88, 52, "EXIT", env.exitEnabled() ? env::exit : null));
         return l;
     }
@@ -149,7 +163,9 @@ final class B1BottomBar {
     /** Disegna la barra con l'angolo in alto a sinistra in (0,0) del sistema di coordinate attuale. */
     static void paint(Graphics2D g, List<Btn> buttons) {
         for (Btn b : buttons) {
-            g.setPaint(new GradientPaint(b.x, b.y, Color.WHITE, b.x, b.y + b.h, new Color(0xCFCFCF)));
+            boolean download = b.name.equals("T\u00e9l\u00e9charger"); // il pulsante piu' importante della pagina Production
+            g.setPaint(download ? new GradientPaint(b.x, b.y, new Color(0xFFEFB0), b.x, b.y + b.h, new Color(0xF0B030))
+                    : new GradientPaint(b.x, b.y, Color.WHITE, b.x, b.y + b.h, new Color(0xCFCFCF)));
             g.fillRect(b.x, b.y, b.w, b.h);
             g.setColor(new Color(0x808080));
             g.drawRect(b.x, b.y, b.w - 1, b.h - 1);
@@ -161,7 +177,7 @@ final class B1BottomBar {
                 g.fillRect(b.x + 24, b.y + 15, 60, 22);
                 text(g, "EXIT", b.x + 24, b.y + 15, 60, 22, new Font("Arial", Font.BOLD, 14), Color.WHITE);
             } else {
-                text(g, b.name, b.x, b.y, b.w, b.h, new Font("Arial", Font.PLAIN, 11), Color.BLACK);
+                text(g, b.name, b.x, b.y, b.w, b.h, new Font("Arial", download ? Font.BOLD : Font.PLAIN, 11), Color.BLACK);
             }
         }
     }
@@ -178,8 +194,14 @@ final class B1BottomBar {
     }
 
     private static void text(Graphics2D g, String s, int x, int y, int w, int h, Font f, Color c) {
-        g.setFont(f);
-        FontMetrics fm = g.getFontMetrics();
+        // il testo si rimpicciolisce fino a stare nel pulsante (es. "Enregistrer", "T\u00e9l\u00e9charger")
+        Font ff = f;
+        FontMetrics fm = g.getFontMetrics(ff);
+        while (fm.stringWidth(s) > w - 4 && ff.getSize() > 8) {
+            ff = ff.deriveFont((float) ff.getSize() - 1);
+            fm = g.getFontMetrics(ff);
+        }
+        g.setFont(ff);
         g.setColor(c);
         g.drawString(s, x + (w - fm.stringWidth(s)) / 2, y + (h - fm.getHeight()) / 2 + fm.getAscent());
     }

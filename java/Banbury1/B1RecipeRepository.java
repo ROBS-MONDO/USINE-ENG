@@ -11,12 +11,19 @@ public interface B1RecipeRepository {
         public final String name;
         public final String modified;
         public final String modifiedBy;
+        /** Numero ricetta (ID della ricetta in WinCC), 0 se non noto. */
+        public final int recipeNo;
 
         public Entry(String uid, String name, String modified, String modifiedBy) {
+            this(uid, name, modified, modifiedBy, 0);
+        }
+
+        public Entry(String uid, String name, String modified, String modifiedBy, int recipeNo) {
             this.uid = uid;
             this.name = name;
             this.modified = modified;
             this.modifiedBy = modifiedBy;
+            this.recipeNo = recipeNo;
         }
 
         @Override
