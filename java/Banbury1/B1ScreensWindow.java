@@ -25,6 +25,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 /**
@@ -236,9 +237,26 @@ public class B1ScreensWindow extends JFrame {
                 g.setColor(new Color(0xBEBEBE));
                 g.fillRect(0, 0, W, 60);
                 drawScreen(g, top, 0);
+                drawClockBox(g);
             }
             drawNav(g);
             g.dispose();
+        }
+
+        /** Data e ora nello spazio libero della barra in alto (tra la sigla macchina e la pressione). */
+        private void drawClockBox(Graphics2D g) {
+            int x = 196, y = 5, w = 270, h = 50;
+            g.setColor(new Color(0xD4D0C8));
+            g.fillRect(x, y, w, h);
+            bevel(g, x, y, w, h);
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            g.setFont(new Font("Arial", Font.BOLD, 17));
+            java.awt.FontMetrics fm = g.getFontMetrics();
+            g.setColor(new Color(0x202020));
+            String d = now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            String t = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            g.drawString(d, x + (w - fm.stringWidth(d)) / 2, y + 20);
+            g.drawString(t, x + (w - fm.stringWidth(t)) / 2, y + 42);
         }
 
         private void drawNav(Graphics2D g) {
