@@ -128,7 +128,7 @@ public final class B1Tags {
         // --- cycle malaxeur ---
         {"cyc_auto",   "Ciclo: auto (bit da trovare: W54.B14 non e' quello giusto)", "none"},
         {"phase_no",   "Fase in corso (WinCC: DBW218, RunningPhaseActual)", "DB110.W218"},
-        {"mode_auto",  "Modo automatico (spie AUTO/MANUAL e trend): bit da trovare, W54.B14 non e' quello giusto", "none"},
+        {"mode_auto",  "Modo automatico (spie AUTO/MANUAL e trend) = produzione auto (W44.B1, sempre 1 nei log in produzione)", "DB110.W44.B1"},
         {"cyc_cont",   "Ciclo: continuo",   "DB110.W54.B12"},
         {"cyc_susp",   "Ciclo: sospeso",    "DB110.W54.B15"},
         {"cyc_cycle",  "Ciclo: ciclo",      "DB110.W44.B9"},
