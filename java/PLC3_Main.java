@@ -540,7 +540,10 @@ public class PLC3_Main extends JFrame {
         private static final int FLOW_TIMER_MS = 40;
         private static final double RAM_STEP = (double) FLOW_TIMER_MS / RAM_TRAVEL_MS;
         private static final int RAM_BEAM_UP_Y = 48;
-        private static final int RAM_BEAM_DOWN_Y = 128;
+        private static final int RAM_BEAM_DOWN_Y = 90;
+        // Corpi dei cilindri idraulici: fissi in basso, gli steli salgono fino alla traversa
+        private static final int RAM_CYL_TOP_Y = 136;
+        private static final int RAM_CYL_H = 26;
 
         private static final double ROTOR_RIGHT_PHASE_OFFSET = 90.0;
 
@@ -4194,21 +4197,22 @@ public class PLC3_Main extends JFrame {
             final int leftX = 553;
             final int rightX = 670;
             final int centerX = 611;
-            final int cylBottom = 30;
+            final int cylTop = RAM_CYL_TOP_Y;
 
             int beamY = (int) Math.round(lerp(RAM_BEAM_UP_Y, RAM_BEAM_DOWN_Y, ramProgress));
             int beamH = 10;
+            int faceBottom = beamY + beamH + 26 + 4;
 
             Color[] chromeColors = {new Color(120, 120, 125), new Color(245, 245, 248),
                     new Color(150, 150, 155)};
             float[] fr = {0f, 0.4f, 1f};
 
-            // Steli cromati dei due cilindri laterali (corrono lungo le colonne)
-            drawChromeRod(g, leftX - 2, cylBottom, 4, beamY + beamH - cylBottom, chromeColors, fr);
-            drawChromeRod(g, rightX - 2, cylBottom, 4, beamY + beamH - cylBottom, chromeColors, fr);
+            // Steli cromati dei due cilindri laterali (salgono lungo le colonne)
+            drawChromeRod(g, leftX - 2, beamY, 4, cylTop - beamY, chromeColors, fr);
+            drawChromeRod(g, rightX - 2, beamY, 4, cylTop - beamY, chromeColors, fr);
 
-            // Stelo del cilindro centrale
-            drawChromeRod(g, centerX - 4, cylBottom, 8, beamY - cylBottom, chromeColors, fr);
+            // Stelo del cilindro centrale: dalla testata del cilindro alla faccia del pistone
+            drawChromeRod(g, centerX - 4, faceBottom, 8, cylTop - faceBottom, chromeColors, fr);
 
             // Corpo del pistone: traversa + massa conica con faccia di spinta
             Path2D body = new Path2D.Double();
@@ -4234,16 +4238,19 @@ public class PLC3_Main extends JFrame {
             g.setColor(new Color(110, 105, 35));
             g.fillRoundRect(leftX - 5, beamY - 2, 10, beamH + 4, 3, 3);
             g.fillRoundRect(rightX - 5, beamY - 2, 10, beamH + 4, 3, 3);
-            g.fillRoundRect(centerX - 9, beamY - 4, 18, 6, 3, 3);
             g.setColor(new Color(60, 60, 60));
             g.drawRoundRect(leftX - 5, beamY - 2, 10, beamH + 4, 3, 3);
             g.drawRoundRect(rightX - 5, beamY - 2, 10, beamH + 4, 3, 3);
-            g.drawRoundRect(centerX - 9, beamY - 4, 18, 6, 3, 3);
+            // Collare dello stelo centrale sotto la faccia del pistone
+            g.setColor(new Color(110, 105, 35));
+            g.fillRoundRect(centerX - 9, faceBottom - 2, 18, 6, 3, 3);
+            g.setColor(new Color(60, 60, 60));
+            g.drawRoundRect(centerX - 9, faceBottom - 2, 18, 6, 3, 3);
 
-            // Corpi dei cilindri idraulici, fissi in alto
-            drawHydraulicCylinderBody(g, leftX - 8, 1, 16, cylBottom - 1);
-            drawHydraulicCylinderBody(g, rightX - 8, 1, 16, cylBottom - 1);
-            drawHydraulicCylinderBody(g, centerX - 11, 1, 22, cylBottom - 1);
+            // Corpi dei cilindri idraulici, fissi in basso
+            drawHydraulicCylinderBody(g, leftX - 8, cylTop, 16, RAM_CYL_H);
+            drawHydraulicCylinderBody(g, rightX - 8, cylTop, 16, RAM_CYL_H);
+            drawHydraulicCylinderBody(g, centerX - 11, cylTop, 22, RAM_CYL_H);
 
             g.dispose();
         }
@@ -4257,8 +4264,8 @@ public class PLC3_Main extends JFrame {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             // Zona libera: sopra il pistone se e' basso, sotto se e' alto
-            final int top = dir < 0 ? 62 : 104;
-            final int bottom = dir < 0 ? 118 : 158;
+            final int top = dir < 0 ? 40 : 94;
+            final int bottom = dir < 0 ? 84 : 132;
             final int spacing = 18;
             final int[] columns = {584, 638};
 
