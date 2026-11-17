@@ -45,8 +45,8 @@ public final class B1RecipeTransfer {
         public boolean handshake = true;
         /** Attesa massima della risposta del PLC, in secondi. */
         public int waitSeconds = 60;
-        /** Scrive anche il totale miscele della produzione in DB110.DBW210 (da confermare con un secondo log del WinCC). */
-        public boolean writeQuantity;
+        /** Scrive anche il totale miscele della produzione in DB110.DBW210 (attivo di default; da verificare in produzione). */
+        public boolean writeQuantity = true;
         public Path backupDir = Paths.get("C:\\_tools\\Banbury1\\Recipes\\backup");
 
         public static Config load() {
@@ -60,7 +60,7 @@ public final class B1RecipeTransfer {
                         c.enabled = "true".equalsIgnoreCase(p.getProperty("enabled", "false").trim());
                         c.allowRawWrite = "true".equalsIgnoreCase(p.getProperty("allow_raw_write", "false").trim());
                         c.handshake = !"false".equalsIgnoreCase(p.getProperty("handshake", "true").trim());
-                        c.writeQuantity = "true".equalsIgnoreCase(p.getProperty("write_quantity", "false").trim());
+                        c.writeQuantity = !"false".equalsIgnoreCase(p.getProperty("write_quantity", "true").trim());
                         try {
                             c.waitSeconds = Integer.parseInt(p.getProperty("wait_seconds", "60").trim());
                         } catch (NumberFormatException ignored) {

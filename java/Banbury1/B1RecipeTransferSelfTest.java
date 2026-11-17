@@ -65,8 +65,8 @@ public final class B1RecipeTransferSelfTest {
         B1RecipeCodec.putWord(idle100, 210, 100);
         B1RecipeTransfer.Plan pq = B1RecipeTransfer.plan(r, l, cur, idle100, 5);
         B1RecipeTransfer.Config qOff = new B1RecipeTransfer.Config();
+        qOff.writeQuantity = false;
         B1RecipeTransfer.Config qOn = new B1RecipeTransfer.Config();
-        qOn.writeQuantity = true;
         check("quantita' diversa dal totale nel PLC: cambio rilevato (100 -> 5)", pq.currentQuantity == 100 && pq.quantityChange());
         check("ricetta uguale ma quantita' cambiata: niente da scrivere senza write_quantity", !pq.hasWork(qOff) && pq.hasWork(qOn));
         check("anteprima con la riga DB110.DBW210", B1RecipeTransfer.describe(pq, qOn, "plc").contains("DB110.DBW210")
@@ -77,7 +77,7 @@ public final class B1RecipeTransferSelfTest {
 
         B1RecipeTransfer.Config off = new B1RecipeTransfer.Config();
         check("scrittura disabilitata di default", !off.writeAllowed());
-        check("write_quantity disabilitato di default", !off.writeQuantity);
+        check("write_quantity attivo di default (la scrittura resta bloccata da enabled/allow_raw_write)", off.writeQuantity && !off.writeAllowed());
         boolean refused = false;
         try {
             B1RecipeTransfer.execute(p, off, "127.0.0.1", 1, l.dbSize);
