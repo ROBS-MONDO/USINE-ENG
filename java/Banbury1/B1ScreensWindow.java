@@ -262,8 +262,8 @@ public class B1ScreensWindow extends JFrame {
         /** Schermata Display, fascia sopra la barra: spie AUTO / MANUAL a sinistra e ricetta attuale al centro. */
         private void drawDisplayStatus(Graphics2D g) {
             Boolean auto = src.connected() ? src.bool("mode_auto") : null;
-            drawModeLamp(g, 8, 654, 178, 42, "AUTO", Boolean.TRUE.equals(auto));
-            drawModeLamp(g, 190, 654, 178, 42, "MANUAL", Boolean.FALSE.equals(auto));
+            drawModeLamp(g, 8, 654, 178, 42, "AUTO", Boolean.TRUE.equals(auto), new Color(0x2BFF1F));
+            drawModeLamp(g, 190, 654, 178, 42, "MANUAL", Boolean.FALSE.equals(auto), new Color(0xFF2828));
             // ricetta attuale (nome riconosciuto anche dai valori, come nel sinottico)
             int x = 376, y = 654, w = 356, h = 42;
             g.setColor(new Color(0xD4D0C8));
@@ -294,12 +294,12 @@ public class B1ScreensWindow extends JFrame {
             }
         }
 
-        private void drawModeLamp(Graphics2D g, int x, int y, int w, int h, String text, boolean on) {
-            g.setColor(on ? new Color(0x2BFF1F) : new Color(0xD8D8D8));
+        private void drawModeLamp(Graphics2D g, int x, int y, int w, int h, String text, boolean on, Color lit) {
+            g.setColor(on ? lit : new Color(0xD8D8D8));
             g.fillRect(x, y, w, h);
             g.setColor(new Color(0x606060));
             g.drawRect(x, y, w - 1, h - 1);
-            g.setColor(on ? new Color(0x20C018) : Color.WHITE);
+            g.setColor(on ? lit.darker() : Color.WHITE);
             g.drawRect(x + 1, y + 1, w - 3, h - 3);
             g.setFont(new Font("Arial", Font.BOLD, 20));
             java.awt.FontMetrics fm = g.getFontMetrics();

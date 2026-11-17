@@ -126,9 +126,9 @@ public final class B1Tags {
         {"rdy_mintime",  "Pronto: tempo min. tra cicli",     "DB110.W54.B9"},
         {"rdy_cycles",   "Pronto: n. cicli passi effettuati","DB110.W54.B10"},
         // --- cycle malaxeur ---
-        {"cyc_auto",   "Ciclo: auto",       "DB110.W54.B14"},
+        {"cyc_auto",   "Ciclo: auto (bit da trovare: W54.B14 non e' quello giusto)", "none"},
         {"phase_no",   "Fase in corso (WinCC: DBW218, RunningPhaseActual)", "DB110.W218"},
-        {"mode_auto",  "Modo automatico per il trend (ipotesi: = lampada Auto)", "DB110.W54.B14"},
+        {"mode_auto",  "Modo automatico (spie AUTO/MANUAL e trend): bit da trovare, W54.B14 non e' quello giusto", "none"},
         {"cyc_cont",   "Ciclo: continuo",   "DB110.W54.B12"},
         {"cyc_susp",   "Ciclo: sospeso",    "DB110.W54.B15"},
         {"cyc_cycle",  "Ciclo: ciclo",      "DB110.W44.B9"},
