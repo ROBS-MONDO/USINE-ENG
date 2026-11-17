@@ -988,10 +988,10 @@ public class B1_Main extends JFrame {
             g.drawLine(8, 789, 755, 789);
             List<B1AlarmEngine.Event> ev = ENGINE.events();
             if (ENGINE.definitions().isEmpty()) {
-                text(g, "Nessun allarme definito (b1_alarms.properties): servono numero, testo e bit dei messaggi", 38, 792, 700, 18,
+                text(g, "Aucune alarme d\u00e9finie (b1_alarms.properties) : num\u00e9ro, texte et bit des messages requis", 38, 792, 700, 18,
                         new Font("Arial", Font.ITALIC, 11), new Color(0x606060), -1);
             } else if (ev.isEmpty()) {
-                text(g, "Nessun allarme", 38, 792, 300, 18, new Font("Arial", Font.PLAIN, 12), new Color(0x206020), -1);
+                text(g, "Aucune alarme", 38, 792, 300, 18, new Font("Arial", Font.PLAIN, 12), new Color(0x206020), -1);
             }
             Font fa = new Font("Arial", Font.PLAIN, 12);
             for (int i = 0; i < Math.min(2, ev.size()); i++) {

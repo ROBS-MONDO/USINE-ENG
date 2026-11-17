@@ -52,7 +52,7 @@ public class B1AlarmWindow extends JFrame {
     private final JLabel status = new JLabel(" ");
 
     private B1AlarmWindow(B1Source src, B1AlarmEngine engine) {
-        super("Banbury 1 - Allarmi (sola lettura)");
+        super("Banbury 1 - Alarmes (lecture seule)");
         this.src = src;
         this.engine = engine;
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -96,12 +96,12 @@ public class B1AlarmWindow extends JFrame {
         model.set(ev.size() > PAGE ? ev.subList(0, PAGE) : ev);
         String s;
         if (engine.definitions().isEmpty()) {
-            s = "Nessun allarme definito: compilare b1_alarms.properties (servono numero, testo e bit di ogni messaggio)";
+            s = "Aucune alarme d\u00e9finie : compl\u00e9ter b1_alarms.properties (num\u00e9ro, texte et bit de chaque message)";
         } else if (!src.connected()) {
-            s = "PLC non connesso";
+            s = "PLC non connect\u00e9";
         } else {
-            s = "Allarmi attivi: " + engine.activeCount() + "   |   definiti: " + engine.definitions().size()
-                    + "   |   mostrati gli ultimi " + PAGE + "   |   SOLA LETTURA";
+            s = "Alarmes actives : " + engine.activeCount() + "   |   d\u00e9finies : " + engine.definitions().size()
+                    + "   |   derni\u00e8res affich\u00e9es : " + PAGE + "   |   LECTURE SEULE";
         }
         status.setText(s);
     }
@@ -143,7 +143,7 @@ public class B1AlarmWindow extends JFrame {
                 case 1: return t.format(T);
                 case 2: return String.valueOf(e.def.number);
                 case 3: return e.def.point;
-                default: return e.def.text + (e.active() ? "" : "   (rientrato " + e.went.format(T) + ")");
+                default: return e.def.text + (e.active() ? "" : "   (fin " + e.went.format(T) + ")");
             }
         }
     }
