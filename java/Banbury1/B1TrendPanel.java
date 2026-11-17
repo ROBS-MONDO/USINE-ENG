@@ -676,12 +676,12 @@ public final class B1TrendPanel extends JPanel {
                     continue;
                 }
                 if (m[0] > cur) {
-                    label(g2, barX, barY, barW, barH, from, to, total, cur, m[0], recipes.get(i).text, "", false);
+                    label(g2, barX, barY, barW, barH, from, to, total, cur, m[0], B1RecipeBridge.displayName(recipes.get(i).text), "", false);
                 }
                 cur = Math.max(cur, m[1]);
             }
             if (cur < e) {
-                label(g2, barX, barY, barW, barH, from, to, total, cur, e, recipes.get(i).text, "", false);
+                label(g2, barX, barY, barW, barH, from, to, total, cur, e, B1RecipeBridge.displayName(recipes.get(i).text), "", false);
             }
         }
         g2.setColor(new Color(0, 160, 120));

@@ -2,6 +2,8 @@ package Banbury1;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,6 +29,32 @@ public final class B1RecipeBridge {
     }
 
     private static final long PERIOD_MS = 5000;
+
+    /** Nome nel PLC (minuscolo) -> nome in archivio, per le ricette riconosciute dai valori e non dal nome. */
+    private static final Map<String, String> ALIASES = new ConcurrentHashMap<>();
+
+    /** Nome da mostrare: quello dell'archivio se la ricetta in macchina e' stata riconosciuta dai valori (es. 'gomma2' -> '4* pass 100'). */
+    public static String displayName(String plcName) {
+        if (plcName == null) {
+            return "";
+        }
+        String a = ALIASES.get(plcName.trim().toLowerCase());
+        return pretty(a != null ? a : plcName);
+    }
+
+    /** Nome in archivio da aprire nell'editor (come salvato, ASCII); se non c'e' alias il nome del PLC. */
+    public static String archiveName(String plcName) {
+        if (plcName == null) {
+            return "";
+        }
+        String a = ALIASES.get(plcName.trim().toLowerCase());
+        return a != null ? a : plcName;
+    }
+
+    /** I nomi in archivio sono ASCII (PLC): '100o' -> '100\u00B0' come nell'originale WinCC. */
+    static String pretty(String name) {
+        return name.replaceAll("(?<=\\d)o\\b", "\u00B0");
+    }
 
     private final B1RecipeRepository repo;
     private final B1RecipeLayout layout;
@@ -93,14 +121,37 @@ public final class B1RecipeBridge {
                     found++;
                     B1Recipe archived = repo.load(e.uid);
                     if (B1RecipeCodec.sameExecutable(live, archived, layout)) {
+                        ALIASES.remove(name.toLowerCase());
                         return new Status(State.SAME, name, "= archivio (rev. " + archived.revision + ")");
                     }
                     lastRev = " (rev. " + archived.revision + ")";
                 }
             }
+            String key = name.toLowerCase();
             if (found == 0) {
+                // nome non in archivio: si cerca una ricetta con gli stessi valori (nome nel PLC diverso da quello di WinCC)
+                B1RecipeRepository.Entry same = null;
+                B1Recipe sameRecipe = null;
+                int equal = 0;
+                for (B1RecipeRepository.Entry e : entries) {
+                    B1Recipe archived = repo.load(e.uid);
+                    if (B1RecipeCodec.sameContent(live, archived, layout)) {
+                        if (same == null) {
+                            same = e;
+                            sameRecipe = archived;
+                        }
+                        equal++;
+                    }
+                }
+                if (same != null) {
+                    ALIASES.put(key, same.name.trim());
+                    return new Status(State.SAME, pretty(same.name.trim()), "= archivio (rev. " + sameRecipe.revision + ")"
+                            + (equal > 1 ? " +" + (equal - 1) + " uguali" : ""));
+                }
+                ALIASES.remove(key);
                 return new Status(State.NOT_ARCHIVED, name, "non in archivio");
             }
+            ALIASES.remove(key);
             return new Status(State.DIFFERENT, name, "DIVERSA dall'archivio" + lastRev);
         } catch (IOException e) {
             return new Status(State.UNKNOWN, name, "archivio non leggibile");

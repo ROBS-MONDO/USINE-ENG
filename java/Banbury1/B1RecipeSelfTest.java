@@ -105,9 +105,21 @@ public final class B1RecipeSelfTest {
         check("fase diversa rilevata",
                 B1RecipeBridge.compare(changed, repo2, l).state == B1RecipeBridge.State.DIFFERENT);
         byte[] renamed = plc.clone();
-        B1RecipeCodec.writeString(renamed, l.nameOffset, l.nameMax, "ALTRA");
-        check("altro nome: non in archivio",
-                B1RecipeBridge.compare(renamed, repo2, l).state == B1RecipeBridge.State.NOT_ARCHIVED);
+        B1RecipeCodec.writeString(renamed, l.nameOffset, 22, "ALTRA"); // 22 caratteri: oltre si sconfina nella testata
+        B1RecipeBridge.Status rs = B1RecipeBridge.compare(renamed, repo2, l);
+        check("altro nome ma stessi valori: riconosciuta dall'archivio",
+                rs.state == B1RecipeBridge.State.SAME && rs.name.equals(B1RecipeBridge.pretty(arch.name.trim())));
+        check("nome da mostrare = nome in archivio",
+                B1RecipeBridge.displayName("ALTRA").equals(B1RecipeBridge.pretty(arch.name.trim())));
+        check("apertura editor con il nome in archivio", B1RecipeBridge.archiveName("ALTRA").equals(arch.name.trim()));
+        byte[] otherDb = renamed.clone();
+        B1RecipeCodec.putWord(otherDb, 42 + 12, 40);
+        check("altro nome e altri valori: non in archivio",
+                B1RecipeBridge.compare(otherDb, repo2, l).state == B1RecipeBridge.State.NOT_ARCHIVED);
+        check("alias tolto se non riconosciuta", B1RecipeBridge.displayName("ALTRA").equals("ALTRA"));
+        check("100o -> 100 gradi", B1RecipeBridge.pretty("4* pass 100o").equals("4* pass 100\u00B0")
+                && B1RecipeBridge.pretty("2o pass avec corr").equals("2\u00B0 pass avec corr")
+                && B1RecipeBridge.pretty("gomma2").equals("gomma2"));
         byte[] none = new byte[384];
         check("DB vuoto: nessuna ricetta",
                 B1RecipeBridge.compare(none, repo2, l).state == B1RecipeBridge.State.UNKNOWN);

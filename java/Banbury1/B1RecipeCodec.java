@@ -96,7 +96,12 @@ public final class B1RecipeCodec {
      * la stessa testata e le stesse fasi fino alla fase di scarico compresa (le successive sono residui).
      */
     public static boolean sameExecutable(B1Recipe a, B1Recipe b, B1RecipeLayout l) {
-        if (!a.name.trim().equalsIgnoreCase(b.name.trim()) || !a.header.equals(b.header)) {
+        return a.name.trim().equalsIgnoreCase(b.name.trim()) && sameContent(a, b, l);
+    }
+
+    /** Come sameExecutable ma senza guardare il nome (ricetta riconosciuta dai valori). */
+    public static boolean sameContent(B1Recipe a, B1Recipe b, B1RecipeLayout l) {
+        if (!a.header.equals(b.header)) {
             return false;
         }
         for (int i = 0; i < l.phaseCount; i++) {

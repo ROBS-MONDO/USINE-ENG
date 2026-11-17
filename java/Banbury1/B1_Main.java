@@ -558,7 +558,7 @@ public class B1_Main extends JFrame {
             g.fillOval(276, 42, 12, 12);
             text(g, conn ? "PLC connesso" : "PLC non connesso", 292, 38, 190, 20, fNormal, DARK, -1);
             String rn = src.str("recipe_name");
-            text(g, "Ricetta: " + (rn == null || rn.isEmpty() ? "--" : rn), 276, 55, 205, 18, fBold, DARK, -1);
+            text(g, "Ricetta: " + (rn == null || rn.isEmpty() ? "--" : B1RecipeBridge.displayName(rn)), 276, 55, 205, 18, fBold, DARK, -1);
             keyTag(g, "recipe_name", 276, 55);
             if (bridge != null) {
                 B1RecipeBridge.Status st = bridge.status();
@@ -574,7 +574,7 @@ public class B1_Main extends JFrame {
                 g.fillOval(276, 74, 10, 10);
                 text(g, line.length() > 34 ? line.substring(0, 34) + "\u2026" : line, 290, 70, 190, 18,
                         new Font("Arial", Font.PLAIN, 12), DARK, -1);
-                final String openName = rn;
+                final String openName = B1RecipeBridge.archiveName(rn);
                 hits.add(new Hit(276, 55, 205, 33, "Ricetta", () -> bridge.openEditor(openName)));
             } else {
                 String st = src.status();
