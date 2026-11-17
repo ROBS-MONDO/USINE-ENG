@@ -407,7 +407,7 @@ public final class B1ProductionPage {
 
     /**
      * Download: envoie au PLC la recette de la production selectionnee. Ouvre l'\u00e9diteur de recettes sur la recette et l'aper\u00e7u d'envoi
-     * (copie de s\u00e9curit\u00e9, confirmation \u00ab ENVOYER \u00bb, machine \u00e0 l'arr\u00eat). La quantit\u00e9 de m\u00e9langes n'est pas encore transmise au PLC.
+     * (copie de s\u00e9curit\u00e9, confirmation \u00ab ENVOYER \u00bb, machine \u00e0 l'arr\u00eat). Le total de m\u00e9langes est ajout\u00e9 \u00e0 l'aper\u00e7u (\u00e9crit seulement avec write_quantity=true).
      */
     public void download() {
         B1Production p = selected();
@@ -424,8 +424,8 @@ public final class B1ProductionPage {
             error("Archive des recettes indisponible.");
             return;
         }
-        say("T\u00e9l\u00e9chargement : recette \u00ab " + rn + " \u00bb (la quantit\u00e9 de m\u00e9langes n'est pas encore transmise au PLC)");
-        bridge.openEditorAndSend(rn);
+        say("T\u00e9l\u00e9chargement : recette \u00ab " + rn + " \u00bb, " + p.quantity + " m\u00e9langes");
+        bridge.openEditorAndSend(rn, p.quantity);
     }
 
     /** Pulsanti della barra inferiore, al posto di Govoni/B2/... Coordinate nella barra (x da 578). */

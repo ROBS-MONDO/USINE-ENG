@@ -109,6 +109,12 @@ public class B1RecipeEditor extends JFrame {
 
     /** Come sopra; con send=true, dopo aver selezionato la ricetta in archivio apre l'anteprima "Envoyer au PLC". */
     public static void openShared(B1RecipeRepository repo, B1RecipeLayout layout, String plcIp, String recipeName, boolean send) {
+        openShared(repo, layout, plcIp, recipeName, send, null);
+    }
+
+    /** Con send=true e quantity != null (download da una produzione) l'anteprima comprende anche il totale miscele. */
+    public static void openShared(B1RecipeRepository repo, B1RecipeLayout layout, String plcIp, String recipeName, boolean send,
+                                  Integer quantity) {
         SwingUtilities.invokeLater(() -> {
             synchronized (B1RecipeEditor.class) {
                 if (shared == null || !shared.isDisplayable()) {
@@ -119,7 +125,7 @@ public class B1RecipeEditor extends JFrame {
                 shared.toFront();
                 shared.requestFocus();
                 if (send && recipeName != null && !recipeName.trim().isEmpty()) {
-                    shared.panel.selectAndSend(recipeName);
+                    shared.panel.selectAndSend(recipeName, quantity);
                 } else if (recipeName != null && !recipeName.trim().isEmpty()) {
                     shared.panel.selectByName(recipeName);
                 } else {
@@ -618,7 +624,7 @@ public class B1RecipeEditor extends JFrame {
         }
 
         /** Download: seleziona la ricetta in archivio (se manca non invia nulla) e apre l'anteprima di invio al PLC. */
-        void selectAndSend(String name) {
+        void selectAndSend(String name, Integer quantity) {
             if (!(current != null && !dirty && name.trim().equalsIgnoreCase(current.name.trim()))) {
                 if (!confirmDiscard()) {
                     return;
@@ -647,8 +653,12 @@ public class B1RecipeEditor extends JFrame {
                     return;
                 }
             }
+            pendingQuantity = quantity;
             sendToPlc();
         }
+
+        /** Totale miscele della produzione per il prossimo invio (impostato dal download della pagina Production). */
+        private Integer pendingQuantity;
 
         /** Archivio ancora vuoto: parte dalla ricetta in macchina (lettura dal PLC, sola lettura) invece di mostrare un editor vuoto. */
         void autoImportIfEmpty() {
@@ -683,6 +693,8 @@ public class B1RecipeEditor extends JFrame {
             }
             onHeaderEdited();
             final B1Recipe recipe = current.copy();
+            final Integer qty = pendingQuantity;
+            pendingQuantity = null;
             final B1RecipeTransfer.Config cfg = B1RecipeTransfer.Config.load();
             final String host = plcIp;
             lblStatus.setText("Lecture du PLC " + host + " pour l'aper\u00e7u...");
@@ -700,7 +712,7 @@ public class B1RecipeEditor extends JFrame {
                         } catch (IOException ignored) {
                             // stato macchina non leggibile: l'anteprima lo segnala
                         }
-                        return B1RecipeTransfer.plan(recipe, layout, cur, st);
+                        return B1RecipeTransfer.plan(recipe, layout, cur, st, qty);
                     }
                 }
 
@@ -721,7 +733,7 @@ public class B1RecipeEditor extends JFrame {
             JTextArea area = new JTextArea(B1RecipeTransfer.describe(plan, cfg, host), 24, 86);
             area.setEditable(false);
             area.setFont(new Font("Monospaced", Font.PLAIN, 12));
-            boolean canWrite = cfg.writeAllowed() && plan.blockers.isEmpty() && !plan.changes.isEmpty();
+            boolean canWrite = cfg.writeAllowed() && plan.blockers.isEmpty() && plan.hasWork(cfg);
             Object[] options = canWrite ? new Object[]{"Annuler", "\u00c9crire dans le PLC"} : new Object[]{"Fermer"};
             int r = JOptionPane.showOptionDialog(this, new JScrollPane(area), "Envoyer au PLC - aper\u00e7u",
                     JOptionPane.DEFAULT_OPTION, canWrite ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE,
@@ -757,7 +769,8 @@ public class B1RecipeEditor extends JFrame {
                         java.nio.file.Path backup = get();
                         log.ok = true;
                         log.backup = String.valueOf(backup);
-                        log.message = "Recette envoy\u00e9e et v\u00e9rifi\u00e9e";
+                        log.message = "Recette envoy\u00e9e et v\u00e9rifi\u00e9e"
+                                + (cfg.writeQuantity && plan.quantityChange() ? " ; total m\u00e9langes DBW210 : " + plan.currentQuantity + " -> " + plan.quantity : "");
                         B1RecipeSendLog.record(log);
                         lblStatus.setText("Recette envoy\u00e9e et v\u00e9rifi\u00e9e. Copie de s\u00e9curit\u00e9 : " + backup);
                         JOptionPane.showMessageDialog(EditorPanel.this, "Recette envoy\u00e9e et v\u00e9rifi\u00e9e.\nCopie de s\u00e9curit\u00e9 : " + backup);

@@ -34,6 +34,8 @@ public final class B1RecipeTransfer {
     static final int BIT_BUSY = 2;
     static final int START_WORD = 40; // DBX41.0 = bit 0 della parola
     static final int END_WORD = 382;  // DBX383.0 = bit 0 della parola
+    /** DB110.DBW210 = totale miscele ("Melanges total"); il PLC lo usa per calcolare quelle da fare (DBW214 = totale - DBW212). */
+    static final int QTY_WORD = 210;
 
     /** Impostazioni (file b1_recipe_transfer.properties). */
     public static final class Config {
@@ -43,6 +45,8 @@ public final class B1RecipeTransfer {
         public boolean handshake = true;
         /** Attesa massima della risposta del PLC, in secondi. */
         public int waitSeconds = 60;
+        /** Scrive anche il totale miscele della produzione in DB110.DBW210 (da confermare con un secondo log del WinCC). */
+        public boolean writeQuantity;
         public Path backupDir = Paths.get("C:\\_tools\\Banbury1\\Recipes\\backup");
 
         public static Config load() {
@@ -56,6 +60,7 @@ public final class B1RecipeTransfer {
                         c.enabled = "true".equalsIgnoreCase(p.getProperty("enabled", "false").trim());
                         c.allowRawWrite = "true".equalsIgnoreCase(p.getProperty("allow_raw_write", "false").trim());
                         c.handshake = !"false".equalsIgnoreCase(p.getProperty("handshake", "true").trim());
+                        c.writeQuantity = "true".equalsIgnoreCase(p.getProperty("write_quantity", "false").trim());
                         try {
                             c.waitSeconds = Integer.parseInt(p.getProperty("wait_seconds", "60").trim());
                         } catch (NumberFormatException ignored) {
@@ -107,6 +112,19 @@ public final class B1RecipeTransfer {
         public String recipeName = "";
         public int recipeNo;
         public long recipeRevision;
+        /** Totale miscele della produzione (null = nessuna produzione: non si tocca). */
+        public Integer quantity;
+        /** Totale miscele attuale nel PLC (DB110.DBW210), -1 se non letto. */
+        public int currentQuantity = -1;
+
+        public boolean quantityChange() {
+            return quantity != null && currentQuantity >= 0 && quantity != currentQuantity;
+        }
+
+        /** C'e' qualcosa da scrivere (parole della ricetta o, se abilitato, il totale miscele)? */
+        public boolean hasWork(Config cfg) {
+            return !changes.isEmpty() || (cfg != null && cfg.writeQuantity && quantityChange());
+        }
     }
 
     /**
@@ -114,7 +132,13 @@ public final class B1RecipeTransfer {
      * puo' essere null). Non scrive niente.
      */
     public static Plan plan(B1Recipe r, B1RecipeLayout l, byte[] currentDb, byte[] db110) {
+        return plan(r, l, currentDb, db110, null);
+    }
+
+    /** Come sopra, con il totale miscele della produzione da impostare (null = nessuna produzione). */
+    public static Plan plan(B1Recipe r, B1RecipeLayout l, byte[] currentDb, byte[] db110, Integer quantity) {
         Plan p = new Plan();
+        p.quantity = quantity;
         p.db = l.db;
         p.recipeUid = r.uid;
         p.recipeName = r.name == null ? "" : r.name.trim();
@@ -173,6 +197,18 @@ public final class B1RecipeTransfer {
         } else {
             p.warnings.add("\u00c9tat de la machine (DB110) non lu : contr\u00f4le rotors \u00e0 l'arr\u00eat non effectu\u00e9");
         }
+        if (quantity != null) {
+            if (quantity < 0 || quantity > 999) {
+                p.blockers.add("Quantit\u00e9 de m\u00e9langes hors limites (" + quantity + ")");
+            } else if (db110 != null && db110.length >= QTY_WORD + 2) {
+                p.currentQuantity = S7ReadClient.int16(db110, QTY_WORD);
+            } else {
+                p.warnings.add("Total des m\u00e9langes (DB110.DBW" + QTY_WORD + ") non lu : la quantit\u00e9 ne sera pas \u00e9crite");
+            }
+            if (p.quantityChange()) {
+                p.warnings.removeIf(w -> w.contains("d\u00e9j\u00e0 identique"));
+            }
+        }
         return p;
     }
 
@@ -230,6 +266,10 @@ public final class B1RecipeTransfer {
             sb.append(String.format("  DB%d.DBW%-4d %-34s 0x%04X (%d)  ->  0x%04X (%d)%n", p.db, c.offset, c.what,
                     c.oldValue, (short) c.oldValue, c.newValue, (short) c.newValue));
         }
+        if (p.quantity != null && p.currentQuantity >= 0) {
+            sb.append(String.format("  DB110.DBW%-4d %-34s %d  ->  %d  %s%n", QTY_WORD, "Total des m\u00e9langes de la production", p.currentQuantity,
+                    p.quantity, p.quantityChange() ? (cfg.writeQuantity ? "(sera \u00e9crit)" : "(NON \u00e9crit : write_quantity=false)") : "(inchang\u00e9)"));
+        }
         sb.append("\n");
         if (cfg.writeAllowed()) {
             sb.append("\u00c9criture ACTIV\u00c9E. S\u00e9quence : copie de s\u00e9curit\u00e9 du DB").append(p.db).append(" in ").append(cfg.backupDir)
@@ -237,7 +277,8 @@ public final class B1RecipeTransfer {
                     .append("\n  2) \u00e9criture des mots modifi\u00e9s, num\u00e9ro de recette en dernier")
                     .append("\n  3) fin du transfert (DB201.DBX383.0) et attente que le PLC cl\u00f4ture l'\u00e9change (jusqu'\u00e0 ")
                     .append(cfg.waitSeconds).append(" s)\n  4) relecture et comparaison du DB.\n")
-                    .append("Note : \u00e0 la fin du transfert le PLC remet \u00e0 z\u00e9ro les m\u00e9langes faits (DB110.DBW212) et met \u00e0 jour ceux \u00e0 faire (DBW214), comme observ\u00e9 avec WinCC le 17/11/2026.\n");
+                    .append(cfg.writeQuantity && p.quantityChange() ? "  0) avant le Start : \u00e9criture du total des m\u00e9langes (DB110.DBW210) et v\u00e9rification\n" : "")
+                .append("Note : \u00e0 la fin du transfert le PLC remet \u00e0 z\u00e9ro les m\u00e9langes faits (DB110.DBW212) et met \u00e0 jour ceux \u00e0 faire (DBW214), comme observ\u00e9 avec WinCC le 17/11/2026.\n");
         } else {
             sb.append("\u00c9criture D\u00c9SACTIV\u00c9E (mode aper\u00e7u) : pour l'activer il faut enabled=true et allow_raw_write=true\n")
                     .append("dans b1_recipe_transfer.properties. La s\u00e9quence de transfert est celle du WinCC (journal du 16/11/2026).\n");
@@ -257,7 +298,7 @@ public final class B1RecipeTransfer {
         if (!p.blockers.isEmpty() || p.image == null) {
             throw new IOException("Envoi bloqu\u00e9 : " + String.join("; ", p.blockers));
         }
-        if (p.changes.isEmpty()) {
+        if (!p.hasWork(cfg)) {
             throw new IOException("Rien \u00e0 \u00e9crire");
         }
         try (S7WriteClient plc = new S7WriteClient(host, port, 0, 2, 3000)) {
@@ -282,6 +323,15 @@ public final class B1RecipeTransfer {
                     .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".bin");
             Files.write(backup, now);
 
+            boolean writeQty = cfg.writeQuantity && p.quantityChange();
+            if (writeQty) {
+                // il totale va scritto PRIMA dello Start: a fine trasferimento il PLC calcola le miscele da fare da questo valore
+                plc.writeDb(110, QTY_WORD, new byte[]{(byte) (p.quantity.intValue() >> 8), (byte) p.quantity.intValue()});
+                if (S7ReadClient.int16(plc.readDb(110, QTY_WORD, 2), 0) != p.quantity.intValue()) {
+                    throw new IOException("V\u00e9rification \u00e9chou\u00e9e : DB110.DBW" + QTY_WORD + " n'a pas pris la valeur " + p.quantity
+                            + " (aucune recette \u00e9crite)");
+                }
+            }
             if (cfg.handshake) {
                 setBit0(plc, p.db, START_WORD, now); // Start transfert
                 waitFor(plc, cfg, () -> ((S7ReadClient.int16(plc.readDb(110, 0, 64), W44) >> BIT_BUSY) & 1) != 0,
@@ -297,6 +347,10 @@ public final class B1RecipeTransfer {
                     return ((w44 >> BIT_ENABLED) & 1) != 0 && ((w44 >> BIT_BUSY) & 1) == 0 && closed;
                 }, "le PLC n'a pas cl\u00f4tur\u00e9 le transfert (DB110.DBW44 / DB201.DBW40 / DBW382) : la copie de s\u00e9curit\u00e9 est "
                         + backup, cfg.waitSeconds);
+            }
+            if (writeQty && S7ReadClient.int16(plc.readDb(110, QTY_WORD, 2), 0) != p.quantity.intValue()) {
+                throw new IOException("Le total des m\u00e9langes (DB110.DBW" + QTY_WORD + ") ne vaut plus " + p.quantity
+                        + " apr\u00e8s le transfert : le PLC l'a modifi\u00e9. Copie de s\u00e9curit\u00e9 : " + backup);
             }
             byte[] after = plc.readDb(p.db, 0, p.image.length);
             // le due parole di scambio (Start, Fine) tornano a 0 e non fanno parte della ricetta

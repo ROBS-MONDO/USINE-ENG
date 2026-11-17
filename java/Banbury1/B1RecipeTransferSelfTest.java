@@ -60,8 +60,24 @@ public final class B1RecipeTransferSelfTest {
         check("ricetta non valida: invio bloccato", !B1RecipeTransfer.plan(bad, l, cur, idle).blockers.isEmpty());
         check("DB non letto: invio bloccato", !B1RecipeTransfer.plan(r2, l, null, null).blockers.isEmpty());
 
+        // totale miscele della produzione (DB110.DBW210)
+        byte[] idle100 = idle.clone();
+        B1RecipeCodec.putWord(idle100, 210, 100);
+        B1RecipeTransfer.Plan pq = B1RecipeTransfer.plan(r, l, cur, idle100, 5);
+        B1RecipeTransfer.Config qOff = new B1RecipeTransfer.Config();
+        B1RecipeTransfer.Config qOn = new B1RecipeTransfer.Config();
+        qOn.writeQuantity = true;
+        check("quantita' diversa dal totale nel PLC: cambio rilevato (100 -> 5)", pq.currentQuantity == 100 && pq.quantityChange());
+        check("ricetta uguale ma quantita' cambiata: niente da scrivere senza write_quantity", !pq.hasWork(qOff) && pq.hasWork(qOn));
+        check("anteprima con la riga DB110.DBW210", B1RecipeTransfer.describe(pq, qOn, "plc").contains("DB110.DBW210")
+                && B1RecipeTransfer.describe(pq, qOff, "plc").contains("NON"));
+        check("stessa quantita': nessun cambio", !B1RecipeTransfer.plan(r, l, cur, idle100, 100).quantityChange());
+        check("quantita' fuori limiti: bloccato", !B1RecipeTransfer.plan(r, l, cur, idle100, 1000).blockers.isEmpty());
+        check("senza produzione la quantita' non si tocca", !B1RecipeTransfer.plan(r, l, cur, idle100).quantityChange());
+
         B1RecipeTransfer.Config off = new B1RecipeTransfer.Config();
         check("scrittura disabilitata di default", !off.writeAllowed());
+        check("write_quantity disabilitato di default", !off.writeQuantity);
         boolean refused = false;
         try {
             B1RecipeTransfer.execute(p, off, "127.0.0.1", 1, l.dbSize);
@@ -101,9 +117,30 @@ public final class B1RecipeTransferSelfTest {
             try {
                 B1RecipeTransfer.execute(pl, on, host, port, l.dbSize); // il DB ora e' diverso dall'anteprima
             } catch (java.io.IOException e) {
-                changedMeanwhile = e.getMessage().contains("cambiato");
+                changedMeanwhile = e.getMessage().contains("chang\u00e9");
             }
             check("DB cambiato dopo l'anteprima: invio annullato", changedMeanwhile);
+
+            // totale miscele: scritto prima dello Start, riletto, e il PLC di prova ricalcola le miscele da fare
+            on.writeQuantity = true;
+            byte[] st110;
+            byte[] live2;
+            try (S7ReadClient c = new S7ReadClient(host, port, 0, 2, 3000)) {
+                c.connect();
+                st110 = c.readDb(110, 0, 256);
+                live2 = c.readDb(201, 0, l.dbSize);
+            }
+            if (a.length < 3 || !a[2].equals("raw")) {
+                B1RecipeTransfer.Plan pq2 = B1RecipeTransfer.plan(B1RecipeCodec.decode(live2, l), l, live2, st110, 5);
+                check("server di prova: totale 100 -> 5 previsto", pq2.currentQuantity == 100 && pq2.quantityChange() && pq2.changes.isEmpty());
+                B1RecipeTransfer.execute(pq2, on, host, port, l.dbSize);
+                try (S7ReadClient c = new S7ReadClient(host, port, 0, 2, 3000)) {
+                    c.connect();
+                    byte[] d110 = c.readDb(110, 0, 256);
+                    check("server di prova: DB110.DBW210 = 5 dopo l'invio", S7ReadClient.int16(d110, 210) == 5);
+                    check("server di prova: miscele da fare ricalcolate dal PLC (DBW214 = 5)", S7ReadClient.int16(d110, 214) == 5);
+                }
+            }
         }
         System.exit(failures == 0 ? 0 : 1);
     }
