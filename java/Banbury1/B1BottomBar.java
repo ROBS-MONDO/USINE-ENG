@@ -38,6 +38,11 @@ final class B1BottomBar {
         default boolean exitEnabled() {
             return true;
         }
+
+        /** false: senza i pulsanti Govoni, B2, B2 main, Valeurs PLC e Etiquette (pagine con una barra propria, es. Production). */
+        default boolean extraButtons() {
+            return true;
+        }
     }
 
     static final class Btn {
@@ -125,7 +130,7 @@ final class B1BottomBar {
         String[] t = {"Govoni", "B2", "B2 main", "Valeurs PLC", "\u00c9tiquette"};
         int[] tx = {578, 632, 688, 752, 826};
         int[] tw = {48, 48, 58, 70, 66};
-        for (int i = 0; i < t.length; i++) {
+        for (int i = 0; i < t.length && env.extraButtons(); i++) {
             Runnable a = null;
             if (i == 0) {
                 a = () -> B1ScreensWindow.open(src, "301_GovoniSynoptique2Bambury1");

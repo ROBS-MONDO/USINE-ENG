@@ -153,6 +153,7 @@ public class B1ScreensWindow extends JFrame {
         void show(String screen) {
             contentName = screen;
             content = B1Screen.load(screen);
+            barButtons = null; // la barra cambia secondo la pagina (es. Production senza i pulsanti Govoni/B2/...)
             repaint();
         }
 
@@ -179,6 +180,11 @@ public class B1ScreensWindow extends JFrame {
             @Override
             public B1RecipeBridge bridge() {
                 return B1_Main.BRIDGE;
+            }
+
+            @Override
+            public boolean extraButtons() {
+                return !"007_Production".equals(contentName);
             }
 
             @Override
