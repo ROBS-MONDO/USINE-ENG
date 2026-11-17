@@ -997,9 +997,9 @@ public class B1_Main extends JFrame {
             for (int i = 0; i < Math.min(2, ev.size()); i++) {
                 B1AlarmEngine.Event e = ev.get(i);
                 int y = 791 + i * 18;
-                g.setColor(i % 2 == 0 ? Color.WHITE : new Color(0xF0F0F0));
+                g.setColor(e.active() ? B1AlarmEngine.COLOR_CAME : B1AlarmEngine.COLOR_WENT); // come WinCC: rosso attivo, blu rientrato
                 g.fillRect(8, y, 747, 18);
-                Color c = e.active() ? new Color(0xC00000) : Color.BLACK;
+                Color c = Color.WHITE;
                 text(g, e.came.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), 38, y, 70, 18, fa, c, -1);
                 text(g, e.came.format(DateTimeFormatter.ofPattern("HH:mm:ss")), 107, y, 70, 18, fa, c, -1);
                 text(g, String.valueOf(e.def.number), 176, y, 44, 18, fa, c, -1);

@@ -61,6 +61,10 @@ public final class B1AlarmEngine {
         }
     }
 
+    /** Colori della classe Alarm di WinCC: messaggio arrivato (attivo) e rientrato non ancora tacitato. */
+    public static final java.awt.Color COLOR_CAME = new java.awt.Color(0xFF, 0x00, 0x00);
+    public static final java.awt.Color COLOR_WENT = new java.awt.Color(0x00, 0x80, 0xFF);
+
     private static final Pattern WINCC = Pattern.compile("^DB(\\d+)DBX(\\d+)_([0-7])$");
     private static final Pattern DOTTED = Pattern.compile("^DB(\\d+)\\.W(\\d+)\\.B(\\d+)$");
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

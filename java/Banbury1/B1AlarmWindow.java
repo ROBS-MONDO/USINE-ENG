@@ -71,8 +71,12 @@ public class B1AlarmWindow extends JFrame {
             public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
                 Component comp = super.getTableCellRendererComponent(t, v, sel, foc, r, c);
                 B1AlarmEngine.Event e = model.eventAt(r);
-                comp.setForeground(e != null && e.active() ? new Color(0xC0, 0x00, 0x00) : Color.BLACK);
-                if (!sel) {
+                if (e != null && !sel) {
+                    // come WinCC (classe Alarm): attivo = sfondo rosso, rientrato = sfondo blu, testo bianco
+                    comp.setForeground(Color.WHITE);
+                    comp.setBackground(e.active() ? B1AlarmEngine.COLOR_CAME : B1AlarmEngine.COLOR_WENT);
+                } else if (!sel) {
+                    comp.setForeground(Color.BLACK);
                     comp.setBackground(r % 2 == 0 ? Color.WHITE : ROW2);
                 }
                 return comp;
