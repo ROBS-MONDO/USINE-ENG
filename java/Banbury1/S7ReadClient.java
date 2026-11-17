@@ -17,6 +17,7 @@ import java.net.Socket;
 public class S7ReadClient implements Closeable {
 
     private static final int AREA_DB = 0x84;
+    private static final int AREA_M = 0x83; // merker (flag memory), solo lettura
     /** PDU richiesta; la CPU rispondera' con il valore negoziato. */
     private static final int PDU_REQUESTED = 480;
 
@@ -106,7 +107,27 @@ public class S7ReadClient implements Closeable {
         int done = 0;
         while (done < size) {
             int chunk = Math.min(maxChunk, size - done);
-            byte[] part = readChunk(db, start + done, chunk);
+            byte[] part = readChunk(AREA_DB, db, start + done, chunk);
+            System.arraycopy(part, 0, result, done, chunk);
+            done += chunk;
+        }
+        return result;
+    }
+
+    /** Legge {@code size} byte dall'area merker (M) a partire da {@code start} (sola lettura, come i DB). */
+    public synchronized byte[] readMarkers(int start, int size) throws IOException {
+        if (!isConnected()) {
+            throw new IOException("Non connesso");
+        }
+        if (start < 0 || size < 1) {
+            throw new IllegalArgumentException("Parametri area M non validi");
+        }
+        byte[] result = new byte[size];
+        int maxChunk = Math.min(pduSize - 18, 960);
+        int done = 0;
+        while (done < size) {
+            int chunk = Math.min(maxChunk, size - done);
+            byte[] part = readChunk(AREA_M, 0, start + done, chunk);
             System.arraycopy(part, 0, result, done, chunk);
             done += chunk;
         }
@@ -153,7 +174,7 @@ public class S7ReadClient implements Closeable {
         }
     }
 
-    private byte[] readChunk(int db, int start, int len) throws IOException {
+    private byte[] readChunk(int area, int db, int start, int len) throws IOException {
         int ref = ++pduRef & 0xFFFF;
         int bitAddr = start * 8;
         byte[] req = {
@@ -164,7 +185,7 @@ public class S7ReadClient implements Closeable {
                 0x12, 0x0A, 0x10, 0x02,
                 (byte) (len >> 8), (byte) len,
                 (byte) (db >> 8), (byte) db,
-                (byte) AREA_DB,
+                (byte) area,
                 (byte) (bitAddr >> 16), (byte) (bitAddr >> 8), (byte) bitAddr
         };
         out.write(req);
@@ -179,7 +200,7 @@ public class S7ReadClient implements Closeable {
         }
         int rc = r[21] & 0xFF;
         if (rc != 0xFF) {
-            throw new IOException(describeReturnCode(rc, db, start, len));
+            throw new IOException(describeReturnCode(rc, area == AREA_M ? 0 : db, start, len));
         }
         if (r.length < 25 + len) {
             throw new IOException("Dati S7 incompleti");
@@ -197,7 +218,7 @@ public class S7ReadClient implements Closeable {
             case 0x03: what = "accesso negato (protezione/DB ottimizzato)"; break;
             default: what = "codice 0x" + Integer.toHexString(rc);
         }
-        return "Lettura DB" + db + "[" + start + ".." + (start + len - 1) + "] rifiutata: " + what;
+        return (db == 0 ? "Lettura area M" : "Lettura DB" + db) + "[" + start + ".." + (start + len - 1) + "] rifiutata: " + what;
     }
 
     protected byte[] readTpkt() throws IOException {

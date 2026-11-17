@@ -229,3 +229,6 @@ Non provato su SQL Server: prima prova a secco e backup.
 
 ## Connessione SQL centralizzata (provider = svc)
 In `b1_recipes_sql.properties` (e nei file analoghi) `provider = svc` fa usare a B1 la classe `SVC.DBBamburyReader.openConnection()` (database Mondo su srv-bambury): URL e credenziali stanno solo li', non nei file di B1. Richiede che la classe sia nel classpath del progetto (stesso progetto Eclipse). Il trend (Datas_B1) usa un altro database: resta con la propria configurazione.
+
+## Area merker (M)
+Oltre ai DB, i tag possono puntare all'area merker del PLC (sola lettura): `M30.0` (bit), `MW30` / `UMW30` (parola), `MW30.B3` (bit di una parola). Esempi gia' in uso: `silos_open = M30.0` (SilosOpen), `lube_running = M46.5` (LubricationRunning). Altri merker nel progetto WinCC: SilosClose M30.1, RotorRunning M20.3, Horn M3.0, AlarmsAck M3.2, CheckCommunication M3.1. Se la CPU rifiuta la lettura dell'area M, B1 lo scrive in console e continua senza quelle spie.

@@ -51,7 +51,22 @@ public final class B1PlcSource implements B1Source {
                 java.util.Set<Integer> all = new java.util.TreeSet<>(tags.dbs());
                 all.addAll(extraDbs);
                 for (int db : all) {
-                    sizes.put(db, plc.detectDbSize(db, MAX_DB));
+                    if (db == 0) {
+                        // area merker (M): lunghezza dai tag; se la CPU rifiuta la lettura si prosegue senza
+                        int len = Math.max(2, (tags.usedLength(0) + 1) & ~1);
+                        try {
+                            plc.readMarkers(0, len);
+                            sizes.put(0, len);
+                        } catch (IOException e) {
+                            if (e.getMessage() == null || !e.getMessage().startsWith("Lettura area M")) {
+                                throw e;
+                            }
+                            sizes.put(0, 0);
+                            System.err.println("PLC: " + e.getMessage() + " (spie su merker non disponibili)");
+                        }
+                    } else {
+                        sizes.put(db, plc.detectDbSize(db, MAX_DB));
+                    }
                 }
                 connected = true;
                 status = host + " rack " + rack + " slot " + slot + " (sola lettura)";
@@ -59,7 +74,8 @@ public final class B1PlcSource implements B1Source {
                     Map<Integer, byte[]> next = new HashMap<>();
                     for (Map.Entry<Integer, Integer> e : sizes.entrySet()) {
                         if (e.getValue() > 0) {
-                            next.put(e.getKey(), plc.readDb(e.getKey(), 0, e.getValue()));
+                            next.put(e.getKey(), e.getKey() == 0 ? plc.readMarkers(0, e.getValue())
+                                    : plc.readDb(e.getKey(), 0, e.getValue()));
                         }
                     }
                     data = next;

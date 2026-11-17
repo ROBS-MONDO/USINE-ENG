@@ -69,6 +69,10 @@ public final class B1Tags {
     private static final Pattern SPEC = Pattern.compile(
             "^(!?)DB(\\d+)\\.(?:(U?W)(\\d+)(?:\\.B(\\d+))?|X(\\d+)\\.([0-7])|S(\\d+))(?:\\*([0-9.]+))?$");
 
+    /** Area merker (M, flag memory): M30.0 (bit), MW30 / UMW30 (parola), MW30.B3 (bit di una parola); db = 0 nei Tag. */
+    private static final Pattern MSPEC = Pattern.compile(
+            "^(!?)(?:M(U?W)(\\d+)(?:\\.B(\\d+))?|M(\\d+)\\.([0-7]))(?:\\*([0-9.]+))?$");
+
     private final Map<String, Tag> tags = new LinkedHashMap<>();
 
     // chiave, descrizione, indirizzo predefinito ("" = non collegato)
@@ -108,9 +112,9 @@ public final class B1Tags {
         {"piston_blocked", "Pistone: bloccato",         "none"},
         {"piston_move",    "Pistone: in movimento (osservato: si accende in salita e in discesa)", "DB110.W22.B5"},
         {"rotors_running", "Rotori: running",           "DB110.W60"},
-        {"lube_running",   "Lubrificazione: running",   ""},
+        {"lube_running",   "Lubrificazione: running (merker M46.5, tag WinCC LubricationRunning)",   "M46.5"},
         // --- silos / porte ---
-        {"silos_open",      "Silos: aperto (ipotesi da PDL)",  "none"},
+        {"silos_open",      "Silos: aperto (merker M30.0, tag WinCC SilosOpen)",  "M30.0"},
         {"silos_closed",    "Silos: chiuso (ipotesi da PDL)",  "DB110.W6.B11"},
         {"door_load_open",  "Porta carico: aperta",            "DB110.W26.B0"},
         {"door_load_closed","Porta carico: chiusa",            "DB110.W26.B1"},
@@ -198,6 +202,23 @@ public final class B1Tags {
         if (spec == null || spec.isEmpty()) {
             return null;
         }
+        Matcher mm = MSPEC.matcher(spec);
+        if (mm.matches()) {
+            boolean negM = !mm.group(1).isEmpty();
+            double scaleM = mm.group(7) != null ? Double.parseDouble(mm.group(7)) : 1.0;
+            if (mm.group(2) != null) {
+                int off = Integer.parseInt(mm.group(3));
+                if (mm.group(4) != null) {
+                    int b = Integer.parseInt(mm.group(4));
+                    if (b > 15) {
+                        return null;
+                    }
+                    return new Tag(key, desc, spec, Kind.BIT, 0, b >= 8 ? off : off + 1, b % 8, 1, negM, guess);
+                }
+                return new Tag(key, desc, spec, mm.group(2).startsWith("U") ? Kind.UINT : Kind.INT, 0, off, 0, scaleM, false, guess);
+            }
+            return new Tag(key, desc, spec, Kind.BIT, 0, Integer.parseInt(mm.group(5)), Integer.parseInt(mm.group(6)), 1, negM, guess);
+        }
         Matcher m = SPEC.matcher(spec);
         if (!m.matches()) {
             System.err.println("b1_tags: indirizzo non valido per " + key + ": " + spec);
@@ -242,6 +263,18 @@ public final class B1Tags {
         return t == null ? key : t.desc;
     }
 
+    /** Primo byte dopo l'ultimo usato dai tag del DB indicato (db 0 = area M); 0 se nessun tag. */
+    public int usedLength(int db) {
+        int max = 0;
+        for (Tag t : tags.values()) {
+            if (!t.spec.isEmpty() && t.db == db) {
+                max = Math.max(max, t.off + t.length());
+            }
+        }
+        return max;
+    }
+
+    /** DB usati dai tag; 0 = area merker (M). */
     public Set<Integer> dbs() {
         Set<Integer> s = new TreeSet<>();
         for (Tag t : tags.values()) {
@@ -257,6 +290,7 @@ public final class B1Tags {
         try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(out, StandardCharsets.UTF_8))) {
             w.println("# Mappa tag Banbury 1 (CPU IM 151-8 F-CPU, 192.168.10.100, rack 0 slot 2)");
             w.println("# Sintassi: chiave = DB110.W80 | DB110.UW80 | DB110.W80*0.1 | DB110.W6.B12 | DB201.X41.0 | DB150.S6 | !DB110.W6.B3");
+            w.println("# Area merker (M): M30.0 | MW30 | UMW30 | MW30.B3 (sola lettura)");
             w.println("# Riga vuota = indirizzo predefinito del programma. 'none' = volutamente non collegato (mostra '--').");
             w.println("# Le righe preimpostate possono essere IPOTESI da confermare (vedi DB_MAP.md).");
             w.println("# Premere F2 nel sinottico per vedere la chiave di ogni campo.");
