@@ -228,6 +228,9 @@ public class B1ScreensWindow extends JFrame {
             g.fillRect(0, 0, W, H);
             if (content != null) {
                 drawScreen(g, content, 0);
+                if ("002_Process".equals(contentName)) {
+                    drawProcessTable(g);
+                }
             } else {
                 g.setColor(Color.DARK_GRAY);
                 g.setFont(new Font("Arial", Font.BOLD, 18));
@@ -257,6 +260,179 @@ public class B1ScreensWindow extends JFrame {
             String t = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
             g.drawString(d, x + (w - fm.stringWidth(d)) / 2, y + 20);
             g.drawString(t, x + (w - fm.stringWidth(t)) / 2, y + 42);
+        }
+
+
+        // ---------------- pagina Process: tabella delle tre fasi ----------------
+        private static final String[] OP_NAMES = {"Rubb.", "Add.", "All Black", "PLAST.", "CERAC.", "SILANO", "Half Black", "Degas", "Clean", "Disch."};
+        private static final int[] OP_BITS = {0, 1, 2, 3, 4, 5, 6, 13, 14, 15};
+        private static final Color[][] BANDS = {
+            {new Color(0x3C86E0), new Color(0x1458B8)},   // fase attuale, valori attuali
+            {new Color(0x5CC05C), new Color(0x2E8E2E)},   // fase attuale, valori impostati
+            {new Color(0xEBAA48), new Color(0xC27818)}};  // fase successiva, valori impostati
+
+        private static final int[] COLS_X = {46, 416, 474, 532, 600, 632, 664, 700, 732, 788, 846, 914, 946};
+
+        private void drawProcessTable(Graphics2D g) {
+            Font fh = new Font("Arial", Font.PLAIN, 11);
+            // intestazioni
+            g.setColor(new Color(0xE6E6E6));
+            g.fillRect(46, 154, 360, 22);
+            g.fillRect(416, 154, 272, 22);
+            g.fillRect(700, 154, 276, 22);
+            g.setColor(new Color(0x606060));
+            g.drawRect(46, 154, 360, 22);
+            g.drawRect(416, 154, 272, 22);
+            g.drawRect(700, 154, 276, 22);
+            g.setFont(new Font("Arial", Font.PLAIN, 14));
+            g.setColor(Color.BLACK);
+            g.drawString("OPERATION", 46 + 150, 170);
+            g.drawString("SET", 416 + 120, 170);
+            g.drawString("CONTROL", 700 + 100, 170);
+            g.setFont(fh);
+            g.drawString("Phase", 8, 196);
+            for (int i = 0; i < OP_NAMES.length; i++) {
+                fitHeader(g, OP_NAMES[i], 46 + i * 36, 180, 36);
+            }
+            fitHeader(g, "Timeout (s)", 416, 180, 56);
+            fitHeader(g, "Rotor (rpm)", 474, 180, 56);
+            fitHeader(g, "Press.(bar)", 532, 180, 66);
+            fitHeader(g, "Door", 600, 180, 30);
+            fitHeader(g, "Pist.", 632, 180, 30);
+            fitHeader(g, "Skip", 700, 180, 30);
+            fitHeader(g, "Time (s)", 732, 180, 54);
+            fitHeader(g, "Temp. (\u00B0C)", 788, 180, 56);
+            fitHeader(g, "Ener.(kWh)", 846, 180, 66);
+            fitHeader(g, "AND", 914, 180, 30);
+            fitHeader(g, "OR", 946, 180, 30);
+
+            Double ph = src.connected() ? src.num("phase_no") : null;
+            int phase = ph == null ? 0 : ph.intValue();
+            // riga 1: attuale/valori attuali; riga 2: attuale/impostati; riga 3: successiva (dal DB201)
+            String[] act = {"ph_act_ops", "ph_act_tmo", "ph_act_bits", "ph_act_rpm", "ph_act_press", "ph_act_ctrl", "ph_act_time", "ph_act_temp", "ph_act_energy"};
+            String[] set = {"ph_set_ops", "ph_set_tmo", "ph_set_bits", "ph_set_rpm", "ph_set_press", "ph_set_ctrl", "ph_set_time", "ph_set_temp", "ph_set_energy"};
+            double[][] rows = new double[3][];
+            rows[0] = readPhase(act);
+            rows[1] = readPhase(set);
+            rows[2] = nextPhase(phase);
+            int[] y = {212, 266, 320};
+            String[] labels = {phase > 0 ? String.valueOf(phase) : "--", phase > 0 ? String.valueOf(phase) : "--",
+                rows[2] == null ? "--" : String.valueOf(phase + 1)};
+            for (int r = 0; r < 3; r++) {
+                drawPhaseRow(g, y[r], BANDS[r], labels[r], rows[r], r == 0);
+            }
+            // etichetta della spia "ciclo sospeso" (nel layout originale e' un campo senza testo)
+            g.setColor(new Color(0xD4D0C8));
+            g.fillRect(855, 565, 160, 25);
+            bevel(g, 855, 565, 160, 25);
+            fit(g, "Cycle suspendu", 855, 565, 160, 25, Color.BLACK, -1, false);
+            // legenda colori (le scritte sono nel layout)
+            int[] ly = {533, 563, 593};
+            for (int i = 0; i < 3; i++) {
+                g.setPaint(new GradientPaint(5, ly[i], BANDS[i][0], 5, ly[i] + 21, BANDS[i][1]));
+                g.fillRect(5, ly[i], 50, 21);
+            }
+        }
+
+        private void fitHeader(Graphics2D g, String text, int x, int y, int w) {
+            g.setColor(new Color(0xD4D0C8));
+            g.fillRect(x, y, w, 22);
+            bevel(g, x, y, w, 22);
+            fit(g, text, x, y, w, 22, Color.BLACK, 0, false);
+        }
+
+        private double[] readPhase(String[] keys) {
+            if (!src.connected()) {
+                return null;
+            }
+            double[] v = new double[keys.length];
+            for (int i = 0; i < keys.length; i++) {
+                Double d = src.num(keys[i]);
+                if (d == null) {
+                    return null;
+                }
+                v[i] = d;
+            }
+            return v;
+        }
+
+        /** Fase successiva dal DB201 (ricetta in macchina): 10 fasi da 30 byte dal DBW42. */
+        private double[] nextPhase(int phase) {
+            if (!src.connected() || phase < 1 || phase >= 10) {
+                return null;
+            }
+            int base = 42 + 30 * phase;
+            int[] offs = {0, 2, 10, 12, 14, 20, 22, 24, 26};
+            double[] v = new double[9];
+            for (int i = 0; i < offs.length; i++) {
+                Double d = src.raw("DB201DBW" + (base + offs[i]));
+                if (d == null) {
+                    return null;
+                }
+                v[i] = d;
+            }
+            v[0] = ((int) v[0]) & 0xFFFF;
+            v[2] = ((int) v[2]) & 0xFFFF;
+            v[5] = ((int) v[5]) & 0xFFFF;
+            v[4] = v[4] * 0.1;
+            v[8] = v[8] * 0.1;
+            return v;
+        }
+
+        private void drawPhaseRow(Graphics2D g, int y, Color[] band, String label, double[] v, boolean actual) {
+            int h = 46;
+            g.setPaint(new GradientPaint(4, y, band[0], 4, y + h, band[1]));
+            g.fillRoundRect(4, y, 984, h, 8, 8);
+            fieldBox(g, 8, y + 8, 34, 28, label, true);
+            int ops = v == null ? 0 : (int) v[0] & 0xFFFF;
+            for (int i = 0; i < 10; i++) {
+                drawSq(g, 46 + i * 36 + 5, y + 10, 26, v != null && (ops & (1 << OP_BITS[i])) != 0,
+                        new Color(0x3CFF3C), new Color(0x0C4A0C));
+            }
+            fieldBox(g, 416, y + 8, 56, 28, v == null ? null : fmt(v[1], 0), false);
+            fieldBox(g, 474, y + 8, 56, 28, v == null ? null : fmt(v[3], 0), false);
+            fieldBox(g, 532, y + 8, 66, 28, v == null ? null : fmt(v[4], 1), false);
+            int bits = v == null ? 0 : (int) v[2] & 0xFFFF;
+            drawSq(g, 602, y + 10, 26, v != null && (bits & 0x02) != 0,
+                    actual ? new Color(0x3CFF3C) : new Color(0xFF3A3A), actual ? new Color(0x0C4A0C) : new Color(0x5A1010));
+            boolean up = v != null && (bits & 0x04) != 0;
+            boolean down = v != null && (bits & 0x10) != 0;
+            drawSq(g, 634, y + 10, 26, up || down, new Color(0x3CFF3C), new Color(0x0C4A0C));
+            drawArrow(g, 664, y + 8, up, true);
+            drawArrow(g, 664, y + 25, down, false);
+            int ctrl = v == null ? 0 : (int) v[5] & 0xFFFF;
+            drawSq(g, 702, y + 10, 26, v != null && (ctrl & 0x04) != 0, new Color(0xE0E0E0), new Color(0x404048));
+            fieldBox(g, 732, y + 8, 54, 28, v == null ? null : fmt(v[6], 0), false);
+            fieldBox(g, 788, y + 8, 56, 28, v == null ? null : fmt(v[7], 0), false);
+            fieldBox(g, 846, y + 8, 66, 28, v == null ? null : fmt(v[8], 1), false);
+            drawSq(g, 916, y + 10, 26, v != null && (ctrl & 0x01) != 0, new Color(0x40A0FF), new Color(0x103060));
+            drawSq(g, 948, y + 10, 26, v != null && (ctrl & 0x02) != 0, new Color(0x40A0FF), new Color(0x103060));
+        }
+
+        private static String fmt(double d, int dec) {
+            return String.format(LOC, "%." + dec + "f", d);
+        }
+
+        private void fieldBox(Graphics2D g, int x, int y, int w, int h, String text, boolean center) {
+            g.setColor(new Color(0xEEF2FA));
+            g.fillRect(x, y, w, h);
+            bevel(g, x, y, w, h);
+            fit(g, text == null ? "--" : text, x, y, w - 2, h, text == null ? new Color(0x808080) : Color.BLACK, center ? 0 : 1, true);
+        }
+
+        private void drawSq(Graphics2D g, int x, int y, int s, boolean lit, Color bright, Color dark) {
+            g.setColor(new Color(0x303030));
+            g.fillRect(x, y, s, s);
+            g.setPaint(lit ? new GradientPaint(x, y, bright, x + s, y + s, bright.darker())
+                    : new GradientPaint(x, y, dark.brighter(), x + s, y + s, dark));
+            g.fillRect(x + 2, y + 2, s - 4, s - 4);
+        }
+
+        private void drawArrow(Graphics2D g, int x, int y, boolean lit, boolean up) {
+            int[] xs = {x + 12, x + 2, x + 22};
+            int[] ys = up ? new int[]{y, y + 14, y + 14} : new int[]{y + 14, y, y};
+            g.setColor(lit ? new Color(0x20C020) : new Color(0x50706A));
+            g.fillPolygon(xs, ys, 3);
         }
 
         private void drawNav(Graphics2D g) {
@@ -334,6 +510,9 @@ public class B1ScreensWindow extends JFrame {
         private static final int DISPLAY_SHIFT = -200;
 
         private boolean skipObject(B1Screen.Obj o) {
+            if ("002_Process".equals(drawingScreen) && o.name.equals("IO_RecipeID")) {
+                return true;
+            }
             return "005_Display".equals(drawingScreen) && (o.name.equals("IO_value4") || o.name.equals("ST_unit4"));
         }
 
@@ -472,7 +651,13 @@ public class B1ScreensWindow extends JFrame {
         private final java.util.Map<String, String> lampKeys = java.util.Map.of(
                 "005_Display/GO_logo9", "piston_high",
                 "005_Display/GO_logo5", "piston_float",
-                "005_Display/GO_logo4", "piston_low");
+                "005_Display/GO_logo4", "piston_low",
+                "002_Process/GO_logo6", "prod_ready",
+                "002_Process/GO_logo5", "prod_auto",
+                "002_Process/GO_logo1", "prod_auto_on",
+                "002_Process/GO_logo7", "cycle_stopped",
+                "002_Process/GO_logo3", "new_load",
+                "002_Process/GO_logo4", "recipe_ok");
 
         private void drawIo(Graphics2D g, B1Screen.Obj o, int dy) {
             g.setColor(GRAY);
@@ -483,6 +668,12 @@ public class B1ScreensWindow extends JFrame {
             String topVal = topBarValue(o);
             if (topVal != null) {
                 v = topVal;
+            }
+            if ("002_Process".equals(drawingScreen) && o.name.equals("IO_RecipeName")) {
+                String rn = src.connected() ? src.str("recipe_name") : null;
+                fit(g, rn == null || rn.isEmpty() ? "--" : B1RecipeBridge.displayName(rn), o.l, o.t + dy, o.w(), o.h(),
+                        Color.BLACK, -1, true);
+                return;
             }
             if (timeKey != null) {
                 Double sec = src.num(timeKey);
@@ -554,7 +745,11 @@ public class B1ScreensWindow extends JFrame {
 
         private void drawLamp(Graphics2D g, B1Screen.Obj o, int dy) {
             Color bright, dark;
-            switch (o.lamp) {
+            String lampKind = o.lamp;
+            if ("002_Process".equals(contentName) && (o.name.equals("GO_logo1") || o.name.equals("GO_logo5"))) {
+                lampKind = "GREEN"; // nella schermata reale Auto cycle ON e Production auto sono verdi da accese
+            }
+            switch (lampKind) {
                 case "RED": bright = new Color(0xFF3A3A); dark = new Color(0x6E1010); break;
                 case "ORANGE": bright = new Color(0xFFA030); dark = new Color(0x6B4A1A); break;
                 default: bright = new Color(0x3CFF3C); dark = new Color(0x0C4A0C);

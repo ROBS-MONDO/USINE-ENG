@@ -35,6 +35,15 @@ public final class B1DemoSource implements B1Source {
         strs.put("pass", "4e");
         strs.put("color", "---");
         strs.put("recipe_name", "gomma2");
+        // pagina Process (esempio dalla foto WinCC: fase 1 di 4* pass 100)
+        nums.put("phase_no", 1.0);
+        double[] actV = {0x0001, 7, 0x12, 29, 25.3, 0x03, 0, 78, 0};
+        double[] setV = {0x0001, 70, 0x12, 29, 90.0, 0x01, 0, 80, 0};
+        String[] sfx = {"ops", "tmo", "bits", "rpm", "press", "ctrl", "time", "temp", "energy"};
+        for (int i = 0; i < sfx.length; i++) {
+            nums.put("ph_act_" + sfx[i], actV[i]);
+            nums.put("ph_set_" + sfx[i], setV[i]);
+        }
 
         String[] on = {"piston_float", "piston_low", "rotors_running", "lube_running", "silos_closed",
                 "door_load_closed", "weight_open", "door_dis_open", "rdy_discharge", "rdy_motor",
