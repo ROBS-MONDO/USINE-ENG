@@ -111,11 +111,11 @@ public final class B1Tags {
         {"piston_low",     "Pistone: posizione bassa",  "DB110.W22.B1"},
         {"piston_blocked", "Pistone: bloccato",         "none"},
         {"piston_move",    "Pistone: in movimento (osservato: si accende in salita e in discesa)", "DB110.W22.B5"},
-        {"rotors_running", "Rotori: running",           "DB110.W60"},
+        {"rotors_running", "Rotori: running (merker M20.3, tag WinCC RotorRunning; prima: velocita' DB110.W60 diversa da 0)",           "M20.3"},
         {"lube_running",   "Lubrificazione: running (merker M46.5, tag WinCC LubricationRunning)",   "M46.5"},
         // --- silos / porte ---
         {"silos_open",      "Silos: aperto (merker M30.0, tag WinCC SilosOpen)",  "M30.0"},
-        {"silos_closed",    "Silos: chiuso (ipotesi da PDL)",  "DB110.W6.B11"},
+        {"silos_closed",    "Silos: chiuso (merker M30.1, tag WinCC SilosClose; prima: DB110.W6.B11)",  "M30.1"},
         {"door_load_open",  "Porta carico: aperta",            "DB110.W26.B0"},
         {"door_load_closed","Porta carico: chiusa",            "DB110.W26.B1"},
         {"weight_open",     "Poids presseur: aperto",          "DB110.W24.B2"},
