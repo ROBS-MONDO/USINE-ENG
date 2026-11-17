@@ -69,7 +69,7 @@ public final class B1PlcSource implements B1Source {
                     }
                 }
                 connected = true;
-                status = host + " rack " + rack + " slot " + slot + " (lecture seule)";
+                status = host + " rack " + rack + " slot " + slot + " (lecture)";
                 while (!stop) {
                     Map<Integer, byte[]> next = new HashMap<>();
                     for (Map.Entry<Integer, Integer> e : sizes.entrySet()) {

@@ -48,7 +48,7 @@ import java.util.Locale;
  */
 public class B1_Main extends JFrame {
 
-    static final String VERSION = "B1 V0.1 (lecture seule)";
+    static final String VERSION = "B1 V0.1";
     static final String DEFAULT_IP = "192.168.10.100";
     static final Path DEFAULT_TAGS = Paths.get("C:\\_tools\\Banbury1\\b1_tags.properties");
 
@@ -1026,7 +1026,7 @@ public class B1_Main extends JFrame {
                 g.fillRect(768, 806, 255, 24);
                 text(g, message, 768, 806, 255, 24, new Font("Arial", Font.PLAIN, 11), Color.BLACK, -1);
             } else {
-                text(g, "LECTURE SEULE  -  F2 : adresses", 768, 808, 255, 20, new Font("Arial", Font.PLAIN, 11), new Color(0x505050), -1);
+                text(g, B1RecipeTransfer.writeEnabled() ? "\u00c9CRITURE : recettes  -  F2 : adresses" : "LECTURE SEULE  -  F2 : adresses", 768, 808, 255, 20, new Font("Arial", Font.PLAIN, 11), new Color(0x505050), -1);
             }
         }
     }

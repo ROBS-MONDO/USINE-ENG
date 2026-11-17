@@ -54,7 +54,7 @@ public class B1ScreensWindow extends JFrame {
     private final ScreenPanel panel;
 
     private B1ScreensWindow(B1Source src, String first) {
-        super("Banbury 1 - \u00e9crans (lecture seule)");
+        super("Banbury 1 - \u00e9crans");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         panel = new ScreenPanel(src, first);
         setContentPane(panel);
@@ -484,7 +484,9 @@ public class B1ScreensWindow extends JFrame {
             if (System.currentTimeMillis() < messageUntil) {
                 st = message;
             }
-            g.drawString(st + "   |   LECTURE SEULE   |   F2 : adresses", 10, 765);
+            g.drawString(st + (B1RecipeTransfer.writeEnabled()
+                    ? "   |   \u00c9CRITURE ACTIV\u00c9E : recettes uniquement (T\u00e9l\u00e9charger / Envoyer au PLC)   |   F2 : adresses"
+                    : "   |   LECTURE SEULE   |   F2 : adresses"), 10, 765);
         }
 
         /** Schermata Display, fascia sopra la barra: spie AUTO / MANUAL a sinistra e ricetta attuale al centro. */

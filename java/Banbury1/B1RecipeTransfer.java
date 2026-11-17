@@ -37,6 +37,19 @@ public final class B1RecipeTransfer {
     /** DB110.DBW210 = totale miscele ("Melanges total"); il PLC lo usa per calcolare quelle da fare (DBW214 = totale - DBW212). */
     static final int QTY_WORD = 210;
 
+    private static volatile Config cachedConfig;
+    private static volatile long cachedAt;
+
+    /** La scrittura delle ricette e' abilitata (b1_recipe_transfer.properties)? Il file si rilegge al massimo ogni 5 s (per le scritte a video). */
+    public static boolean writeEnabled() {
+        long now = System.currentTimeMillis();
+        if (cachedConfig == null || now - cachedAt > 5000) {
+            cachedConfig = Config.load();
+            cachedAt = now;
+        }
+        return cachedConfig.writeAllowed();
+    }
+
     /** Impostazioni (file b1_recipe_transfer.properties). */
     public static final class Config {
         public boolean enabled;
