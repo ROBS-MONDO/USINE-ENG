@@ -109,7 +109,7 @@ public class MondoLuxRecipesSetup extends JFrame {
     // =========================================================
     private static final int EDIT_MODE_DURATION_SECONDS = 15 * 60; // 15 minuti
     private static final int EDIT_MODE_WARNING_SECONDS = 10;
-    private static final int EDIT_MODE_POSTPONE_SECONDS = 30;
+    private static final int EDIT_MODE_POSTPONE_SECONDS = 5 * 60; // 5 minuti
     private static final Color EDIT_MODE_BACKGROUND = new Color(255, 190, 190);
     private static final Color NORMAL_BACKGROUND = new Color(236, 236, 236);
 
@@ -2442,7 +2442,7 @@ public class MondoLuxRecipesSetup extends JFrame {
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
         JButton okButton = new JButton("OK");
-        JButton postponeButton = new JButton("PROLONGER DE 30 SECONDES");
+        JButton postponeButton = new JButton("PROLONGER DE 5 MINUTES");
 
         okButton.setFont(new Font("SansSerif", Font.BOLD, 16));
         postponeButton.setFont(new Font("SansSerif", Font.BOLD, 16));
@@ -2451,7 +2451,7 @@ public class MondoLuxRecipesSetup extends JFrame {
         postponeButton.addActionListener(e -> {
             editModeExpiresAtMillis += EDIT_MODE_POSTPONE_SECONDS * 1000L;
             editModeWarningShown = false;
-            setOkStatus("MODE MODIFICATION ACTIF - PROLONGÉ DE 30 SECONDES");
+            setOkStatus("MODE MODIFICATION ACTIF - PROLONGÉ DE 5 MINUTES");
             editModeWarningDialog.dispose();
         });
 
