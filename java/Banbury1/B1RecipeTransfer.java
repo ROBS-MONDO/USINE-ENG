@@ -236,7 +236,8 @@ public final class B1RecipeTransfer {
                     .append("\n  1) Start transfert (DB201.DBX41.0) et attente de la prise en charge (DB110.DBW44 bit 2)")
                     .append("\n  2) \u00e9criture des mots modifi\u00e9s, num\u00e9ro de recette en dernier")
                     .append("\n  3) fin du transfert (DB201.DBX383.0) et attente que le PLC cl\u00f4ture l'\u00e9change (jusqu'\u00e0 ")
-                    .append(cfg.waitSeconds).append(" s)\n  4) relecture et comparaison du DB.\n");
+                    .append(cfg.waitSeconds).append(" s)\n  4) relecture et comparaison du DB.\n")
+                    .append("Note : \u00e0 la fin du transfert le PLC remet \u00e0 z\u00e9ro les m\u00e9langes faits (DB110.DBW212) et met \u00e0 jour ceux \u00e0 faire (DBW214), comme observ\u00e9 avec WinCC le 17/11/2026.\n");
         } else {
             sb.append("\u00c9criture D\u00c9SACTIV\u00c9E (mode aper\u00e7u) : pour l'activer il faut enabled=true et allow_raw_write=true\n")
                     .append("dans b1_recipe_transfer.properties. La s\u00e9quence de transfert est celle du WinCC (journal du 16/11/2026).\n");
