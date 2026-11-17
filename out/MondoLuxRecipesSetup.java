@@ -40,7 +40,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 public class MondoLuxRecipesSetup extends JFrame {
 
     // Versione visibile per controllo file corretto
-    private static final String VERSION = "V2.02";
+    private static final String VERSION = "V2.03";
 
     // =========================================================
     // CONFIG
