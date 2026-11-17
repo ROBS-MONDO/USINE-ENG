@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Importa nell'archivio ricette di B1 le ricette del database WinCC (Q131014), a partire dal file prodotto da
  * sql/export_wincc_recipes.sql. Senza --apply mostra soltanto cosa importerebbe (non scrive niente).
- * Uso: java Banbury1.B1WinccRecipeImport recipes_out.txt [--apply] [--dir cartella] [--available]
+ * Uso: java Banbury1.B1WinccRecipeImport recipes_out.txt [--apply] [--update-numbers] [--dir cartella] [--available]
  * Corrispondenze: D_RECIPES.NUM_DATA1..5 = tempo sicurezza (s), temp. sicurezza, energia max (kWh), porte de dechargement (s),
  * temp. riavvio; NUM_DATA6 = tempo ciclo (s, non presente nel DB201: solo riportato). Valori di fase (D_RECIPE_PHASE_PARAMS, gia' grezzi
  * come nel PLC): parametro 1 operazioni, 2 timeout, 3 rotor, 4 pressione, 5 bit set, 6 bit controllo, 7 tempo fase, 8 temperatura, 9 energia.
@@ -111,7 +111,7 @@ public final class B1WinccRecipeImport {
             if (!r.name.equals(d.get("NAME").trim())) {
                 notes.add("nome adattato: '" + d.get("NAME") + "' -> '" + r.name + "'");
             }
-            r.recipeNo = 0;
+            r.recipeNo = num(d.get("ID")); // il PLC riceve l'ID della ricetta WinCC (DBW2)
             r.header.put("safety_time", num(d.get("NUM_DATA1")));
             r.header.put("safety_temp", num(d.get("NUM_DATA2")));
             r.header.put("max_energy", num(d.get("NUM_DATA3")) * 10); // il DB tiene kWh, il PLC x10
@@ -138,16 +138,18 @@ public final class B1WinccRecipeImport {
 
     public static void main(String[] a) throws Exception {
         if (a.length < 1) {
-            System.err.println("Uso: java Banbury1.B1WinccRecipeImport recipes_out.txt [--apply] [--dir cartella] [--available]");
+            System.err.println("Uso: java Banbury1.B1WinccRecipeImport recipes_out.txt [--apply] [--update-numbers] [--dir cartella] [--available]");
             System.exit(2);
         }
         Path file = Paths.get(a[0]);
         boolean apply = false;
+        boolean updateNumbers = false;
         boolean available = false;
         Path dir = B1RecipeEditor.DEFAULT_DIR;
         for (int i = 1; i < a.length; i++) {
             switch (a[i]) {
                 case "--apply": apply = true; break;
+                case "--update-numbers": updateNumbers = true; break;
                 case "--available": available = true; break;
                 case "--dir": dir = Paths.get(a[++i]); break;
                 default:
@@ -179,17 +181,31 @@ public final class B1WinccRecipeImport {
         B1RecipeRepository repo = B1RecipeRepositories.open(layout, dir);
         int saved = 0;
         List<String> existing = new ArrayList<>();
+        Map<String, String> uidByName = new LinkedHashMap<>();
         for (B1RecipeRepository.Entry e : repo.list()) {
             existing.add(e.name.toLowerCase());
+            uidByName.put(e.name.toLowerCase(), e.uid);
         }
+        int renumbered = 0;
         for (B1Recipe r : recipes) {
             if (existing.contains(r.name.toLowerCase())) {
+                if (updateNumbers) {
+                    B1Recipe old = repo.load(uidByName.get(r.name.toLowerCase()));
+                    if (old.recipeNo != r.recipeNo) {
+                        old.recipeNo = r.recipeNo;
+                        repo.save(old, "import WinCC (numero)");
+                        renumbered++;
+                        System.out.println("numero aggiornato: " + r.name + " -> " + r.recipeNo);
+                    }
+                    continue;
+                }
                 System.out.println("gia' presente, saltata: " + r.name);
                 continue;
             }
             repo.save(r, "import WinCC");
             saved++;
         }
-        System.out.println("Importate " + saved + " ricette in " + repo.location());
+        System.out.println("Importate " + saved + " ricette in " + repo.location()
+                + (updateNumbers ? "; numeri ricetta aggiornati: " + renumbered : ""));
     }
 }
