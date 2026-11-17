@@ -41,7 +41,7 @@ public final class B1FileRecipeRepository implements B1RecipeRepository {
 
     private Path file(String uid) {
         if (!uid.matches("[0-9a-fA-F-]{36}")) {
-            throw new IllegalArgumentException("UID non valido: " + uid);
+            throw new IllegalArgumentException("UID non valide : " + uid);
         }
         return dir.resolve(uid + ".b1recipe");
     }
@@ -93,8 +93,8 @@ public final class B1FileRecipeRepository implements B1RecipeRepository {
         if (Files.exists(f)) {
             long onDisk = Long.parseLong(read(f).getOrDefault("rev", "0"));
             if (onDisk != r.revision) {
-                throw new ConflictException("La ricetta e' stata modificata da un'altra postazione (revisione "
-                        + onDisk + " invece di " + r.revision + "). Riaprirla per non perdere le modifiche.");
+                throw new ConflictException("La recette a \u00e9t\u00e9 modifi\u00e9e depuis un autre poste (r\u00e9vision "
+                        + onDisk + " invece di " + r.revision + "). La rouvrir pour ne pas perdre les modifications.");
             }
         }
         long rev = r.revision + 1;

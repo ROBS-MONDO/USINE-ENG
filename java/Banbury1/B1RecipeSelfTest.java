@@ -30,7 +30,7 @@ public final class B1RecipeSelfTest {
                         && l2.opsOffset == 0 && l2.dischargeBit == 15 && l2.db == 201
                         && l2.header.size() == l.header.size() && l2.phase.size() == l.phase.size()
                         && l2.phaseField("rpm") != null && l2.phaseField("rpm").offset == 12
-                        && "D\u00e9ch. (scarico)".equals(l2.opNames.get(15)));
+                        && "D\u00e9ch. (d\u00e9chargement)".equals(l2.opNames.get(15)));
         Files.delete(lf);
         B1Recipe r = B1RecipeCodec.decode(db, l);
         check("nome ricetta = gomma2", "gomma2".equals(r.name));
@@ -61,8 +61,8 @@ public final class B1RecipeSelfTest {
         bad.phases.get(3).ops = 0x1000;
         List<String> e = B1RecipeCodec.validate(bad, l);
         System.out.println("      messaggi: " + e);
-        check("nome vuoto segnalato", e.stream().anyMatch(m -> m.startsWith("Nome ricetta")));
-        check("assenza fase di scarico segnalata", e.stream().anyMatch(m -> m.contains("scarico")));
+        check("nome vuoto segnalato", e.stream().anyMatch(m -> m.startsWith("Nom de recette")));
+        check("assenza fase di scarico segnalata", e.stream().anyMatch(m -> m.contains("chargement")));
 
         Path dir = Files.createTempDirectory("b1rec");
         B1FileRecipeRepository repo = new B1FileRecipeRepository(dir, l);

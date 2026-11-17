@@ -66,7 +66,7 @@ public final class B1RecipeBridge {
     });
     private final AtomicBoolean running = new AtomicBoolean();
     private volatile long lastRun;
-    private volatile Status status = new Status(State.UNKNOWN, "", "in attesa");
+    private volatile Status status = new Status(State.UNKNOWN, "", "en attente");
 
     public B1RecipeBridge(B1RecipeRepository repo, B1RecipeLayout layout, String plcIp) {
         this.repo = repo;
@@ -90,7 +90,7 @@ public final class B1RecipeBridge {
     public void offer(byte[] db) {
         long now = System.currentTimeMillis();
         if (db == null) {
-            status = new Status(State.UNKNOWN, "", "ricetta non letta");
+            status = new Status(State.UNKNOWN, "", "recette non lue");
             return;
         }
         if (now - lastRun < PERIOD_MS || !running.compareAndSet(false, true)) {
@@ -110,7 +110,7 @@ public final class B1RecipeBridge {
         B1Recipe live = B1RecipeCodec.decode(db, layout);
         String name = live.name == null ? "" : live.name.trim();
         if (name.isEmpty()) {
-            return new Status(State.UNKNOWN, "", "nessuna ricetta in macchina");
+            return new Status(State.UNKNOWN, "", "aucune recette en machine");
         }
         try {
             List<B1RecipeRepository.Entry> entries = repo.list();
@@ -122,9 +122,9 @@ public final class B1RecipeBridge {
                     B1Recipe archived = repo.load(e.uid);
                     if (B1RecipeCodec.sameExecutable(live, archived, layout)) {
                         ALIASES.remove(name.toLowerCase());
-                        return new Status(State.SAME, name, "= archivio (rev. " + archived.revision + ")");
+                        return new Status(State.SAME, name, "= archive (r\u00e9v. " + archived.revision + ")");
                     }
-                    lastRev = " (rev. " + archived.revision + ")";
+                    lastRev = " (r\u00e9v. " + archived.revision + ")";
                 }
             }
             String key = name.toLowerCase();
@@ -145,16 +145,16 @@ public final class B1RecipeBridge {
                 }
                 if (same != null) {
                     ALIASES.put(key, same.name.trim());
-                    return new Status(State.SAME, pretty(same.name.trim()), "= archivio (rev. " + sameRecipe.revision + ")"
-                            + (equal > 1 ? " +" + (equal - 1) + " uguali" : ""));
+                    return new Status(State.SAME, pretty(same.name.trim()), "= archive (r\u00e9v. " + sameRecipe.revision + ")"
+                            + (equal > 1 ? " +" + (equal - 1) + " identiques" : ""));
                 }
                 ALIASES.remove(key);
-                return new Status(State.NOT_ARCHIVED, name, "non in archivio");
+                return new Status(State.NOT_ARCHIVED, name, "pas en archive");
             }
             ALIASES.remove(key);
-            return new Status(State.DIFFERENT, name, "DIVERSA dall'archivio" + lastRev);
+            return new Status(State.DIFFERENT, name, "DIFF\u00c9RENTE de l'archive" + lastRev);
         } catch (IOException e) {
-            return new Status(State.UNKNOWN, name, "archivio non leggibile");
+            return new Status(State.UNKNOWN, name, "archive illisible");
         }
     }
 

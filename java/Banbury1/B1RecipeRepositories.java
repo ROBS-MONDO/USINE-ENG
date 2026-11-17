@@ -53,7 +53,7 @@ public final class B1RecipeRepositories {
         } catch (IOException e) {
             System.err.println("Ricette B1: archivio SQL non disponibile (" + e.getMessage() + "): uso la cartella " + dir);
             final B1FileRecipeRepository files = new B1FileRecipeRepository(dir, layout);
-            final String note = dir + "  (ATTENZIONE: SQL non raggiungibile)";
+            final String note = dir + "  (ATTENTION : SQL injoignable)";
             return new B1RecipeRepository() {
                 @Override
                 public List<Entry> list() throws IOException {

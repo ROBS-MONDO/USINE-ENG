@@ -60,7 +60,7 @@ import java.util.Map;
  */
 public class B1RecipeEditor extends JFrame {
 
-    static final String VERSION = "B1 Ricette V0.1";
+    static final String VERSION = "B1 Recettes V0.1";
     static final Path DEFAULT_DIR = Paths.get("C:\\_tools\\Banbury1\\Recipes");
     static final Path DEFAULT_LAYOUT = Paths.get("C:\\_tools\\Banbury1\\b1_recipe_layout.properties");
     static final String DEFAULT_PLC = "192.168.10.100";
@@ -186,7 +186,7 @@ public class B1RecipeEditor extends JFrame {
         r.header.put("restart_temp", 80);
         r.header.put("safety_time", 600);
         r.header.put("max_energy", 300);
-        p.show(r, false, "Ricetta di esempio (dati del dump del 12/11/2026)");
+        p.show(r, false, "Recette d'exemple (donn\u00e9es du dump du 12/11/2026)");
         p.setSize(1180, 760);
         p.addNotify();
         layoutAll(p);
@@ -252,7 +252,7 @@ public class B1RecipeEditor extends JFrame {
             buildCenter();
             buildBottom();
             refreshList();
-            show(B1Recipe.blank(layout), false, "Nuova ricetta");
+            show(B1Recipe.blank(layout), false, "Nouvelle recette");
 
             getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK), "save");
             getActionMap().put("save", new AbstractAction() {
@@ -275,7 +275,7 @@ public class B1RecipeEditor extends JFrame {
             JPanel left = new JPanel(new BorderLayout(4, 4));
             left.setOpaque(false);
             left.setPreferredSize(new Dimension(270, 0));
-            JLabel t = new JLabel("  RICETTE B1", JLabel.LEFT);
+            JLabel t = new JLabel("  RECETTES B1", JLabel.LEFT);
             t.setOpaque(true);
             t.setBackground(HEAD);
             t.setForeground(Color.WHITE);
@@ -285,7 +285,7 @@ public class B1RecipeEditor extends JFrame {
             JPanel mid = new JPanel(new BorderLayout(4, 4));
             mid.setOpaque(false);
             search.setFont(F);
-            search.setToolTipText("Cerca per nome");
+            search.setToolTipText("Chercher par nom");
             search.getDocument().addDocumentListener(new DocumentListener() {
                 public void insertUpdate(DocumentEvent e) { applyFilter(); }
                 public void removeUpdate(DocumentEvent e) { applyFilter(); }
@@ -303,10 +303,10 @@ public class B1RecipeEditor extends JFrame {
             left.add(mid, BorderLayout.CENTER);
             JPanel btns = new JPanel(new java.awt.GridLayout(2, 2, 4, 4));
             btns.setOpaque(false);
-            btns.add(button("Nuova", this::newRecipe));
-            btns.add(button("Duplica", this::duplicate));
-            btns.add(button("Elimina", this::deleteRecipe));
-            btns.add(button("Aggiorna", this::refreshList));
+            btns.add(button("Nouvelle", this::newRecipe));
+            btns.add(button("Dupliquer", this::duplicate));
+            btns.add(button("Supprimer", this::deleteRecipe));
+            btns.add(button("Actualiser", this::refreshList));
             left.add(btns, BorderLayout.SOUTH);
             add(left, BorderLayout.WEST);
         }
@@ -317,18 +317,18 @@ public class B1RecipeEditor extends JFrame {
 
             JPanel head = new JPanel(new GridBagLayout());
             head.setBackground(new Color(0xE6E6E6));
-            head.setBorder(BorderFactory.createTitledBorder("Testata ricetta"));
+            head.setBorder(BorderFactory.createTitledBorder("En-t\u00eate recette"));
             GridBagConstraints c = new GridBagConstraints();
             c.insets = new Insets(3, 6, 3, 6);
             c.anchor = GridBagConstraints.WEST;
             c.gridx = 0; c.gridy = 0;
-            head.add(lbl("Nome ricetta"), c);
+            head.add(lbl("Nom recette"), c);
             txtName.setFont(new Font("Arial", Font.BOLD, 15));
             c.gridx = 1; c.gridwidth = 2;
             head.add(txtName, c);
             c.gridwidth = 1;
             c.gridx = 3;
-            head.add(lbl("N. ricetta"), c);
+            head.add(lbl("N\u00b0 recette"), c);
             txtNo.setFont(F);
             c.gridx = 4;
             head.add(txtNo, c);
@@ -385,16 +385,16 @@ public class B1RecipeEditor extends JFrame {
                 table.getColumnModel().getColumn(ci).setMinWidth(ci == 0 ? 40 : 60);
             }
             JScrollPane sp = new JScrollPane(table);
-            sp.setBorder(BorderFactory.createTitledBorder("Fasi (le righe grigie dopo lo scarico non vengono eseguite)"));
+            sp.setBorder(BorderFactory.createTitledBorder("Phases (les lignes grises apr\u00e8s le d\u00e9chargement ne sont pas ex\u00e9cut\u00e9es)"));
             sp.getViewport().setBackground(Color.WHITE);
             center.add(sp, BorderLayout.CENTER);
 
             JPanel pb = new JPanel();
             pb.setOpaque(false);
             pb.setLayout(new BoxLayout(pb, BoxLayout.X_AXIS));
-            pb.add(button("Azzera fase", this::clearPhase));
+            pb.add(button("Effacer phase", this::clearPhase));
             pb.add(Box.createHorizontalStrut(6));
-            pb.add(button("Copia fase sulla successiva", this::copyPhaseDown));
+            pb.add(button("Copier la phase sur la suivante", this::copyPhaseDown));
             center.add(pb, BorderLayout.SOUTH);
             add(center, BorderLayout.CENTER);
         }
@@ -412,23 +412,23 @@ public class B1RecipeEditor extends JFrame {
             problems.setFont(new Font("Arial", Font.PLAIN, 12));
             problems.setBackground(new Color(0xFFF4D0));
             JScrollPane ps = new JScrollPane(problems);
-            ps.setBorder(BorderFactory.createTitledBorder("Controlli"));
+            ps.setBorder(BorderFactory.createTitledBorder("Contr\u00f4les"));
             ps.setPreferredSize(new Dimension(0, 92));
             bottom.add(ps, BorderLayout.CENTER);
             JPanel b = new JPanel(new java.awt.GridLayout(2, 2, 6, 6));
             b.setOpaque(false);
-            b.add(button("Salva (Ctrl+S)", this::save));
-            b.add(button("Importa dal PLC", this::importFromPlc));
-            b.add(button("Esporta CSV", this::exportCsv));
-            JButton send = button("Invia al PLC", this::sendToPlc);
-            send.setToolTipText("Anteprima di cosa verrebbe scritto nel DB" + layout.db
-                    + " (la scrittura vera e' disabilitata finche' non si abilita b1_recipe_transfer.properties)");
+            b.add(button("Enregistrer (Ctrl+S)", this::save));
+            b.add(button("Importer du PLC", this::importFromPlc));
+            b.add(button("Exporter CSV", this::exportCsv));
+            JButton send = button("Envoyer au PLC", this::sendToPlc);
+            send.setToolTipText("Aper\u00e7u de ce qui serait \u00e9crit dans le DB" + layout.db
+                    + " (l'\u00e9criture r\u00e9elle est d\u00e9sactiv\u00e9e tant que b1_recipe_transfer.properties n'est pas activ\u00e9)");
             b.add(send);
             b.setPreferredSize(new Dimension(380, 78));
             bottom.add(b, BorderLayout.EAST);
             lblStatus.setFont(new Font("Arial", Font.PLAIN, 11));
-            lblStatus.setText("Archivio: " + repo.location() + "   |   Utente: " + user
-                    + "   |   PLC: " + plcIp + " (sola lettura)");
+            lblStatus.setText("Archive : " + repo.location() + "   |   Utilisateur : " + user
+                    + "   |   PLC: " + plcIp + " (lecture seule)");
             bottom.add(lblStatus, BorderLayout.SOUTH);
             add(bottom, BorderLayout.SOUTH);
         }
@@ -442,7 +442,7 @@ public class B1RecipeEditor extends JFrame {
             for (B1RecipeLayout.Field f : layout.header) {
                 headerFields.get(f.key).setText(fmt(r.header.getOrDefault(f.key, 0), f));
             }
-            lblInfo.setText(info + (r.revision > 0 ? "   |   rev. " + r.revision + ", " + r.modified + " (" + r.modifiedBy + ")" : ""));
+            lblInfo.setText(info + (r.revision > 0 ? "   |   r\u00e9v. " + r.revision + ", " + r.modified + " (" + r.modifiedBy + ")" : ""));
             model.fireTableDataChanged();
             loading = false;
             dirty = isDirty;
@@ -465,7 +465,7 @@ public class B1RecipeEditor extends JFrame {
         void revalidateRecipe() {
             List<String> err = B1RecipeCodec.validate(current, layout);
             problems.setBackground(err.isEmpty() ? new Color(0xD8F5D8) : new Color(0xFFF4D0));
-            problems.setText(err.isEmpty() ? "Ricetta valida." + (dirty ? "  (modifiche non salvate)" : "")
+            problems.setText(err.isEmpty() ? "Recette valide." + (dirty ? "  (modifications non enregistr\u00e9es)" : "")
                     : String.join("\n", err));
             table.repaint();
         }
@@ -474,8 +474,8 @@ public class B1RecipeEditor extends JFrame {
             if (!dirty) {
                 return true;
             }
-            int r = JOptionPane.showConfirmDialog(this, "Ci sono modifiche non salvate. Scartarle?",
-                    "Modifiche non salvate", JOptionPane.YES_NO_OPTION);
+            int r = JOptionPane.showConfirmDialog(this, "Il y a des modifications non enregistr\u00e9es. Les abandonner ?",
+                    "Modifications non enregistr\u00e9es", JOptionPane.YES_NO_OPTION);
             return r == JOptionPane.YES_OPTION;
         }
 
@@ -484,7 +484,7 @@ public class B1RecipeEditor extends JFrame {
                 allEntries = repo.list();
             } catch (IOException e) {
                 allEntries = new ArrayList<>();
-                error("Archivio non leggibile: " + e.getMessage());
+                error("Archive illisible : " + e.getMessage());
             }
             applyFilter();
         }
@@ -509,16 +509,16 @@ public class B1RecipeEditor extends JFrame {
                 return;
             }
             try {
-                show(repo.load(e.uid), false, "Ricetta dall'archivio");
+                show(repo.load(e.uid), false, "Recette de l'archive");
             } catch (IOException ex) {
-                error("Lettura fallita: " + ex.getMessage());
+                error("\u00c9chec de lecture : " + ex.getMessage());
             }
         }
 
         private void newRecipe() {
             if (confirmDiscard()) {
                 list.clearSelection();
-                show(B1Recipe.blank(layout), false, "Nuova ricetta");
+                show(B1Recipe.blank(layout), false, "Nouvelle recette");
             }
         }
 
@@ -529,26 +529,26 @@ public class B1RecipeEditor extends JFrame {
             B1Recipe c = current.copy();
             c.uid = java.util.UUID.randomUUID().toString();
             c.revision = 0;
-            c.name = current.name + "_COPIA";
+            c.name = current.name + "_COPIE";
             list.clearSelection();
-            show(c, true, "Copia non ancora salvata");
+            show(c, true, "Copie pas encore enregistr\u00e9e");
         }
 
         private void deleteRecipe() {
             if (current == null || current.revision == 0) {
                 return;
             }
-            int r = JOptionPane.showConfirmDialog(this, "Eliminare definitivamente la ricetta '" + current.name + "'?",
-                    "Elimina", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            int r = JOptionPane.showConfirmDialog(this, "Supprimer d\u00e9finitivement la recette '" + current.name + "'?",
+                    "Supprimer", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (r != JOptionPane.YES_OPTION) {
                 return;
             }
             try {
                 repo.delete(current.uid);
                 refreshList();
-                show(B1Recipe.blank(layout), false, "Nuova ricetta");
+                show(B1Recipe.blank(layout), false, "Nouvelle recette");
             } catch (IOException e) {
-                error("Eliminazione fallita: " + e.getMessage());
+                error("\u00c9chec de la suppression : " + e.getMessage());
             }
         }
 
@@ -563,8 +563,8 @@ public class B1RecipeEditor extends JFrame {
             List<String> err = B1RecipeCodec.validate(current, layout);
             if (!err.isEmpty()) {
                 int r = JOptionPane.showConfirmDialog(this,
-                        "La ricetta non e' valida e non potra' essere scaricata:\n- " + String.join("\n- ", err)
-                                + "\n\nSalvare comunque come bozza?", "Ricetta non valida",
+                        "La recette n'est pas valide et ne pourra pas \u00eatre envoy\u00e9e \u00e0 la machine :\n- " + String.join("\n- ", err)
+                                + "\n\nEnregistrer quand m\u00eame comme brouillon ?", "Recette non valide",
                         JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                 if (r != JOptionPane.YES_OPTION) {
                     return;
@@ -574,12 +574,12 @@ public class B1RecipeEditor extends JFrame {
                 repo.save(current, user);
                 dirty = false;
                 refreshList();
-                lblInfo.setText("Salvata: rev. " + current.revision + ", " + current.modified + " (" + user + ")");
+                lblInfo.setText("Enregistr\u00e9e : r\u00e9v. " + current.revision + ", " + current.modified + " (" + user + ")");
                 revalidateRecipe();
             } catch (B1RecipeRepository.ConflictException e) {
                 error(e.getMessage());
             } catch (IOException e) {
-                error("Salvataggio fallito: " + e.getMessage());
+                error("\u00c9chec de l'enregistrement : " + e.getMessage());
             }
         }
 
@@ -599,10 +599,10 @@ public class B1RecipeEditor extends JFrame {
                         search.setText("");
                         list.setSelectedValue(e, true);
                         loading = false;
-                        show(repo.load(e.uid), false, "Ricetta dall'archivio");
+                        show(repo.load(e.uid), false, "Recette de l'archive");
                     } catch (IOException ex) {
                         loading = false;
-                        error("Lettura fallita: " + ex.getMessage());
+                        error("\u00c9chec de lecture : " + ex.getMessage());
                     }
                     return;
                 }
@@ -626,7 +626,7 @@ public class B1RecipeEditor extends JFrame {
             if (!confirmDiscard()) {
                 return;
             }
-            String ip = JOptionPane.showInputDialog(this, "Indirizzo PLC B1 (lettura DB" + layout.db + "):", plcIp);
+            String ip = JOptionPane.showInputDialog(this, "Adresse PLC B1 (lecture DB" + layout.db + "):", plcIp);
             if (ip == null || ip.trim().isEmpty()) {
                 return;
             }
@@ -645,7 +645,7 @@ public class B1RecipeEditor extends JFrame {
             final B1Recipe recipe = current.copy();
             final B1RecipeTransfer.Config cfg = B1RecipeTransfer.Config.load();
             final String host = plcIp;
-            lblStatus.setText("Lettura del PLC " + host + " per l'anteprima...");
+            lblStatus.setText("Lecture du PLC " + host + " pour l'aper\u00e7u...");
             new SwingWorker<B1RecipeTransfer.Plan, Void>() {
                 @Override
                 protected B1RecipeTransfer.Plan doInBackground() throws Exception {
@@ -671,7 +671,7 @@ public class B1RecipeEditor extends JFrame {
                         showTransferDialog(plan, cfg, host);
                     } catch (Exception e) {
                         Throwable t = e.getCause() != null ? e.getCause() : e;
-                        error("Anteprima invio fallita: " + (t.getMessage() != null ? t.getMessage() : t.toString()));
+                        error("\u00c9chec de l'aper\u00e7u d'envoi : " + (t.getMessage() != null ? t.getMessage() : t.toString()));
                     }
                 }
             }.execute();
@@ -682,22 +682,22 @@ public class B1RecipeEditor extends JFrame {
             area.setEditable(false);
             area.setFont(new Font("Monospaced", Font.PLAIN, 12));
             boolean canWrite = cfg.writeAllowed() && plan.blockers.isEmpty() && !plan.changes.isEmpty();
-            Object[] options = canWrite ? new Object[]{"Annulla", "Scrivi nel PLC"} : new Object[]{"Chiudi"};
-            int r = JOptionPane.showOptionDialog(this, new JScrollPane(area), "Invia al PLC - anteprima",
+            Object[] options = canWrite ? new Object[]{"Annuler", "\u00c9crire dans le PLC"} : new Object[]{"Fermer"};
+            int r = JOptionPane.showOptionDialog(this, new JScrollPane(area), "Envoyer au PLC - aper\u00e7u",
                     JOptionPane.DEFAULT_OPTION, canWrite ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE,
                     null, options, options[0]);
-            lblStatus.setText("Archivio: " + repo.location() + "   |   Utente: " + user + "   |   PLC: " + plcIp
-                    + (cfg.writeAllowed() ? " (scrittura abilitata)" : " (sola lettura)"));
+            lblStatus.setText("Archive : " + repo.location() + "   |   Utilisateur : " + user + "   |   PLC: " + plcIp
+                    + (cfg.writeAllowed() ? " (\u00e9criture activ\u00e9e)" : " (lecture seule)"));
             if (!canWrite || r != 1) {
                 return;
             }
-            String typed = JOptionPane.showInputDialog(this, "Stai per scrivere la ricetta nel PLC della macchina.\n"
-                    + "Per confermare scrivi INVIA:", "Conferma", JOptionPane.WARNING_MESSAGE);
-            if (typed == null || !typed.trim().equals("INVIA")) {
-                lblStatus.setText("Invio annullato");
+            String typed = JOptionPane.showInputDialog(this, "Vous allez \u00e9crire la recette dans le PLC de la machine.\n"
+                    + "Pour confirmer, \u00e9crivez ENVOYER :", "Confirmer", JOptionPane.WARNING_MESSAGE);
+            if (typed == null || !typed.trim().equals("ENVOYER")) {
+                lblStatus.setText("Envoi annul\u00e9");
                 return;
             }
-            lblStatus.setText("Scrittura nel PLC...");
+            lblStatus.setText("\u00c9criture dans le PLC...");
             new SwingWorker<java.nio.file.Path, Void>() {
                 @Override
                 protected java.nio.file.Path doInBackground() throws Exception {
@@ -717,16 +717,16 @@ public class B1RecipeEditor extends JFrame {
                         java.nio.file.Path backup = get();
                         log.ok = true;
                         log.backup = String.valueOf(backup);
-                        log.message = "Ricetta inviata e verificata";
+                        log.message = "Recette envoy\u00e9e et v\u00e9rifi\u00e9e";
                         B1RecipeSendLog.record(log);
-                        lblStatus.setText("Ricetta inviata e verificata. Copia di sicurezza: " + backup);
-                        JOptionPane.showMessageDialog(EditorPanel.this, "Ricetta inviata e verificata.\nCopia di sicurezza: " + backup);
+                        lblStatus.setText("Recette envoy\u00e9e et v\u00e9rifi\u00e9e. Copie de s\u00e9curit\u00e9 : " + backup);
+                        JOptionPane.showMessageDialog(EditorPanel.this, "Recette envoy\u00e9e et v\u00e9rifi\u00e9e.\nCopie de s\u00e9curit\u00e9 : " + backup);
                     } catch (Exception e) {
                         Throwable t = e.getCause() != null ? e.getCause() : e;
                         log.ok = false;
                         log.message = t.getMessage() != null ? t.getMessage() : t.toString();
                         B1RecipeSendLog.record(log);
-                        error("Invio fallito: " + (t.getMessage() != null ? t.getMessage() : t.toString()));
+                        error("\u00c9chec de l'envoi : " + (t.getMessage() != null ? t.getMessage() : t.toString()));
                     }
                 }
             }.execute();
@@ -742,7 +742,7 @@ public class B1RecipeEditor extends JFrame {
             }
             final String host = h;
             final int portF = port;
-            lblStatus.setText("Lettura dal PLC " + host + "...");
+            lblStatus.setText("Lecture du PLC " + host + "...");
             new SwingWorker<B1Recipe, Void>() {
                 @Override
                 protected B1Recipe doInBackground() throws Exception {
@@ -750,7 +750,7 @@ public class B1RecipeEditor extends JFrame {
                         plc.connect();
                         int size = plc.detectDbSize(layout.db, 1024);
                         if (size <= 0) {
-                            throw new IOException("DB" + layout.db + " non leggibile");
+                            throw new IOException("DB" + layout.db + " illisible");
                         }
                         byte[] d = plc.readDb(layout.db, 0, size);
                         B1Recipe r = B1RecipeCodec.decode(d, layout);
@@ -765,11 +765,11 @@ public class B1RecipeEditor extends JFrame {
                     try {
                         B1Recipe r = get();
                         list.clearSelection();
-                        show(r, true, "Importata dal PLC " + host + " (DB" + layout.db + ") - non ancora salvata");
-                        lblStatus.setText("Importazione completata (sola lettura)");
+                        show(r, true, "Import\u00e9e du PLC " + host + " (DB" + layout.db + ") - pas encore enregistr\u00e9e");
+                        lblStatus.setText("Importation termin\u00e9e (lecture seule)");
                     } catch (Exception e) {
                         Throwable t = e.getCause() != null ? e.getCause() : e;
-                        error("Importazione dal PLC fallita: " + (t.getMessage() != null ? t.getMessage() : t.toString()));
+                        error("\u00c9chec de l'importation du PLC : " + (t.getMessage() != null ? t.getMessage() : t.toString()));
                     }
                 }
             }.execute();
@@ -780,20 +780,20 @@ public class B1RecipeEditor extends JFrame {
                 return;
             }
             javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
-            fc.setSelectedFile(new File(current.name.isEmpty() ? "ricetta_b1.csv" : current.name + ".csv"));
+            fc.setSelectedFile(new File(current.name.isEmpty() ? "recette_b1.csv" : current.name + ".csv"));
             if (fc.showSaveDialog(this) != javax.swing.JFileChooser.APPROVE_OPTION) {
                 return;
             }
             try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(fc.getSelectedFile().toPath(), StandardCharsets.UTF_8))) {
-                w.println("Ricetta;" + current.name + ";N.;" + current.recipeNo);
+                w.println("Recette;" + current.name + ";N.;" + current.recipeNo);
                 for (B1RecipeLayout.Field f : layout.header) {
                     w.println(f.title() + ";" + fmt(current.header.getOrDefault(f.key, 0), f));
                 }
-                StringBuilder h = new StringBuilder("Fase");
+                StringBuilder h = new StringBuilder("Phase");
                 for (B1RecipeLayout.Field f : layout.phase) {
                     h.append(';').append(f.title());
                 }
-                w.println(h.append(";Operazioni (hex)").toString());
+                w.println(h.append(";Op\u00e9rations (hex)").toString());
                 for (int i = 0; i < current.phases.size(); i++) {
                     B1Recipe.Phase p = current.phases.get(i);
                     StringBuilder s = new StringBuilder().append(i + 1);
@@ -803,7 +803,7 @@ public class B1RecipeEditor extends JFrame {
                     w.println(s.append(String.format(";0x%04X", p.ops & 0xFFFF)).toString());
                 }
             } catch (IOException e) {
-                error("Esportazione fallita: " + e.getMessage());
+                error("\u00c9chec de l'exportation : " + e.getMessage());
             }
         }
 
@@ -833,7 +833,7 @@ public class B1RecipeEditor extends JFrame {
         }
 
         private void error(String msg) {
-            JOptionPane.showMessageDialog(this, msg, "Errore", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, msg, "Erreur", JOptionPane.ERROR_MESSAGE);
         }
 
         // ---------------- conversioni ----------------
@@ -889,10 +889,10 @@ public class B1RecipeEditor extends JFrame {
             @Override
             public String getColumnName(int c) {
                 switch (c) {
-                    case 0: return "Fase";
-                    case 1: return "Scarico";
-                    case 2: return "Operazioni (hex)";
-                    case 3: return "Operazioni";
+                    case 0: return "Phase";
+                    case 1: return "D\u00e9ch.";
+                    case 2: return "Op\u00e9rations (hex)";
+                    case 3: return "Op\u00e9rations";
                     default: return layout.phase.get(c - FIXED).title();
                 }
             }

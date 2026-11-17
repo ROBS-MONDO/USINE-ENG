@@ -44,10 +44,10 @@ public final class B1TrendChart {
     /** Serie predefinite. Temperatura come nel WinCC (rosso, 0-200). */
     static List<Series> defaultSeries() {
         List<Series> l = new ArrayList<>();
-        l.add(new Series("temp", "Temperatura", "\u00b0C", new Color(0xFF, 0x00, 0x00), 0, 200, "temp", "Temperature"));
-        l.add(new Series("amp", "Corrente", "A", new Color(0x20, 0x60, 0xD0), 0, 400, "current", "Amperage"));
-        l.add(new Series("rpm", "Velocit\u00e0 rotori", "rpm", new Color(0x20, 0x9A, 0x20), 0, 100, "rpm_act", "Vitesse"));
-        l.add(new Series("press", "Pressione", "bar", new Color(0xE0, 0x80, 0x00), 0, 250, "press_act", null));
+        l.add(new Series("temp", "Temp\u00e9rature", "\u00b0C", new Color(0xFF, 0x00, 0x00), 0, 200, "temp", "Temperature"));
+        l.add(new Series("amp", "Courant", "A", new Color(0x20, 0x60, 0xD0), 0, 400, "current", "Amperage"));
+        l.add(new Series("rpm", "Vitesse rotors", "rpm", new Color(0x20, 0x9A, 0x20), 0, 100, "rpm_act", "Vitesse"));
+        l.add(new Series("press", "Pression", "bar", new Color(0xE0, 0x80, 0x00), 0, 250, "press_act", null));
         return l;
     }
 

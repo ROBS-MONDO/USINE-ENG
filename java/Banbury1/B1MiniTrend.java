@@ -105,7 +105,7 @@ final class B1MiniTrend {
         // curva della temperatura
         if (pts.isEmpty()) {
             g.setColor(new Color(0x707070));
-            g.drawString("nessun dato", px + pw / 2 - 30, py + ph / 2);
+            g.drawString("aucune donn\u00e9e", px + pw / 2 - 30, py + ph / 2);
             return;
         }
         g.setColor(new Color(0xE00000));

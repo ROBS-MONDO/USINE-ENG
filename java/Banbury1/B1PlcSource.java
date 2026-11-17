@@ -20,7 +20,7 @@ public final class B1PlcSource implements B1Source {
 
     private volatile Map<Integer, byte[]> data = new HashMap<>();
     private volatile boolean connected;
-    private volatile String status = "Connessione in corso...";
+    private volatile String status = "Connexion en cours...";
     private volatile boolean stop;
     private final Thread thread;
 
@@ -69,7 +69,7 @@ public final class B1PlcSource implements B1Source {
                     }
                 }
                 connected = true;
-                status = host + " rack " + rack + " slot " + slot + " (sola lettura)";
+                status = host + " rack " + rack + " slot " + slot + " (lecture seule)";
                 while (!stop) {
                     Map<Integer, byte[]> next = new HashMap<>();
                     for (Map.Entry<Integer, Integer> e : sizes.entrySet()) {
@@ -85,7 +85,7 @@ public final class B1PlcSource implements B1Source {
                 return;
             } catch (IOException | RuntimeException e) {
                 connected = false;
-                status = "PLC non raggiungibile: " + (e.getMessage() != null ? e.getMessage() : e.toString());
+                status = "PLC injoignable : " + (e.getMessage() != null ? e.getMessage() : e.toString());
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ie) {

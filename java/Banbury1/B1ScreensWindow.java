@@ -38,11 +38,11 @@ public class B1ScreensWindow extends JFrame {
 
     /** Schermate raggiungibili dalla barra in basso: nome file, etichetta. */
     public static final String[][] SCREENS = {
-        {"002_Process", "Process"}, {"003_Trends", "Trends"}, {"004_Alarms", "Alarms"},
-        {"005_Display", "Display"}, {"007_Production", "Production"}, {"008_Settings", "Settings 1"},
-        {"008_Settings_1", "Settings 2"}, {"008_Settings_2", "Settings 3"}, {"008_Settings_3", "Settings 4"},
-        {"009_Temperatures", "Temperatures"}, {"010_Components", "Components"},
-        {"010_PhaseInfo", "Phase info"}, {"203_RunningPhaseActual", "Running phase"},
+        {"002_Process", "Process"}, {"003_Trends", "Tendances"}, {"004_Alarms", "Alarmes"},
+        {"005_Display", "Affichage"}, {"007_Production", "Production"}, {"008_Settings", "R\u00e9glages 1"},
+        {"008_Settings_1", "R\u00e9glages 2"}, {"008_Settings_2", "R\u00e9glages 3"}, {"008_Settings_3", "R\u00e9glages 4"},
+        {"009_Temperatures", "Temp\u00e9ratures"}, {"010_Components", "Composants"},
+        {"010_PhaseInfo", "Info phase"}, {"203_RunningPhaseActual", "Phase en cours"},
         {"300_GovoniSynoptique1ChargeSilo", "Govoni silos"}, {"301_GovoniSynoptique2Bambury1", "Govoni B1"},
         {"304_GovoniEtatBalance", "Govoni balance"}, {"305_GovoniEtatProductionB1", "Govoni prod. B1"},
         {"309_GovoniParametreGeneral1", "Govoni param. 1"}, {"311_GovoniParametreBalance", "Govoni param. bal."},
@@ -54,7 +54,7 @@ public class B1ScreensWindow extends JFrame {
     private final ScreenPanel panel;
 
     private B1ScreensWindow(B1Source src, String first) {
-        super("Banbury 1 - schermate (sola lettura)");
+        super("Banbury 1 - \u00e9crans (lecture seule)");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         panel = new ScreenPanel(src, first);
         setContentPane(panel);
@@ -139,7 +139,7 @@ public class B1ScreensWindow extends JFrame {
                             if (b.action != null) {
                                 b.action.run();
                             } else {
-                                message = "'" + b.name + "': non disponibile (sola lettura)";
+                                message = "'" + b.name + "' : non disponible (lecture seule)";
                                 messageUntil = System.currentTimeMillis() + 4000;
                                 repaint();
                             }
@@ -234,7 +234,7 @@ public class B1ScreensWindow extends JFrame {
             } else {
                 g.setColor(Color.DARK_GRAY);
                 g.setFont(new Font("Arial", Font.BOLD, 18));
-                g.drawString("Layout '" + contentName + "' non trovato (cartella screens/)", 40, 200);
+                g.drawString("Disposition '" + contentName + "' introuvable (dossier screens/)", 40, 200);
             }
             if (top != null) {
                 g.setColor(new Color(0xBEBEBE));
@@ -286,9 +286,9 @@ public class B1ScreensWindow extends JFrame {
             g.drawRect(700, 154, 276, 22);
             g.setFont(new Font("Arial", Font.PLAIN, 14));
             g.setColor(Color.BLACK);
-            g.drawString("OPERATION", 46 + 150, 170);
-            g.drawString("SET", 416 + 120, 170);
-            g.drawString("CONTROL", 700 + 100, 170);
+            g.drawString("OP\u00c9RATION", 46 + 150, 170);
+            g.drawString("CONSIGNE", 416 + 120, 170);
+            g.drawString("CONTR\u00d4LE", 700 + 100, 170);
             g.setFont(fh);
             g.drawString("Phase", 8, 196);
             for (int i = 0; i < OP_NAMES.length; i++) {
@@ -297,14 +297,14 @@ public class B1ScreensWindow extends JFrame {
             fitHeader(g, "Timeout (s)", 416, 180, 56);
             fitHeader(g, "Rotor (rpm)", 474, 180, 56);
             fitHeader(g, "Press.(bar)", 532, 180, 66);
-            fitHeader(g, "Door", 600, 180, 30);
+            fitHeader(g, "Porte", 600, 180, 30);
             fitHeader(g, "Pist.", 632, 180, 30);
-            fitHeader(g, "Skip", 700, 180, 30);
-            fitHeader(g, "Time (s)", 732, 180, 54);
+            fitHeader(g, "Saut", 700, 180, 30);
+            fitHeader(g, "Temps (s)", 732, 180, 54);
             fitHeader(g, "Temp. (\u00B0C)", 788, 180, 56);
-            fitHeader(g, "Ener.(kWh)", 846, 180, 66);
-            fitHeader(g, "AND", 914, 180, 30);
-            fitHeader(g, "OR", 946, 180, 30);
+            fitHeader(g, "\u00c9n.(kWh)", 846, 180, 66);
+            fitHeader(g, "ET", 914, 180, 30);
+            fitHeader(g, "OU", 946, 180, 30);
 
             Double ph = src.connected() ? src.num("phase_no") : null;
             int phase = ph == null ? 0 : ph.intValue();
@@ -446,18 +446,18 @@ public class B1ScreensWindow extends JFrame {
             g.translate(-BAR_X, -BAR_Y);
             g.setColor(new Color(0x404040));
             g.setFont(new Font("Arial", Font.PLAIN, 10));
-            String st = src.connected() ? "PLC: " + src.status() : "PLC non connesso - " + src.status();
+            String st = src.connected() ? "PLC: " + src.status() : "PLC non connect\u00e9 - " + src.status();
             if (System.currentTimeMillis() < messageUntil) {
                 st = message;
             }
-            g.drawString(st + "   |   SOLA LETTURA   |   F2: indirizzi", 10, 765);
+            g.drawString(st + "   |   LECTURE SEULE   |   F2 : adresses", 10, 765);
         }
 
         /** Schermata Display, fascia sopra la barra: spie AUTO / MANUAL a sinistra e ricetta attuale al centro. */
         private void drawDisplayStatus(Graphics2D g) {
             Boolean auto = src.connected() ? src.bool("mode_auto") : null;
             drawModeLamp(g, 8, 654, 178, 42, "AUTO", Boolean.TRUE.equals(auto), new Color(0x2BFF1F));
-            drawModeLamp(g, 190, 654, 178, 42, "MANUAL", Boolean.FALSE.equals(auto), new Color(0xFF2828));
+            drawModeLamp(g, 190, 654, 178, 42, "MANUEL", Boolean.FALSE.equals(auto), new Color(0xFF2828));
             // ricetta attuale (nome riconosciuto anche dai valori, come nel sinottico)
             int x = 376, y = 654, w = 356, h = 42;
             g.setColor(new Color(0xD4D0C8));
@@ -467,7 +467,7 @@ public class B1ScreensWindow extends JFrame {
             String name = rn == null || rn.isEmpty() ? "--" : B1RecipeBridge.displayName(rn);
             g.setFont(new Font("Arial", Font.PLAIN, 10));
             g.setColor(new Color(0x505050));
-            g.drawString("Ricetta attuale", x + 6, y + 12);
+            g.drawString("Recette actuelle", x + 6, y + 12);
             fit(g, name, x + 2, y + 13, w - 4, 28, new Color(0x202020), -1, true);
             B1RecipeBridge br = B1_Main.BRIDGE;
             if (br != null && src.connected()) {
@@ -738,7 +738,7 @@ public class B1ScreensWindow extends JFrame {
             g.setStroke(new BasicStroke(1f));
             if (o.w() > 60 && o.h() > 16) {
                 String label = o.name.contains("Control") || o.name.contains("Contr")
-                        ? "[controllo WinCC]" : o.name;
+                        ? "[contr\u00f4le WinCC]" : o.name;
                 fit(g, label, o.l, o.t + dy, o.w(), o.h(), new Color(0x707070), 0, false);
             }
         }

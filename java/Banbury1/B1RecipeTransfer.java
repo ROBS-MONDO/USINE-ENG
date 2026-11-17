@@ -122,11 +122,11 @@ public final class B1RecipeTransfer {
         p.recipeRevision = r.revision;
         p.current = currentDb;
         for (String e : B1RecipeCodec.validate(r, l)) {
-            p.blockers.add("Ricetta non valida: " + e);
+            p.blockers.add("Recette non valide : " + e);
         }
         if (currentDb == null || currentDb.length < l.phaseBase + l.phaseCount * l.phaseSize) {
-            p.blockers.add("DB" + l.db + " del PLC non letto o troppo corto (" + (currentDb == null ? 0 : currentDb.length)
-                    + " byte, attesi almeno " + (l.phaseBase + l.phaseCount * l.phaseSize) + ")");
+            p.blockers.add("DB" + l.db + " du PLC non lu ou trop court (" + (currentDb == null ? 0 : currentDb.length)
+                    + " octets, attendus au moins " + (l.phaseBase + l.phaseCount * l.phaseSize) + ")");
             return p;
         }
         // spazio reale per il nome: i caratteri partono da nameOffset+2 e si fermano prima del primo campo di testata
@@ -137,8 +137,8 @@ public final class B1RecipeTransfer {
         int nameSpace = Math.min(l.nameMax, firstHeader - (l.nameOffset + 2));
         String nm = r.name == null ? "" : r.name.trim();
         if (nm.length() > nameSpace) {
-            p.blockers.add("Nome ricetta di " + nm.length() + " caratteri: nel DB" + l.db + " ce n'e' spazio solo per " + nameSpace
-                    + " (oltre si sovrascriverebbe la testata a DBW" + firstHeader + ")");
+            p.blockers.add("Nom de recette de " + nm.length() + " caract\u00e8res : dans le DB" + l.db + " il n'y a de place que pour " + nameSpace
+                    + " (au-del\u00e0, l'en-t\u00eate serait \u00e9cras\u00e9 \u00e0 DBW" + firstHeader + ")");
             return p;
         }
         p.image = B1RecipeCodec.encode(r, l, currentDb);
@@ -155,23 +155,23 @@ public final class B1RecipeTransfer {
             }
         }
         if (p.changes.isEmpty()) {
-            p.warnings.add("La ricetta nel PLC e' gia' uguale: non c'e' niente da scrivere.");
+            p.warnings.add("La recette dans le PLC est d\u00e9j\u00e0 identique : rien \u00e0 \u00e9crire.");
         }
         if (db110 != null && db110.length >= 62) {
             int rpm = S7ReadClient.int16(db110, 60);
             if (rpm != 0) {
-                p.blockers.add("Rotori in movimento (" + rpm + " rpm): invio consentito solo a macchina ferma");
+                p.blockers.add("Rotors en mouvement (" + rpm + " rpm) : envoi autoris\u00e9 seulement machine \u00e0 l'arr\u00eat");
             }
             int w44 = S7ReadClient.int16(db110, W44);
             if (((w44 >> BIT_ENABLED) & 1) == 0) {
-                p.blockers.add("Il PLC non abilita il trasferimento (DB110.DBW44 bit 12 = 0, DBW44 = 0x"
+                p.blockers.add("Le PLC n'autorise pas le transfert (DB110.DBW44 bit 12 = 0, DBW44 = 0x"
                         + Integer.toHexString(w44 & 0xFFFF).toUpperCase() + ")");
             }
             if (((w44 >> BIT_BUSY) & 1) != 0) {
-                p.blockers.add("Trasferimento ricetta gia' in corso nel PLC (DB110.DBW44 bit 2 = 1)");
+                p.blockers.add("Transfert de recette d\u00e9j\u00e0 en cours dans le PLC (DB110.DBW44 bit 2 = 1)");
             }
         } else {
-            p.warnings.add("Stato macchina (DB110) non letto: controllo rotori fermi non eseguito");
+            p.warnings.add("\u00c9tat de la machine (DB110) non lu : contr\u00f4le rotors \u00e0 l'arr\u00eat non effectu\u00e9");
         }
         return p;
     }
@@ -179,15 +179,15 @@ public final class B1RecipeTransfer {
     /** Descrizione leggibile del campo che contiene l'offset indicato. */
     static String describe(int off, B1RecipeLayout l) {
         if (off == l.recipeNoOffset) {
-            return "N. ricetta";
+            return "N\u00b0 recette";
         }
         for (B1RecipeLayout.Field f : l.header) {
             if (f.offset == off) {
-                return "Testata: " + f.label;
+                return "En-t\u00eate : " + f.label;
             }
         }
         if (off >= l.nameOffset && off < l.nameOffset + l.nameMax + 2) {
-            return "Nome ricetta";
+            return "Nom recette";
         }
         if (off >= l.phaseBase) {
             int rel = off - l.phaseBase;
@@ -195,17 +195,17 @@ public final class B1RecipeTransfer {
             int in = rel % l.phaseSize;
             if (ph < l.phaseCount) {
                 if (in == l.opsOffset) {
-                    return "Fase " + (ph + 1) + ": operazioni";
+                    return "Phase " + (ph + 1) + " : op\u00e9rations";
                 }
                 for (B1RecipeLayout.Field f : l.phase) {
                     if (f.offset == in) {
-                        return "Fase " + (ph + 1) + ": " + f.label;
+                        return "Phase " + (ph + 1) + ": " + f.label;
                     }
                 }
-                return "Fase " + (ph + 1) + ": parola +" + in;
+                return "Phase " + (ph + 1) + " : mot +" + in;
             }
         }
-        return "(non descritto)";
+        return "(non d\u00e9crit)";
     }
 
     /** Testo dell'anteprima mostrato all'operatore. */
@@ -213,33 +213,33 @@ public final class B1RecipeTransfer {
         StringBuilder sb = new StringBuilder();
         sb.append("PLC ").append(host).append("  -  DB").append(p.db).append("\n\n");
         if (!p.blockers.isEmpty()) {
-            sb.append("INVIO NON POSSIBILE:\n");
+            sb.append("ENVOI IMPOSSIBLE :\n");
             for (String b : p.blockers) {
                 sb.append("  - ").append(b).append("\n");
             }
             sb.append("\n");
         }
         for (String w : p.warnings) {
-            sb.append("Attenzione: ").append(w).append("\n");
+            sb.append("Attention : ").append(w).append("\n");
         }
         if (!p.warnings.isEmpty()) {
             sb.append("\n");
         }
-        sb.append(p.changes.size()).append(" parole da modificare:\n");
+        sb.append(p.changes.size()).append(" mots \u00e0 modifier :\n");
         for (Change c : p.changes) {
             sb.append(String.format("  DB%d.DBW%-4d %-34s 0x%04X (%d)  ->  0x%04X (%d)%n", p.db, c.offset, c.what,
                     c.oldValue, (short) c.oldValue, c.newValue, (short) c.newValue));
         }
         sb.append("\n");
         if (cfg.writeAllowed()) {
-            sb.append("Scrittura ABILITATA. Sequenza: copia di sicurezza di DB").append(p.db).append(" in ").append(cfg.backupDir)
-                    .append("\n  1) Start transfert (DB201.DBX41.0) e attesa della presa in carico (DB110.DBW44 bit 2)")
-                    .append("\n  2) scrittura delle parole cambiate, numero ricetta per ultimo")
-                    .append("\n  3) fine trasferimento (DB201.DBX383.0) e attesa che il PLC chiuda lo scambio (fino a ")
-                    .append(cfg.waitSeconds).append(" s)\n  4) rilettura e confronto del DB.\n");
+            sb.append("\u00c9criture ACTIV\u00c9E. S\u00e9quence : copie de s\u00e9curit\u00e9 du DB").append(p.db).append(" in ").append(cfg.backupDir)
+                    .append("\n  1) Start transfert (DB201.DBX41.0) et attente de la prise en charge (DB110.DBW44 bit 2)")
+                    .append("\n  2) \u00e9criture des mots modifi\u00e9s, num\u00e9ro de recette en dernier")
+                    .append("\n  3) fin du transfert (DB201.DBX383.0) et attente que le PLC cl\u00f4ture l'\u00e9change (jusqu'\u00e0 ")
+                    .append(cfg.waitSeconds).append(" s)\n  4) relecture et comparaison du DB.\n");
         } else {
-            sb.append("Scrittura DISABILITATA (modalita' anteprima): per abilitarla servono enabled=true e allow_raw_write=true\n")
-                    .append("in b1_recipe_transfer.properties. La sequenza di trasferimento e' quella del WinCC (registro del 16/11/2026).\n");
+            sb.append("\u00c9criture D\u00c9SACTIV\u00c9E (mode aper\u00e7u) : pour l'activer il faut enabled=true et allow_raw_write=true\n")
+                    .append("dans b1_recipe_transfer.properties. La s\u00e9quence de transfert est celle du WinCC (journal du 16/11/2026).\n");
         }
         return sb.toString();
     }
@@ -251,29 +251,29 @@ public final class B1RecipeTransfer {
      */
     public static Path execute(Plan p, Config cfg, String host, int port, int sizeLimit) throws IOException {
         if (!cfg.writeAllowed()) {
-            throw new IOException("Scrittura non abilitata (b1_recipe_transfer.properties)");
+            throw new IOException("\u00c9criture non activ\u00e9e (b1_recipe_transfer.properties)");
         }
         if (!p.blockers.isEmpty() || p.image == null) {
-            throw new IOException("Invio bloccato: " + String.join("; ", p.blockers));
+            throw new IOException("Envoi bloqu\u00e9 : " + String.join("; ", p.blockers));
         }
         if (p.changes.isEmpty()) {
-            throw new IOException("Niente da scrivere");
+            throw new IOException("Rien \u00e0 \u00e9crire");
         }
         try (S7WriteClient plc = new S7WriteClient(host, port, 0, 2, 3000)) {
             plc.connect();
             byte[] now = plc.readDb(p.db, 0, p.current.length);
             if (!java.util.Arrays.equals(now, p.current)) {
-                throw new IOException("Il DB" + p.db + " nel PLC e' cambiato dopo l'anteprima: annullato, rifare l'anteprima");
+                throw new IOException("Il DB" + p.db + " dans le PLC a chang\u00e9 apr\u00e8s l'aper\u00e7u : annul\u00e9, refaire l'aper\u00e7u");
             }
             if (cfg.handshake) {
                 byte[] st = plc.readDb(110, 0, 64);
                 int w44 = S7ReadClient.int16(st, W44);
                 if (((w44 >> BIT_ENABLED) & 1) == 0 || ((w44 >> BIT_BUSY) & 1) != 0) {
-                    throw new IOException("Il PLC non e' pronto al trasferimento (DB110.DBW44 = 0x"
+                    throw new IOException("Le PLC n'est pas pr\u00eat pour le transfert (DB110.DBW44 = 0x"
                             + Integer.toHexString(w44 & 0xFFFF).toUpperCase() + ")");
                 }
                 if (S7ReadClient.int16(st, 60) != 0) {
-                    throw new IOException("Rotori in movimento: invio annullato");
+                    throw new IOException("Rotors en mouvement : envoi annul\u00e9");
                 }
             }
             Files.createDirectories(cfg.backupDir);
@@ -284,7 +284,7 @@ public final class B1RecipeTransfer {
             if (cfg.handshake) {
                 setBit0(plc, p.db, START_WORD, now); // Start transfert
                 waitFor(plc, cfg, () -> ((S7ReadClient.int16(plc.readDb(110, 0, 64), W44) >> BIT_BUSY) & 1) != 0,
-                        "il PLC non ha preso in carico il trasferimento (DB110.DBW44 bit 2)", 8);
+                        "le PLC n'a pas pris en charge le transfert (DB110.DBW44 bit 2)", 8);
             }
             writeChanges(plc, p, sizeLimit);
             if (cfg.handshake) {
@@ -294,7 +294,7 @@ public final class B1RecipeTransfer {
                     byte[] d = plc.readDb(p.db, 0, p.current.length);
                     boolean closed = (S7ReadClient.int16(d, START_WORD) & 1) == 0 && (S7ReadClient.int16(d, END_WORD) & 1) == 0;
                     return ((w44 >> BIT_ENABLED) & 1) != 0 && ((w44 >> BIT_BUSY) & 1) == 0 && closed;
-                }, "il PLC non ha chiuso il trasferimento (DB110.DBW44 / DB201.DBW40 / DBW382): la copia di sicurezza e' "
+                }, "le PLC n'a pas cl\u00f4tur\u00e9 le transfert (DB110.DBW44 / DB201.DBW40 / DBW382) : la copie de s\u00e9curit\u00e9 est "
                         + backup, cfg.waitSeconds);
             }
             byte[] after = plc.readDb(p.db, 0, p.image.length);
@@ -307,8 +307,8 @@ public final class B1RecipeTransfer {
                 }
             }
             if (!java.util.Arrays.equals(after, expect)) {
-                throw new IOException("Verifica fallita: il DB" + p.db + " dopo l'invio non coincide con la ricetta. "
-                        + "Copia di sicurezza: " + backup);
+                throw new IOException("V\u00e9rification \u00e9chou\u00e9e : le DB" + p.db + " apr\u00e8s l'envoi ne correspond pas \u00e0 la recette. "
+                        + "Copie de s\u00e9curit\u00e9 : " + backup);
             }
             return backup;
         }
@@ -327,7 +327,7 @@ public final class B1RecipeTransfer {
                 j++;
             }
             if (end > sizeLimit) {
-                throw new IOException("Scrittura fuori dal DB (" + end + " > " + sizeLimit + ")");
+                throw new IOException("\u00c9criture hors du DB (" + end + " > " + sizeLimit + ")");
             }
             ranges.add(new int[]{start, end});
             i = j;
@@ -367,9 +367,9 @@ public final class B1RecipeTransfer {
                 Thread.sleep(200);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new IOException("Interrotto");
+                throw new IOException("Interrompu");
             }
         }
-        throw new IOException("Timeout: " + error);
+        throw new IOException("Timeout : " + error);
     }
 }

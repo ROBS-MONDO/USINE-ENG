@@ -83,8 +83,8 @@ public final class B1TrendPanel extends JPanel {
     private final JButton btnMeasure = nav("MESURE", this::toggleMeasure);
     private final JButton btnExit = new JButton("EXIT");
     private final List<JCheckBox> chkExtra = new ArrayList<>();
-    private final JCheckBox chkTemp = new JCheckBox("TEMPERATURA", true);
-    private final JCheckBox chkAuto = new JCheckBox("SCALA AUTO", true);
+    private final JCheckBox chkTemp = new JCheckBox("TEMP\u00c9RATURE", true);
+    private final JCheckBox chkAuto = new JCheckBox("\u00c9CHELLE AUTO", true);
     private final JCheckBox chkStep = new JCheckBox("STEP", true);
     private int hoverX = -1;
 
@@ -119,7 +119,7 @@ public final class B1TrendPanel extends JPanel {
         decorate(chkTemp);
         add(chkTemp);
         for (B1TrendChart.Series s : extra) {
-            JCheckBox c = new JCheckBox(s.label.toUpperCase(Locale.ROOT).replace("VELOCIT\u00c0 ROTORI", "GIRI"), false);
+            JCheckBox c = new JCheckBox(s.label.toUpperCase(Locale.ROOT).replace("VITESSE ROTORS", "TOURS"), false);
             c.setForeground(s.color.darker());
             decorate(c);
             chkExtra.add(c);
@@ -549,7 +549,7 @@ public final class B1TrendPanel extends JPanel {
         if (chkTemp.isSelected()) {
             Double v = store.buffer("temp").nearest(t, 120_000);
             if (v != null) {
-                rows.add(String.format(Locale.ITALY, "Temperatura: %.1f \u00b0C", v));
+                rows.add(String.format(Locale.ITALY, "Temp\u00e9rature : %.1f \u00b0C", v));
             }
         }
         for (int k = 0; k < extra.size(); k++) {
@@ -664,7 +664,7 @@ public final class B1TrendPanel extends JPanel {
         }
         for (long[] m : manual) {
             segment(g2, barX, barY, barW, barH, from, to, total, m[0], m[1], new Color(190, 25, 25), new Color(255, 95, 95));
-            label(g2, barX, barY, barW, barH, from, to, total, m[0], m[1], "MANUALE", "M", true);
+            label(g2, barX, barY, barW, barH, from, to, total, m[0], m[1], "MANUEL", "M", true);
         }
         // nomi ricetta nei tratti non manuali
         for (int i = 0; i < recipes.size(); i++) {

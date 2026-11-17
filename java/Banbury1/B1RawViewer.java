@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * "Valori PLC": tutte le parole dei DB di B1 in tempo reale (SOLA LETTURA), con colonna "Sinottico"
+ * "Valori PLC": tutte le parole dei DB di B1 in tempo reale (SOLA LETTURA), con colonna "Synoptique"
  * (chiave di b1_tags usata per quell'indirizzo) e "WinCC" (schermata + etichetta che usa quell'indirizzo).
  * E' lo strumento per completare la mappa: si guarda quale parola cambia e cosa mostra il WinCC.
  */
@@ -49,8 +49,8 @@ public class B1RawViewer extends JFrame {
     private final B1Tags tags;
     private final B1WinccIndex index = new B1WinccIndex();
     private final JComboBox<Integer> cmbDb = new JComboBox<>(new Integer[]{110, 150, 201});
-    private final JCheckBox chkNonZero = new JCheckBox("solo valori diversi da 0");
-    private final JCheckBox chkUsed = new JCheckBox("solo indirizzi usati (sinottico o WinCC)");
+    private final JCheckBox chkNonZero = new JCheckBox("seulement les valeurs diff\u00e9rentes de 0");
+    private final JCheckBox chkUsed = new JCheckBox("seulement les adresses utilis\u00e9es (synoptique ou WinCC)");
     private final Model model = new Model();
     private final Map<String, byte[]> prev = new HashMap<>();
     private final Map<String, int[]> changes = new HashMap<>();
@@ -61,7 +61,7 @@ public class B1RawViewer extends JFrame {
     private long captureATime;
 
     private B1RawViewer(B1Source src, B1Tags tags) {
-        super("Valori PLC B1 (sola lettura)");
+        super("Valeurs PLC B1 (lecture seule)");
         this.src = src;
         this.tags = tags;
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -70,12 +70,12 @@ public class B1RawViewer extends JFrame {
         top.add(cmbDb);
         top.add(chkNonZero);
         top.add(chkUsed);
-        top.add(new JLabel("   righe gialle = cambiate negli ultimi 5 s   "));
-        JButton btnA = new JButton("Cattura A");
-        btnA.setToolTipText("Memorizza lo stato attuale di DB110, DB150 e DB201 (es. pistone in alto, porte chiuse)");
+        top.add(new JLabel("   lignes jaunes = modifi\u00e9es durant les 5 derni\u00e8res s   "));
+        JButton btnA = new JButton("Capture A");
+        btnA.setToolTipText("M\u00e9morise l'\u00e9tat actuel de DB110, DB150 et DB201 (ex. piston en haut, portes ferm\u00e9es)");
         btnA.addActionListener(e -> capture());
-        JButton btnB = new JButton("Cattura B + differenze");
-        btnB.setToolTipText("Confronta lo stato attuale con la cattura A: elenca i bit cambiati");
+        JButton btnB = new JButton("Capture B + diff\u00e9rences");
+        btnB.setToolTipText("Compare l'\u00e9tat actuel avec la capture A : liste les bits modifi\u00e9s");
         btnB.addActionListener(e -> compare());
         top.add(btnA);
         top.add(btnB);
@@ -124,15 +124,15 @@ public class B1RawViewer extends JFrame {
             }
         }
         captureATime = System.currentTimeMillis();
-        status.setText(captureA.isEmpty() ? "Cattura A non riuscita: PLC non letto"
-                : "Cattura A memorizzata alle " + java.time.LocalTime.now().withNano(0)
-                + ". Ora cambiate lo stato della macchina e premete 'Cattura B + differenze'.");
+        status.setText(captureA.isEmpty() ? "Capture A \u00e9chou\u00e9e : PLC non lu"
+                : "Capture A m\u00e9moris\u00e9e \u00e0 " + java.time.LocalTime.now().withNano(0)
+                + ". Changez maintenant l'\u00e9tat de la machine et appuyez sur 'Capture B + diff\u00e9rences'.");
     }
 
     /** Confronta lo stato attuale con la cattura A e mostra i bit cambiati con le etichette del WinCC. */
     private void compare() {
         if (captureA.isEmpty()) {
-            status.setText("Prima premere 'Cattura A'");
+            status.setText("Appuyer d'abord sur 'Capture A'");
             return;
         }
         List<String> stable = new ArrayList<>();
@@ -144,39 +144,39 @@ public class B1RawViewer extends JFrame {
                 String syn = usedBySynoptic(db, c.off);
                 String wc = index.usageOfWord(db, c.off);
                 if (!syn.isEmpty()) {
-                    line += "\n      sinottico B1: " + syn;
+                    line += "\n      synoptique B1 : " + syn;
                 }
                 if (!wc.isEmpty()) {
-                    line += "\n      WinCC: " + wc;
+                    line += "\n      WinCC : " + wc;
                 }
                 int n = changes.getOrDefault("DB" + db + "." + c.off, new int[1])[0];
                 if (n >= 10) {
-                    noisy.add(line + "\n      (cambia di continuo: contatore o valore analogico, probabilmente non e' una lampada)");
+                    noisy.add(line + "\n      (change en continu : compteur ou valeur analogique, probablement pas un voyant)");
                 } else {
                     stable.add(line);
                 }
             }
         }
-        StringBuilder sb = new StringBuilder("Cattura A: " + new java.text.SimpleDateFormat("HH:mm:ss").format(
-                new java.util.Date(captureATime)) + "   ->   adesso: "
+        StringBuilder sb = new StringBuilder("Capture A : " + new java.text.SimpleDateFormat("HH:mm:ss").format(
+                new java.util.Date(captureATime)) + "   ->   maintenant : "
                 + java.time.LocalTime.now().withNano(0) + "\n\n");
-        sb.append(stable.isEmpty() ? "Nessun bit di stato cambiato.\n" : "BIT CAMBIATI (candidati lampade):\n\n");
+        sb.append(stable.isEmpty() ? "Aucun bit d'\u00e9tat modifi\u00e9.\n" : "BITS MODIFI\u00c9S (candidats voyants) :\n\n");
         for (String l : stable) {
             sb.append("  ").append(l).append("\n\n");
         }
         if (!noisy.isEmpty()) {
-            sb.append("\nVALORI CHE CAMBIANO DI CONTINUO (da ignorare per le lampade):\n\n");
+            sb.append("\nVALEURS QUI CHANGENT EN CONTINU (\u00e0 ignorer pour les voyants) :\n\n");
             for (String l : noisy) {
                 sb.append("  ").append(l).append("\n\n");
             }
         }
-        sb.append("\nPer assegnare una lampada: nel sinottico originale annotate quale lampada si e' accesa/spenta "
-                + "tra A e B e scrivete in b1_tags.properties, ad es.  piston_low = DB110.W22.B6");
+        sb.append("\nPour affecter un voyant : dans le synoptique d'origine, notez quel voyant s'est allum\u00e9/\u00e9teint "
+                + "entre A et B et \u00e9crivez dans b1_tags.properties, par ex.  piston_low = DB110.W22.B6");
         javax.swing.JTextArea area = new javax.swing.JTextArea(sb.toString(), 26, 100);
         area.setEditable(false);
         area.setFont(new Font("Monospaced", Font.PLAIN, 12));
         area.setCaretPosition(0);
-        javax.swing.JOptionPane.showMessageDialog(this, new JScrollPane(area), "Differenze tra A e B",
+        javax.swing.JOptionPane.showMessageDialog(this, new JScrollPane(area), "Diff\u00e9rences entre A et B",
                 javax.swing.JOptionPane.PLAIN_MESSAGE);
     }
 
@@ -184,7 +184,7 @@ public class B1RawViewer extends JFrame {
         int db = (Integer) cmbDb.getSelectedItem();
         byte[] d = src.dbImage(db);
         if (d == null) {
-            status.setText(src.connected() ? "DB" + db + " non letto dal PLC" : "PLC non connesso: " + src.status());
+            status.setText(src.connected() ? "DB" + db + " non lu depuis le PLC" : "PLC non connect\u00e9 : " + src.status());
             model.set(db, null);
             return;
         }
@@ -222,7 +222,7 @@ public class B1RawViewer extends JFrame {
         private int db;
         private byte[] d;
         private List<Integer> rows = new ArrayList<>();
-        private final String[] cols = {"Indirizzo", "Dec", "Hex", "Bit 15..0", "Asc", "Var.", "Sinottico", "WinCC (schermata: etichetta)"};
+        private final String[] cols = {"Adresse", "Dec", "Hex", "Bit 15..0", "Asc", "Var.", "Synoptique", "WinCC (\u00e9cran : \u00e9tiquette)"};
 
         void set(int db, byte[] d) {
             this.db = db;

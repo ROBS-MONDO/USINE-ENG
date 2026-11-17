@@ -55,7 +55,7 @@ public final class B1SqlRecipeRepository implements B1RecipeRepository {
                         t == null ? "" : t.toLocalDateTime().format(TS), rs.getString(4)));
             }
         } catch (SQLException e) {
-            throw new IOException("Archivio SQL non leggibile: " + e.getMessage(), e);
+            throw new IOException("Archive SQL illisible : " + e.getMessage(), e);
         }
         return out;
     }
@@ -70,7 +70,7 @@ public final class B1SqlRecipeRepository implements B1RecipeRepository {
                 ps.setString(1, uid);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (!rs.next()) {
-                        throw new IOException("Ricetta non trovata nell'archivio SQL: " + uid);
+                        throw new IOException("Recette introuvable dans l'archive SQL : " + uid);
                     }
                     id = rs.getLong(1);
                     r.uid = uid;
@@ -107,7 +107,7 @@ public final class B1SqlRecipeRepository implements B1RecipeRepository {
             }
             return r;
         } catch (SQLException e) {
-            throw new IOException("Archivio SQL non leggibile: " + e.getMessage(), e);
+            throw new IOException("Archive SQL illisible : " + e.getMessage(), e);
         }
     }
 
@@ -138,15 +138,15 @@ public final class B1SqlRecipeRepository implements B1RecipeRepository {
                         long onDb = currentRevision(c, r.uid);
                         c.rollback();
                         throw new ConflictException(onDb < 0
-                                ? "La ricetta e' stata eliminata da un'altra postazione."
-                                : "La ricetta e' stata modificata da un'altra postazione (revisione " + onDb
-                                + " invece di " + r.revision + "). Riaprirla per non perdere le modifiche.");
+                                ? "La recette a \u00e9t\u00e9 supprim\u00e9e depuis un autre poste."
+                                : "La recette a \u00e9t\u00e9 modifi\u00e9e depuis un autre poste (r\u00e9vision " + onDb
+                                + " invece di " + r.revision + "). La rouvrir pour ne pas perdre les modifications.");
                     }
                     id = idOf(c, r.uid);
                 } else {
                     if (currentRevision(c, r.uid) >= 0) {
                         c.rollback();
-                        throw new ConflictException("Questa ricetta esiste gia' nell'archivio: riaprirla dall'elenco.");
+                        throw new ConflictException("Cette recette existe d\u00e9j\u00e0 dans l'archive : la rouvrir depuis la liste.");
                     }
                     try (PreparedStatement ps = c.prepareStatement(
                             "INSERT INTO dbo.B1Recipes (RecipeUID, Nome, NumRicetta, Revisione, Creazione, Modifica, ModificatoDa) "
@@ -193,9 +193,9 @@ public final class B1SqlRecipeRepository implements B1RecipeRepository {
             throw e;
         } catch (SQLException e) {
             if (e.getSQLState() != null && e.getSQLState().startsWith("23")) {
-                throw new IOException("Esiste gia' una ricetta chiamata '" + r.name + "' nell'archivio.", e);
+                throw new IOException("Il existe d\u00e9j\u00e0 une recette nomm\u00e9e '" + r.name + "' dans l'archive.", e);
             }
-            throw new IOException("Salvataggio nell'archivio SQL fallito: " + e.getMessage(), e);
+            throw new IOException("\u00c9chec de l'enregistrement dans l'archive SQL : " + e.getMessage(), e);
         }
         r.revision = newRev;
         r.modified = now.format(TS);
@@ -226,7 +226,7 @@ public final class B1SqlRecipeRepository implements B1RecipeRepository {
                 throw e;
             }
         } catch (SQLException e) {
-            throw new IOException("Eliminazione dall'archivio SQL fallita: " + e.getMessage(), e);
+            throw new IOException("\u00c9chec de la suppression dans l'archive SQL : " + e.getMessage(), e);
         }
     }
 

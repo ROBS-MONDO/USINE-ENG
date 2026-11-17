@@ -77,7 +77,7 @@ public final class B1SqlRecipeRepositorySelfTest {
         try {
             repo.save(dup, "rossi");
         } catch (java.io.IOException e) {
-            duplicate = !(e instanceof B1RecipeRepository.ConflictException) && e.getMessage().contains("gia'");
+            duplicate = !(e instanceof B1RecipeRepository.ConflictException) && e.getMessage().contains("d\u00e9j\u00e0");
         }
         check("nome gia' presente: rifiutato", duplicate);
 

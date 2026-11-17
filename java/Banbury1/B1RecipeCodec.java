@@ -55,7 +55,7 @@ public final class B1RecipeCodec {
         List<String> err = new ArrayList<>();
         String n = r.name == null ? "" : r.name.trim();
         if (n.isEmpty() || n.length() > l.nameMax || !n.chars().allMatch(c -> c >= 32 && c < 127)) {
-            err.add("Nome ricetta non valido (1-" + l.nameMax + " caratteri ASCII)");
+            err.add("Nom de recette non valide (1-" + l.nameMax + " caract\u00e8res ASCII)");
         }
         boolean discharge = false;
         int used = 0;
@@ -67,7 +67,7 @@ public final class B1RecipeCodec {
             used++;
             boolean isDischarge = (p.ops & (1 << l.dischargeBit)) != 0;
             if (p.ops == 0) {
-                err.add("Fase " + (i + 1) + " non valida: nessuna operazione selezionata");
+                err.add("Phase " + (i + 1) + " non valide : aucune op\u00e9ration s\u00e9lectionn\u00e9e");
             }
             for (B1RecipeLayout.Field f : l.phase) {
                 if (f.min == null && f.max == null) {
@@ -75,7 +75,7 @@ public final class B1RecipeCodec {
                 }
                 double v = p.values.getOrDefault(f.key, 0) * f.scale;
                 if ((f.min != null && v < f.min) || (f.max != null && v > f.max)) {
-                    err.add("Fase " + (i + 1) + ": " + f.label + " fuori limiti (" + v + ")");
+                    err.add("Phase " + (i + 1) + ": " + f.label + " hors limites (" + v + ")");
                 }
             }
             if (isDischarge) {
@@ -84,9 +84,9 @@ public final class B1RecipeCodec {
             }
         }
         if (used == 0) {
-            err.add("Ricetta vuota: nessuna fase");
+            err.add("Recette vide : aucune phase");
         } else if (!discharge) {
-            err.add("Ricetta non valida: nessuna fase di scarico");
+            err.add("Recette non valide : aucune phase de d\u00e9chargement");
         }
         return err;
     }

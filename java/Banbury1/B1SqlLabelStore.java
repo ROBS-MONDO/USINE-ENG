@@ -26,21 +26,21 @@ public final class B1SqlLabelStore implements B1LabelStore {
 
     /** Campi del ticket scrivibili: chiave del file (col.<chiave>) -> descrizione. */
     public static final String[][] FIELDS = {
-        {"num_lot", "Lotto completo AA/LOT (es. 26/0703)"},
-        {"annee", "Anno (es. 26)"},
-        {"lot", "Numero lotto (es. 0703)"},
-        {"suffixe", "Suffisso"},
-        {"serie", "Num melange / serie (A, A1...)"},
-        {"nombre", "Numero di miscele"},
-        {"passage", "Passaggio come testo WinCC (1er, 2eme...)"},
+        {"num_lot", "Lot complet AA/LOT (ex. 26/0703)"},
+        {"annee", "Ann\u00e9e (ex. 26)"},
+        {"lot", "Num\u00e9ro de lot (ex. 0703)"},
+        {"suffixe", "Suffixe"},
+        {"serie", "Num m\u00e9lange / s\u00e9rie (A, A1...)"},
+        {"nombre", "Nombre de m\u00e9langes"},
+        {"passage", "Passage comme texte WinCC (1er, 2eme...)"},
         {"couche", "Type (SUP, INF, STS, NET, MEL.MERE, PREMAST)"},
         {"couleur", "Couleur (---, Clair, Fonc\u00e9, Medium)"},
-        {"recipe_name", "Nome ricetta"},
+        {"recipe_name", "Nom recette"},
         {"recipe_uid", "RecipeUID"},
-        {"date", "Data (colonna data)"},
-        {"time", "Ora (colonna ora)"},
-        {"timestamp", "Data e ora (colonna datetime)"},
-        {"user", "Utente Windows"},
+        {"date", "Date (colonne date)"},
+        {"time", "Heure (colonne heure)"},
+        {"timestamp", "Date et heure (colonne datetime)"},
+        {"user", "Utilisateur Windows"},
     };
 
     private static final Pattern IDENT = Pattern.compile("[A-Za-z0-9_\\.\\[\\]]+");
@@ -67,11 +67,11 @@ public final class B1SqlLabelStore implements B1LabelStore {
             }
         }
         if (!table.isEmpty() && !IDENT.matcher(table).matches()) {
-            throw new IllegalArgumentException("Nome tabella non valido: " + table);
+            throw new IllegalArgumentException("Nom de table non valide : " + table);
         }
         for (String c : columns.values()) {
             if (!IDENT.matcher(c).matches()) {
-                throw new IllegalArgumentException("Nome colonna non valido: " + c);
+                throw new IllegalArgumentException("Nom de colonne non valide : " + c);
             }
         }
         if (update && (keyColumn.isEmpty() || keyField.isEmpty())) {
@@ -128,7 +128,7 @@ public final class B1SqlLabelStore implements B1LabelStore {
     /** SQL parametrico; i parametri (nell'ordine dei segnaposto) vengono aggiunti a outParams. */
     String buildSql(B1Label l, LocalDateTime now, List<Object> outParams) {
         if (columns.isEmpty()) {
-            throw new IllegalStateException("Nessuna colonna configurata (col.*)");
+            throw new IllegalStateException("Aucune colonne configur\u00e9e (col.*)");
         }
         StringBuilder sql = new StringBuilder();
         if (update) {
@@ -159,7 +159,7 @@ public final class B1SqlLabelStore implements B1LabelStore {
     @Override
     public String describe(B1Label l) {
         if (table.isEmpty() || columns.isEmpty()) {
-            return "(tabella/colonne non ancora configurate in b1_label_sql.properties)";
+            return "(table/colonnes pas encore configur\u00e9es dans b1_label_sql.properties)";
         }
         List<Object> p = new ArrayList<>();
         String sql = buildSql(l, LocalDateTime.now(), p);
@@ -173,7 +173,7 @@ public final class B1SqlLabelStore implements B1LabelStore {
     @Override
     public void store(B1Label l) throws Exception {
         if (!enabled) {
-            throw new IllegalStateException("Scrittura SQL non abilitata (enabled=false): modalita' prova");
+            throw new IllegalStateException("\u00c9criture SQL non activ\u00e9e (enabled=false) : mode test");
         }
         List<Object> p = new ArrayList<>();
         String sql = buildSql(l, LocalDateTime.now(), p);
@@ -187,7 +187,7 @@ public final class B1SqlLabelStore implements B1LabelStore {
             }
             int n = ps.executeUpdate();
             if (update && n != 1) {
-                throw new IllegalStateException("UPDATE ha modificato " + n + " righe (atteso 1)");
+                throw new IllegalStateException("UPDATE a modifi\u00e9 " + n + " righe (atteso 1)");
             }
         }
     }

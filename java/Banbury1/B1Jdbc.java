@@ -69,7 +69,7 @@ final class B1Jdbc {
             Class<?> c = Class.forName("SVC.DBBamburyReader");
             return (Connection) c.getMethod("openConnection").invoke(null);
         } catch (ClassNotFoundException e) {
-            throw new SQLException("provider=svc: classe SVC.DBBamburyReader non trovata nel classpath", e);
+            throw new SQLException("provider=svc : classe SVC.DBBamburyReader introuvable dans le classpath", e);
         } catch (java.lang.reflect.InvocationTargetException e) {
             Throwable t = e.getCause() != null ? e.getCause() : e;
             throw new SQLException("provider=svc: " + t.getMessage(), t);
@@ -81,14 +81,14 @@ final class B1Jdbc {
     /** Descrizione dell'autenticazione per i messaggi (mai la password). */
     static String describe(Properties cfg, String passwordEnv) {
         if (svc(cfg)) {
-            return "connessione centralizzata SVC.DBBamburyReader (nessuna credenziale nei file di B1)";
+            return "connexion centralis\u00e9e SVC.DBBamburyReader (aucun identifiant dans les fichiers de B1)";
         }
         if (windows(cfg)) {
-            return "autenticazione Windows (nessuna password)";
+            return "authentification Windows (aucun mot de passe)";
         }
         String user = cfg.getProperty("jdbc.user", "").trim();
-        String pwd = System.getenv(passwordEnv) != null ? "da " + passwordEnv
-                : cfg.getProperty("jdbc.password", "").isEmpty() ? "mancante" : "da jdbc.password (meglio autenticazione Windows)";
-        return "utente " + (user.isEmpty() ? "(vuoto)" : user) + ", password " + pwd;
+        String pwd = System.getenv(passwordEnv) != null ? "depuis " + passwordEnv
+                : cfg.getProperty("jdbc.password", "").isEmpty() ? "manquant" : "depuis jdbc.password (mieux : authentification Windows)";
+        return "utilisateur " + (user.isEmpty() ? "(vide)" : user) + ", mot de passe " + pwd;
     }
 }

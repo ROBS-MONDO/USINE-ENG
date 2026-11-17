@@ -102,8 +102,8 @@ public final class B1LabelDialog {
         private final JTextField scan = new JTextField();
         private final JLabel info = new JLabel(" ", JLabel.CENTER);
         private final JLabel[] vals = new JLabel[11];
-        private final String[] names = {"Ticket", "Ricetta", "RecipeUID", "Lotto", "Suffixe", "Num melange",
-                "Miscele", "Passaggio", "Type (couche)", "Couleur", "Ricetta in archivio B1"};
+        private final String[] names = {"Ticket", "Recette", "RecipeUID", "Lot", "Suffixe", "Num melange",
+                "M\u00e9langes", "Passage", "Type (couche)", "Couleur", "Recette en archive B1"};
         private final JTextArea sql = new JTextArea(5, 50);
         private final JButton confirm = new JButton();
         private B1Label current;
@@ -157,17 +157,17 @@ public final class B1LabelDialog {
             sql.setBackground(new Color(0xFFF8DC));
             JScrollPane sp = new JScrollPane(sql);
             sp.setBorder(BorderFactory.createTitledBorder(store.dryRun()
-                    ? "SQL (MODALITA' PROVA: non viene scritto nulla)" : "SQL che verra' eseguito"));
+                    ? "SQL (MODE TEST : rien n'est \u00e9crit)" : "SQL qui sera ex\u00e9cut\u00e9"));
             mid.add(sp, BorderLayout.CENTER);
             add(mid, BorderLayout.CENTER);
 
             JPanel bottom = new JPanel();
             bottom.setOpaque(false);
             confirm.setFont(FB);
-            confirm.setText(store.dryRun() ? "Simula (nessuna scrittura)" : "Conferma e scrivi su SQL");
+            confirm.setText(store.dryRun() ? "Simuler (aucune \u00e9criture)" : "Confirmer et \u00e9crire dans SQL");
             confirm.setEnabled(false);
             confirm.addActionListener(e -> confirmWrite());
-            JButton cancel = new JButton("Annulla");
+            JButton cancel = new JButton("Annuler");
             cancel.setFont(FB);
             cancel.addActionListener(e -> close.run());
             bottom.add(confirm);
@@ -284,7 +284,7 @@ public final class B1LabelDialog {
             }
             current = l;
             vals[0].setText(l.ticketKind());
-            vals[1].setText(l.recipeName.isEmpty() ? "(dal RecipeUID)" : l.recipeName);
+            vals[1].setText(l.recipeName.isEmpty() ? "(depuis le RecipeUID)" : l.recipeName);
             vals[2].setText(l.recipeUid);
             vals[3].setText(l.annee + "/" + l.lot);
             vals[4].setText(l.suffixe);
@@ -298,7 +298,7 @@ public final class B1LabelDialog {
             try {
                 d = store.describe(l);
             } catch (RuntimeException ex) {
-                d = "Errore: " + ex.getMessage();
+                d = "Erreur : " + ex.getMessage();
             }
             sql.setText(d);
             info.setForeground(new Color(0, 130, 0));
@@ -317,9 +317,9 @@ public final class B1LabelDialog {
                         return "si (" + e.name + ")";
                     }
                 }
-                return "NO: ricetta non presente nell'archivio B1";
+                return "NON : recette absente de l'archive B1";
             } catch (IOException e) {
-                return "archivio non leggibile";
+                return "archive illisible";
             }
         }
 
@@ -342,7 +342,7 @@ public final class B1LabelDialog {
             }
             confirm.setEnabled(false);
             info.setForeground(Color.DARK_GRAY);
-            info.setText(store.dryRun() ? "Simulazione..." : "Scrittura su SQL...");
+            info.setText(store.dryRun() ? "Simulation..." : "\u00c9criture dans SQL...");
             new SwingWorker<Void, Void>() {
                 @Override
                 protected Void doInBackground() throws Exception {
@@ -359,8 +359,8 @@ public final class B1LabelDialog {
                         get();
                         log(l, store.dryRun() ? "SIMULATO" : "SCRITTO", "");
                         info.setForeground(new Color(0, 130, 0));
-                        info.setText(store.dryRun() ? "Simulazione completata (nessuna scrittura)"
-                                : "Ticket scritto su SQL");
+                        info.setText(store.dryRun() ? "Simulation termin\u00e9e (aucune \u00e9criture)"
+                                : "Ticket \u00e9crit dans SQL");
                     } catch (Exception ex) {
                         Throwable t = ex.getCause() != null ? ex.getCause() : ex;
                         log(l, "ERRORE", String.valueOf(t.getMessage()));

@@ -12,7 +12,7 @@ public final class B1TrendWindow extends JFrame {
     private static B1TrendWindow shared;
 
     private B1TrendWindow(B1TrendStore store) {
-        super("Banbury 1 - Trend (sola lettura)");
+        super("Banbury 1 - Tendance (lecture seule)");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setContentPane(new B1TrendPanel(store, this::dispose));
         setSize(1280, 720);

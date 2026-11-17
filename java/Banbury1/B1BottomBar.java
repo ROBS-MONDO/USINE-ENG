@@ -65,22 +65,22 @@ final class B1BottomBar {
     /** Descrizione mostrata fermando il mouse su un pulsante (come i suggerimenti del WinCC). */
     static String tooltip(String name) {
         switch (name) {
-            case "Synoptic": return "SYNOPTIC - sinottico principale";
-            case "Process": return "PROCESS - processo e fasi";
-            case "Trends": return "TREND - andamento temperatura, corrente, giri, pressione";
-            case "Alarms": return "ALARMS - elenco allarmi";
-            case "Display": return "LARGE VIEW - vista ingrandita";
-            case "Recettes": return "RECIPES - editor ricette";
-            case "Production": return "PRODUCTION - lista di produzione";
-            case "Settings": return "SETTINGS - impostazioni";
-            case "Temperatures": return "TEMPERATURES - temperature";
-            case "Components": return "COMPONENTS - componenti";
-            case "Govoni": return "GOVONI - sinottico bilance e silos";
-            case "B2": return "B2 - Banbury 2 (non ancora collegato)";
-            case "B2 main": return "B2 MAIN - Banbury 2 principale (non ancora collegato)";
-            case "Valori PLC": return "VALORI PLC - indirizzi e valori letti dal PLC";
-            case "Etichetta": return "ETICHETTA - lettura etichetta QR della ricetta";
-            case "EXIT": return "EXIT - chiude questa finestra";
+            case "Synoptic": return "SYNOPTIQUE - synoptique principal";
+            case "Process": return "PROCESS - proc\u00e9d\u00e9 et phases";
+            case "Trends": return "TENDANCE - \u00e9volution temp\u00e9rature, courant, tours, pression";
+            case "Alarms": return "ALARMES - liste des alarmes";
+            case "Display": return "GRANDE VUE - vue agrandie";
+            case "Recettes": return "RECETTES - \u00e9diteur de recettes";
+            case "Production": return "PRODUCTION - liste de production";
+            case "Settings": return "R\u00c9GLAGES - param\u00e8tres";
+            case "Temperatures": return "TEMP\u00c9RATURES - temp\u00e9ratures";
+            case "Components": return "COMPOSANTS - composants";
+            case "Govoni": return "GOVONI - synoptique balances et silos";
+            case "B2": return "B2 - Banbury 2 (pas encore connect\u00e9)";
+            case "B2 main": return "B2 MAIN - Banbury 2 principal (pas encore connect\u00e9)";
+            case "Valeurs PLC": return "VALEURS PLC - adresses et valeurs lues dans le PLC";
+            case "\u00c9tiquette": return "\u00c9TIQUETTE - lecture de l'\u00e9tiquette QR de la recette";
+            case "EXIT": return "EXIT - ferme cette fen\u00eatre";
             default: return name;
         }
     }
@@ -122,7 +122,7 @@ final class B1BottomBar {
             }
             l.add(new Btn(xs[i], 0, 52, 52, names[i], a));
         }
-        String[] t = {"Govoni", "B2", "B2 main", "Valori PLC", "Etichetta"};
+        String[] t = {"Govoni", "B2", "B2 main", "Valeurs PLC", "\u00c9tiquette"};
         int[] tx = {578, 632, 688, 752, 826};
         int[] tw = {48, 48, 58, 70, 66};
         for (int i = 0; i < t.length; i++) {

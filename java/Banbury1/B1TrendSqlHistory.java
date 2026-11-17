@@ -65,7 +65,7 @@ public final class B1TrendSqlHistory {
         }
         String table = cfg.getProperty("trend.table", "dbo.Datas_B1").trim();
         if (!validTable(table)) {
-            throw new IllegalArgumentException("trend.table non valida: " + table);
+            throw new IllegalArgumentException("trend.table non valide : " + table);
         }
         List<B1TrendChart.Series> series = B1TrendChart.defaultSeries();
         List<long[]> times = new ArrayList<>();

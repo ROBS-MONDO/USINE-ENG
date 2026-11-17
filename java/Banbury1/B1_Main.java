@@ -48,7 +48,7 @@ import java.util.Locale;
  */
 public class B1_Main extends JFrame {
 
-    static final String VERSION = "B1 V0.1 (sola lettura)";
+    static final String VERSION = "B1 V0.1 (lecture seule)";
     static final String DEFAULT_IP = "192.168.10.100";
     static final Path DEFAULT_TAGS = Paths.get("C:\\_tools\\Banbury1\\b1_tags.properties");
 
@@ -311,7 +311,7 @@ public class B1_Main extends JFrame {
                                 h.action.run();
                                 return;
                             }
-                            message = "'" + h.name + "': non disponibile (sinottico in SOLA LETTURA)";
+                            message = "'" + h.name + "' : non disponible (synoptique en LECTURE SEULE)";
                             messageUntil = System.currentTimeMillis() + 4000;
                             return;
                         }
@@ -556,9 +556,9 @@ public class B1_Main extends JFrame {
             Boolean conn = src.connected();
             g.setColor(conn ? new Color(0x20B020) : new Color(0xD02020));
             g.fillOval(276, 42, 12, 12);
-            text(g, conn ? "PLC connesso" : "PLC non connesso", 292, 38, 190, 20, fNormal, DARK, -1);
+            text(g, conn ? "PLC connect\u00e9" : "PLC non connect\u00e9", 292, 38, 190, 20, fNormal, DARK, -1);
             String rn = src.str("recipe_name");
-            text(g, "Ricetta: " + (rn == null || rn.isEmpty() ? "--" : B1RecipeBridge.displayName(rn)), 276, 55, 205, 18, fBold, DARK, -1);
+            text(g, "Recette : " + (rn == null || rn.isEmpty() ? "--" : B1RecipeBridge.displayName(rn)), 276, 55, 205, 18, fBold, DARK, -1);
             keyTag(g, "recipe_name", 276, 55);
             if (bridge != null) {
                 B1RecipeBridge.Status st = bridge.status();
@@ -575,7 +575,7 @@ public class B1_Main extends JFrame {
                 text(g, line.length() > 34 ? line.substring(0, 34) + "\u2026" : line, 290, 70, 190, 18,
                         new Font("Arial", Font.PLAIN, 12), DARK, -1);
                 final String openName = B1RecipeBridge.archiveName(rn);
-                hits.add(new Hit(276, 55, 205, 33, "Ricetta", () -> bridge.openEditor(openName)));
+                hits.add(new Hit(276, 55, 205, 33, "Recette", () -> bridge.openEditor(openName)));
             } else {
                 String st = src.status();
                 text(g, st.length() > 38 ? st.substring(0, 38) + "\u2026" : st, 276, 72, 205, 14, fSmall, DARK, -1);
@@ -616,10 +616,10 @@ public class B1_Main extends JFrame {
             lampRow(g, 13, 233, 42, 160, "piston_blocked", LampKind.GREEN, "Bloqu\u00e9");
             bigArrow(g, 218, 143, true, pistonArrowLit(true));
             bigArrow(g, 218, 196, false, pistonArrowLit(false));
-            arrowButton(g, 12, 263, 38, 26, false, "Pistone consegna -");
+            arrowButton(g, 12, 263, 38, 26, false, "Consigne piston -");
             field(g, 57, 262, 98, 26, "press_set", num("press_set", 1), true, fBig);
             unit(g, "bar", 157, 262, 38, 26);
-            arrowButton(g, 196, 263, 38, 26, true, "Pistone consegna +");
+            arrowButton(g, 196, 263, 38, 26, true, "Consigne piston +");
             field(g, 57, 292, 98, 26, "press_act", num("press_act", 1), false, fBig);
             unit(g, "bar", 157, 292, 38, 26);
             field(g, 57, 327, 98, 26, "piston_pct1", num("piston_pct1", 0), false, fBig);
@@ -633,21 +633,21 @@ public class B1_Main extends JFrame {
         private void drawRotors(Graphics2D g) {
             box(g, 7, 424, 250, 150, new Color(0xD0D0D0), new Color(0x909090));
             title(g, "ROTORS", 7, 424, 250, 26);
-            arrowButton(g, 12, 457, 38, 26, false, "Giri consegna -");
+            arrowButton(g, 12, 457, 38, 26, false, "Consigne tours -");
             field(g, 57, 457, 98, 26, "rpm_set", num("rpm_set", 0), true, fBig);
             unit(g, "rpm", 157, 457, 38, 26);
-            arrowButton(g, 196, 457, 38, 26, true, "Giri consegna +");
+            arrowButton(g, 196, 457, 38, 26, true, "Consigne tours +");
             field(g, 57, 487, 98, 26, "rpm_act", num("rpm_act", 0), false, fBig);
             unit(g, "rpm", 157, 487, 38, 26);
             field(g, 57, 517, 98, 26, "current", num("current", 0), false, fBig);
             unit(g, "A", 157, 517, 38, 26);
-            lampRow(g, 13, 548, 42, 160, "rotors_running", LampKind.GREEN, "Running");
+            lampRow(g, 13, 548, 42, 160, "rotors_running", LampKind.GREEN, "En marche");
         }
 
         private void drawLube(Graphics2D g) {
             box(g, 7, 583, 200, 66, new Color(0xD0D0D0), new Color(0x909090));
             title(g, "LUBRICATION", 7, 583, 200, 26);
-            lampRow(g, 13, 616, 42, 155, "lube_running", LampKind.GREEN, "Running");
+            lampRow(g, 13, 616, 42, 155, "lube_running", LampKind.GREEN, "En marche");
         }
 
         private void drawTemperature(Graphics2D g) {
@@ -878,7 +878,7 @@ public class B1_Main extends JFrame {
             String[][] rows = {
                     {"rdy_temp", "Temp. Min. OK d\u00e9marrage"}, {"rdy_discharge", "D\u00e9chargement OK"},
                     {"rdy_motor", "Moteur principal OK"}, {"rdy_door", "Porte d\u00e9ch. ferm\u00e9e"},
-                    {"rdy_mintime", "Temps min. entre cycles"}, {"rdy_cycles", "Nr. Cycles pas effectu\u00e9s"}};
+                    {"rdy_mintime", "Temps min. entre cycles"}, {"rdy_cycles", "Nb. cycles pas effectu\u00e9s"}};
             box(g, 822, 200, 201, 190, new Color(0xD0D0D0), new Color(0x909090));
             for (int i = 0; i < rows.length; i++) {
                 lampRow(g, 826, 206 + i * 30, 856, 163, rows[i][0], LampKind.GREEN, rows[i][1]);
@@ -901,7 +901,7 @@ public class B1_Main extends JFrame {
             lampRow(g, 366, 558, 396, 165, "pos_load", LampKind.GREEN, "Position chargement");
             lampRow(g, 366, 587, 396, 165, "decel_load", LampKind.GREEN, "d\u00e9c\u00e9l\u00e9ration charg.");
             lampRow(g, 366, 616, 396, 165, "decel_dis", LampKind.GREEN, "D\u00e9c\u00e9l\u00e9ration d\u00e9ch.");
-            lampRow(g, 366, 645, 396, 165, "pos_dis", LampKind.GREEN, "Postion d\u00e9ch.");
+            lampRow(g, 366, 645, 396, 165, "pos_dis", LampKind.GREEN, "Position d\u00e9ch.");
         }
 
         private void drawProduction(Graphics2D g) {
@@ -976,7 +976,7 @@ public class B1_Main extends JFrame {
             box(g, 5, 742, 757, 90, new Color(0xE4ECF4), new Color(0x8098B0));
             g.setPaint(new GradientPaint(5, 744, new Color(0xC8D8EC), 757, 744, new Color(0xE4ECF4)));
             g.fillRect(6, 743, 755, 18);
-            text(g, "Alarm", 8, 743, 100, 18, fNormal, new Color(0x20406C), -1);
+            text(g, "Alarmes", 8, 743, 100, 18, fNormal, new Color(0x20406C), -1);
             String[] cols = {"", "Date", "Time", "Nombre", "Point d'erreur", "Texte du message"};
             int[] cx = {10, 38, 107, 176, 220, 300};
             for (int i = 0; i < cols.length; i++) {
@@ -1023,7 +1023,7 @@ public class B1_Main extends JFrame {
                 g.fillRect(768, 806, 255, 24);
                 text(g, message, 768, 806, 255, 24, new Font("Arial", Font.PLAIN, 11), Color.BLACK, -1);
             } else {
-                text(g, "SOLA LETTURA  -  F2: indirizzi", 768, 808, 255, 20, new Font("Arial", Font.PLAIN, 11), new Color(0x505050), -1);
+                text(g, "LECTURE SEULE  -  F2 : adresses", 768, 808, 255, 20, new Font("Arial", Font.PLAIN, 11), new Color(0x505050), -1);
             }
         }
     }

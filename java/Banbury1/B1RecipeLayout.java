@@ -66,24 +66,24 @@ public final class B1RecipeLayout {
     public final Map<Integer, String> opNames = new LinkedHashMap<>();
 
     private static final String[] DEFAULT_LINES = {
-        "header.safety_temp  = W28 ; Temp. sicurezza ; \u00b0C ; 1 ; 0 ; 200",
-        "header.drop_door    = W30 ; Porte de dechargement ; s ; 1 ; 0 ; 3600",
-        "header.safety_time  = W32 ; Tempo sicurezza ; s ; 1 ; 0 ; 3600",
-        "header.max_energy   = W34 ; Energia max ; kWh ; 0.1 ; 0 ; 999.9",
-        "header.restart_temp = W38 ; Temp. riavvio ; \u00b0C ; 1 ; 0 ; 200",
+        "header.safety_temp  = W28 ; Temp. de s\u00e9curit\u00e9 ; \u00b0C ; 1 ; 0 ; 200",
+        "header.drop_door    = W30 ; Porte de d\u00e9chargement ; s ; 1 ; 0 ; 3600",
+        "header.safety_time  = W32 ; Temps de s\u00e9curit\u00e9 ; s ; 1 ; 0 ; 3600",
+        "header.max_energy   = W34 ; \u00c9nergie max ; kWh ; 0.1 ; 0 ; 999.9",
+        "header.restart_temp = W38 ; Temp. de red\u00e9marrage ; \u00b0C ; 1 ; 0 ; 200",
         // Confermato dal database ricette del WinCC (Q131014: A_RECIPE_PHASE_PARAMS_TAGS) e dai due invii registrati il 16/11/2026:
         // 10 fasi da 30 byte a partire da DBW42; per ogni fase (offset dall'inizio del blocco):
         //   +0 JOBS_word (operazioni, parola a bit)  +2 JOBS_timeout (s)  +10 SETS_word (bit Porte/Piston)
         //   +12 ROTOR1_speed (rpm)  +14 pressure (x10, bar)  +20 CONTROLS_word (et/ou/skip)
         //   +22 PHASE_timout (s)  +24 PHASE_temperature (C)  +26 PHASE_energy (x10)
-        "phase.timeout   = W2   ; Timeout (s) ; s ; 1 ; 0 ; 9999",
-        "phase.set_bits  = UW10 ; Set: porte e pistone (bit) ;  ; 1 ; ; ",
+        "phase.timeout   = W2   ; Timeout ; s ; 1 ; 0 ; 9999",
+        "phase.set_bits  = UW10 ; Consigne : porte et piston (bits) ;  ; 1 ; ; ",
         "phase.rpm       = W12  ; Rotor ; rpm ; 1 ; 5 ; 50",
         "phase.press     = W14  ; Press. ; bar ; 0.1 ; 0 ; 500",
-        "phase.ctrl_bits = UW20 ; Controllo: et=bit0, ou=bit1, skip=bit15 ;  ; 1 ; ; ",
-        "phase.time      = W22  ; Tempo fase ; s ; 1 ; 0 ; 99999",
-        "phase.temp      = W24  ; Temperatura ; \u00b0C ; 1 ; 0 ; 600",
-        "phase.energy    = W26  ; Energia ; kWh ; 0.1 ; 0 ; 1000",
+        "phase.ctrl_bits = UW20 ; Contr\u00f4le : et=bit0, ou=bit1, saut=bit15 ;  ; 1 ; ; ",
+        "phase.time      = W22  ; Temps phase ; s ; 1 ; 0 ; 99999",
+        "phase.temp      = W24  ; Temp\u00e9rature ; \u00b0C ; 1 ; 0 ; 600",
+        "phase.energy    = W26  ; \u00c9nergie ; kWh ; 0.1 ; 0 ; 1000",
     };
 
     private B1RecipeLayout() {
@@ -101,7 +101,7 @@ public final class B1RecipeLayout {
         }
         l.opNames.put(13, "Degas");
         l.opNames.put(14, "Net.");
-        l.opNames.put(15, "D\u00e9ch. (scarico)");
+        l.opNames.put(15, "D\u00e9ch. (d\u00e9chargement)");
         return l;
     }
 

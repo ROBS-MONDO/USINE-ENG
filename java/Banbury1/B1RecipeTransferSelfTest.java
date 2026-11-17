@@ -35,8 +35,8 @@ public final class B1RecipeTransferSelfTest {
         r2.header.put("safety_time", r.header.get("safety_time") + 5);
         B1RecipeTransfer.Plan p = B1RecipeTransfer.plan(r2, l, cur, idle);
         check("2 parole cambiate (rpm fase 1, tempo sicurezza)", p.changes.size() == 2 && p.blockers.isEmpty());
-        check("descrizioni dei campi", p.changes.stream().anyMatch(c -> c.what.contains("Fase 1"))
-                && p.changes.stream().anyMatch(c -> c.what.startsWith("Testata")));
+        check("descrizioni dei campi", p.changes.stream().anyMatch(c -> c.what.contains("Phase 1"))
+                && p.changes.stream().anyMatch(c -> c.what.startsWith("En-t\u00eate")));
 
         byte[] running = idle.clone();
         B1RecipeCodec.putWord(running, 60, 33);
@@ -66,7 +66,7 @@ public final class B1RecipeTransferSelfTest {
         try {
             B1RecipeTransfer.execute(p, off, "127.0.0.1", 1, l.dbSize);
         } catch (java.io.IOException e) {
-            refused = e.getMessage().contains("non abilitata");
+            refused = e.getMessage().contains("non activ\u00e9e");
         }
         check("execute rifiuta se disabilitata", refused);
         B1RecipeTransfer.Config half = new B1RecipeTransfer.Config();
