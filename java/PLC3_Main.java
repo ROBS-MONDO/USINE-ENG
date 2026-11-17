@@ -532,9 +532,11 @@ public class PLC3_Main extends JFrame {
         // Pistone superiore: 0.0 = alto, 1.0 = basso. Il movimento e' lineare.
         private volatile boolean ramTargetDown = false;
         private Boolean ramLastStableDown = null;
+        // Frecce durante "Mouvement": -1 = verso l'alto, +1 = verso il basso, 0 = nessuna
+        private volatile int ramArrowDir = 0;
         private volatile String currentPistonPosition = "";
         private double ramProgress = 0.0;
-        private static final int RAM_TRAVEL_MS = 3000;
+        private static final int RAM_TRAVEL_MS = 1500;
         private static final int FLOW_TIMER_MS = 40;
         private static final double RAM_STEP = (double) FLOW_TIMER_MS / RAM_TRAVEL_MS;
         private static final int RAM_BEAM_UP_Y = 48;
@@ -1503,8 +1505,9 @@ public class PLC3_Main extends JFrame {
 
         /**
          * Position_piston dal DB (Datas_B2): "Haut", "Bas" o "Mouvement".
-         * Haut/Bas fissano il bersaglio; Mouvement prosegue verso l'estremo opposto
-         * all'ultima posizione stabile, cosi' il pistone parte appena lascia il fine corsa.
+         * Durante "Mouvement" il pistone resta fermo e compaiono le frecce nella direzione
+         * opposta all'ultima posizione stabile; quando arriva "Haut"/"Bas" parte la corsa
+         * animata (RAM_TRAVEL_MS) e le frecce spariscono.
          */
         private void updateRamTarget(String positionPiston) {
             if (positionPiston == null) {
@@ -1514,11 +1517,13 @@ public class PLC3_Main extends JFrame {
             if (v.startsWith("haut")) {
                 ramLastStableDown = Boolean.FALSE;
                 ramTargetDown = false;
+                ramArrowDir = 0;
             } else if (v.startsWith("bas")) {
                 ramLastStableDown = Boolean.TRUE;
                 ramTargetDown = true;
-            } else if (v.startsWith("mouv") && ramLastStableDown != null) {
-                ramTargetDown = !ramLastStableDown;
+                ramArrowDir = 0;
+            } else if (v.startsWith("mouv")) {
+                ramArrowDir = ramLastStableDown == null ? 0 : (ramLastStableDown ? -1 : 1);
             }
         }
 
@@ -4172,6 +4177,7 @@ public class PLC3_Main extends JFrame {
             g2.drawRect(665, 32, 10, 381);
 
             drawHydraulicRam(g2);
+            drawRamMovementArrows(g2);
 
             // Contenuto interno del vano superiore rimosso su richiesta.
             // Il traverso marrone centrale e' stato rimosso; il vetro viene
@@ -4239,6 +4245,45 @@ public class PLC3_Main extends JFrame {
             drawHydraulicCylinderBody(g, rightX - 8, 1, 16, cylBottom - 1);
             drawHydraulicCylinderBody(g, centerX - 11, 1, 22, cylBottom - 1);
 
+            g.dispose();
+        }
+
+        private void drawRamMovementArrows(Graphics2D g2) {
+            int dir = ramArrowDir;
+            if (dir == 0) {
+                return;
+            }
+            Graphics2D g = (Graphics2D) g2.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Zona libera: sopra il pistone se e' basso, sotto se e' alto
+            final int top = dir < 0 ? 62 : 104;
+            final int bottom = dir < 0 ? 118 : 158;
+            final int spacing = 18;
+            final int[] columns = {584, 638};
+
+            double phase = (flowOffset * 0.35) % spacing;
+            for (int cx : columns) {
+                for (int k = -1; k * spacing < (bottom - top); k++) {
+                    double y = dir < 0 ? bottom - (k * spacing + phase) : top + (k * spacing + phase);
+                    if (y < top || y > bottom) {
+                        continue;
+                    }
+                    double edge = Math.min(y - top, bottom - y) / 10.0;
+                    float alpha = (float) Math.max(0.0, Math.min(1.0, edge));
+                    double t = 5 * dir;
+                    Path2D chevron = new Path2D.Double();
+                    chevron.moveTo(cx - 9, y - t);
+                    chevron.lineTo(cx, y + t);
+                    chevron.lineTo(cx + 9, y - t);
+                    g.setStroke(new BasicStroke(5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                    g.setColor(new Color(40, 40, 40, (int) (alpha * 200)));
+                    g.draw(chevron);
+                    g.setStroke(new BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                    g.setColor(new Color(255, 200, 0, (int) (alpha * 255)));
+                    g.draw(chevron);
+                }
+            }
             g.dispose();
         }
 
