@@ -40,7 +40,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 public class MondoLuxRecipesSetup extends JFrame {
 
     // Versione visibile per controllo file corretto
-    private static final String VERSION = "V2.04";
+    private static final String VERSION = "V2.05";
 
     // =========================================================
     // CONFIG
@@ -949,14 +949,6 @@ public class MondoLuxRecipesSetup extends JFrame {
         });
 
         btnClose.addActionListener(e -> dialog.dispose());
-        // Chiusura del SETUP (FERMER o X): uscita dalla modalita' modification
-        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosed(java.awt.event.WindowEvent e) {
-                deactivateEditMode();
-                setInfoStatus("SETUP fermé - mode modification terminé.");
-            }
-        });
 
         JPanel top = new JPanel(new BorderLayout(8, 8));
         top.setBorder(new EmptyBorder(8, 8, 8, 8));
