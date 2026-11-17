@@ -244,6 +244,9 @@ public class B1ScreensWindow extends JFrame {
         private void drawNav(Graphics2D g) {
             g.setColor(new Color(0xB4B4B4));
             g.fillRect(0, 648, W, 120);
+            if ("005_Display".equals(contentName)) {
+                drawDisplayStatus(g);
+            }
             g.translate(BAR_X, BAR_Y);
             B1BottomBar.paint(g, barButtons());
             g.translate(-BAR_X, -BAR_Y);
@@ -254,6 +257,54 @@ public class B1ScreensWindow extends JFrame {
                 st = message;
             }
             g.drawString(st + "   |   SOLA LETTURA   |   F2: indirizzi", 10, 765);
+        }
+
+        /** Schermata Display, fascia sopra la barra: spie AUTO / MANUAL a sinistra e ricetta attuale al centro. */
+        private void drawDisplayStatus(Graphics2D g) {
+            Boolean auto = src.connected() ? src.bool("mode_auto") : null;
+            drawModeLamp(g, 8, 654, 178, 42, "AUTO", Boolean.TRUE.equals(auto));
+            drawModeLamp(g, 190, 654, 178, 42, "MANUAL", Boolean.FALSE.equals(auto));
+            // ricetta attuale (nome riconosciuto anche dai valori, come nel sinottico)
+            int x = 376, y = 654, w = 356, h = 42;
+            g.setColor(new Color(0xD4D0C8));
+            g.fillRect(x, y, w, h);
+            bevel(g, x, y, w, h);
+            String rn = src.connected() ? src.str("recipe_name") : null;
+            String name = rn == null || rn.isEmpty() ? "--" : B1RecipeBridge.displayName(rn);
+            g.setFont(new Font("Arial", Font.PLAIN, 10));
+            g.setColor(new Color(0x505050));
+            g.drawString("Ricetta attuale", x + 6, y + 12);
+            fit(g, name, x + 2, y + 13, w - 4, 28, new Color(0x202020), -1, true);
+            B1RecipeBridge br = B1_Main.BRIDGE;
+            if (br != null && src.connected()) {
+                B1RecipeBridge.Status st = br.status();
+                Color dot;
+                switch (st.state) {
+                    case SAME: dot = new Color(0x20B020); break;
+                    case DIFFERENT: dot = new Color(0xE08000); break;
+                    case NOT_ARCHIVED: dot = new Color(0x2060C0); break;
+                    default: dot = new Color(0x909090);
+                }
+                g.setColor(dot);
+                g.fillOval(x + w - 150, y + 4, 8, 8);
+                g.setFont(new Font("Arial", Font.PLAIN, 10));
+                g.setColor(new Color(0x404040));
+                String t = st.text.length() > 30 ? st.text.substring(0, 30) + "\u2026" : st.text;
+                g.drawString(t, x + w - 138, y + 12);
+            }
+        }
+
+        private void drawModeLamp(Graphics2D g, int x, int y, int w, int h, String text, boolean on) {
+            g.setColor(on ? new Color(0x2BFF1F) : new Color(0xD8D8D8));
+            g.fillRect(x, y, w, h);
+            g.setColor(new Color(0x606060));
+            g.drawRect(x, y, w - 1, h - 1);
+            g.setColor(on ? new Color(0x20C018) : Color.WHITE);
+            g.drawRect(x + 1, y + 1, w - 3, h - 3);
+            g.setFont(new Font("Arial", Font.BOLD, 20));
+            java.awt.FontMetrics fm = g.getFontMetrics();
+            g.setColor(Color.BLACK);
+            g.drawString(text, x + (w - fm.stringWidth(text)) / 2, y + (h - fm.getHeight()) / 2 + fm.getAscent());
         }
 
         // ---------------- disegno oggetti ----------------
