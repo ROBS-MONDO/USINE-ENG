@@ -40,7 +40,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 public class MondoLuxRecipesSetup extends JFrame {
 
     // Versione visibile per controllo file corretto
-    private static final String VERSION = "V2.03";
+    private static final String VERSION = "V2.04";
 
     // =========================================================
     // CONFIG
@@ -752,6 +752,9 @@ public class MondoLuxRecipesSetup extends JFrame {
         table.getColumnModel().getColumn(0).setMinWidth(50);
         table.getColumnModel().getColumn(0).setPreferredWidth(70);
         table.getColumnModel().getColumn(0).setMaxWidth(90);
+        DefaultTableCellRenderer idCenterRenderer = new DefaultTableCellRenderer();
+        idCenterRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        table.getColumnModel().getColumn(0).setCellRenderer(idCenterRenderer);
 
         JTextField txtFilter = new JTextField();
         txtFilter.setFont(new Font("SansSerif", Font.PLAIN, 18));
