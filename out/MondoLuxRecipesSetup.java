@@ -138,6 +138,7 @@ public class MondoLuxRecipesSetup extends JFrame {
     private JDialog editModeWarningDialog;
     private JLabel editModeWarningLabel;
     private boolean editModeWarningShown = false;
+    private String lastAdUsername = "";
 
     private final List<String> lastDownloadAnomalies = new ArrayList<>();
     private Integer lastDownloadAnomalyRecipeId = null;
@@ -623,6 +624,7 @@ public class MondoLuxRecipesSetup extends JFrame {
             props.setProperty("lastDownloaded", lblLastDownloaded.getText() == null ? "" : lblLastDownloaded.getText());
             props.setProperty("selectedTabIndex", String.valueOf(tabSteps.getSelectedIndex()));
             props.setProperty("status", lblStatus.getText() == null ? "" : lblStatus.getText());
+            props.setProperty("adUsername", lastAdUsername == null ? "" : lastAdUsername);
             props.setProperty("version", VERSION);
             props.setProperty("savedAt", LocalDateTime.now().toString());
 
@@ -645,6 +647,8 @@ public class MondoLuxRecipesSetup extends JFrame {
         try (FileReader fr = new FileReader(stateFile)) {
             Properties props = new Properties();
             props.load(fr);
+
+            lastAdUsername = props.getProperty("adUsername", "").trim();
 
             String lastDownloaded = props.getProperty("lastDownloaded", "").trim();
             if (!lastDownloaded.isEmpty()) {
@@ -745,6 +749,9 @@ public class MondoLuxRecipesSetup extends JFrame {
         table.setFont(new Font("SansSerif", Font.PLAIN, 18));
         table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 18));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.getColumnModel().getColumn(0).setMinWidth(50);
+        table.getColumnModel().getColumn(0).setPreferredWidth(70);
+        table.getColumnModel().getColumn(0).setMaxWidth(90);
 
         JTextField txtFilter = new JTextField();
         txtFilter.setFont(new Font("SansSerif", Font.PLAIN, 18));
@@ -939,6 +946,14 @@ public class MondoLuxRecipesSetup extends JFrame {
         });
 
         btnClose.addActionListener(e -> dialog.dispose());
+        // Chiusura del SETUP (FERMER o X): uscita dalla modalita' modification
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                deactivateEditMode();
+                setInfoStatus("SETUP fermé - mode modification terminé.");
+            }
+        });
 
         JPanel top = new JPanel(new BorderLayout(8, 8));
         top.setBorder(new EmptyBorder(8, 8, 8, 8));
@@ -2289,14 +2304,48 @@ public class MondoLuxRecipesSetup extends JFrame {
             return editModeUser;
         }
 
-        ActiveDirectorySetup.AuthenticatedUser user =
-                ActiveDirectorySetup.requestAuthentication(MondoLuxRecipesSetup.this);
+        // Precompila l'utente AD memorizzato (mai la password) nella finestra di login
+        final java.awt.event.AWTEventListener prefill = ev -> {
+            if (ev.getID() == java.awt.event.WindowEvent.WINDOW_OPENED
+                    && ev.getSource() instanceof JDialog
+                    && lastAdUsername != null && !lastAdUsername.isEmpty()) {
+                JDialog dlg = (JDialog) ev.getSource();
+                List<JTextField> fields = new ArrayList<>();
+                collectTextFields(dlg.getContentPane(), fields);
+                if (!fields.isEmpty()) {
+                    fields.get(0).setText(lastAdUsername);
+                    if (fields.size() > 1) {
+                        fields.get(1).requestFocusInWindow();
+                    }
+                }
+            }
+        };
+        Toolkit.getDefaultToolkit().addAWTEventListener(prefill, java.awt.AWTEvent.WINDOW_EVENT_MASK);
+
+        ActiveDirectorySetup.AuthenticatedUser user;
+        try {
+            user = ActiveDirectorySetup.requestAuthentication(MondoLuxRecipesSetup.this);
+        } finally {
+            Toolkit.getDefaultToolkit().removeAWTEventListener(prefill);
+        }
 
         if (user != null) {
+            lastAdUsername = user.getUsername() == null ? "" : user.getUsername();
+            saveUiState();
             activateEditMode(user, EDIT_MODE_DURATION_SECONDS);
         }
 
         return user;
+    }
+
+    private void collectTextFields(Container c, List<JTextField> out) {
+        for (Component comp : c.getComponents()) {
+            if (comp instanceof JTextField) {
+                out.add((JTextField) comp);
+            } else if (comp instanceof Container) {
+                collectTextFields((Container) comp, out);
+            }
+        }
     }
 
     private boolean isEditModeActive() {
@@ -3056,12 +3105,10 @@ public class MondoLuxRecipesSetup extends JFrame {
         try {
             deactivateEditMode();
             saveUiState();
-            Main0 frame = new Main0();
-            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            frame.setVisible(true);
             dispose();
+            System.exit(0);
         } catch (Exception ex) {
-            showError("Erreur ouverture Main0", ex);
+            showError("Erreur sortie application", ex);
         }
     }
 
