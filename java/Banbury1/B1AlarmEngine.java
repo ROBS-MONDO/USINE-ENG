@@ -68,17 +68,91 @@ public final class B1AlarmEngine {
     private static final Pattern WINCC = Pattern.compile("^DB(\\d+)DBX(\\d+)_([0-7])$");
     private static final Pattern DOTTED = Pattern.compile("^DB(\\d+)\\.W(\\d+)\\.B(\\d+)$");
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final int MAX_EVENTS = 500;
+    /** Allarmi ricordati (anche dopo il riavvio di B1, riletti dal file CSV). */
+    public static final int MAX_EVENTS = 10;
 
     private final List<Def> defs = new ArrayList<>();
     private final Map<Integer, Event> activeByNumber = new LinkedHashMap<>();
     private final List<Event> events = new ArrayList<>();
     private final Path csv;
+    /** Allarmi ripresi dal file che risultavano ancora attivi alla chiusura di B1 (stato verificato al primo ciclo). */
+    private final Map<Integer, Event> restoredOpen = new LinkedHashMap<>();
     private boolean primed;
 
     public B1AlarmEngine(List<Def> defs, Path csv) {
         this.defs.addAll(defs);
         this.csv = csv;
+        restore();
+    }
+
+    /** Riprende dal file CSV gli ultimi MAX_EVENTS allarmi (arrivo e, se c'e', rientro). */
+    private void restore() {
+        if (csv == null || !Files.isReadable(csv)) {
+            return;
+        }
+        List<Event> all = new ArrayList<>();
+        Map<Integer, Event> open = new LinkedHashMap<>();
+        try (BufferedReader r = Files.newBufferedReader(csv, StandardCharsets.UTF_8)) {
+            String line;
+            while ((line = r.readLine()) != null) {
+                String[] p = line.split(";", -1);
+                if (p.length < 7 || !("COME".equals(p[0]) || "GO".equals(p[0]))) {
+                    continue;
+                }
+                try {
+                    LocalDateTime t = LocalDateTime.parse(p[1], TS);
+                    int number = Integer.parseInt(p[2].trim());
+                    if ("COME".equals(p[0])) {
+                        Event prev = open.remove(number);
+                        if (prev != null && prev.went == null) {
+                            prev.went = t; // l'arrivo successivo implica che il precedente era rientrato
+                        }
+                        Def d = findDef(number);
+                        if (d == null) {
+                            d = new Def(number, p[6], p[3], p[4], p[5]);
+                        }
+                        Event e = new Event(d, t);
+                        all.add(e);
+                        open.put(number, e);
+                    } else {
+                        Event e = open.remove(number);
+                        if (e != null) {
+                            e.went = t;
+                        }
+                    }
+                } catch (RuntimeException ignored) {
+                    // riga illeggibile: si salta
+                }
+            }
+        } catch (IOException e) {
+            return;
+        }
+        int from = Math.max(0, all.size() - MAX_EVENTS);
+        for (int i = all.size() - 1; i >= from; i--) {
+            Event e = all.get(i);
+            events.add(e);
+            if (e.went == null) {
+                restoredOpen.put(e.def.number, e);
+            }
+        }
+    }
+
+    private Def findDef(int number) {
+        for (Def d : defs) {
+            if (d.number == number) {
+                return d;
+            }
+        }
+        return null;
+    }
+
+    /** Toglie gli eventi piu' vecchi oltre MAX_EVENTS, senza mai togliere quelli ancora attivi. */
+    private void trim() {
+        for (int i = events.size() - 1; i >= 0 && events.size() > MAX_EVENTS; i--) {
+            if (!events.get(i).active()) {
+                events.remove(i);
+            }
+        }
     }
 
     /** Legge b1_alarms.properties (assente = nessun allarme definito). */
@@ -174,13 +248,21 @@ public final class B1AlarmEngine {
             }
             boolean on = v != 0.0;
             Event act = activeByNumber.get(d.number);
+            Event old = restoredOpen.remove(d.number);
+            if (old != null && act == null) {
+                if (on) {
+                    activeByNumber.put(d.number, old); // era gia' attivo prima del riavvio: stesso evento
+                    continue;
+                }
+                old.went = now; // rientrato mentre B1 era chiuso: l'ora esatta non e' nota
+                log(old, "GO");
+                continue;
+            }
             if (on && act == null) {
                 Event e = new Event(d, now);
                 activeByNumber.put(d.number, e);
                 events.add(0, e);
-                if (events.size() > MAX_EVENTS) {
-                    events.remove(events.size() - 1);
-                }
+                trim();
                 log(e, "COME");
             } else if (!on && act != null) {
                 act.went = now;

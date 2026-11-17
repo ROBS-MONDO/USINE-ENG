@@ -41,7 +41,7 @@ public class B1AlarmWindow extends JFrame {
 
     private static final DateTimeFormatter D = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter T = DateTimeFormatter.ofPattern("HH:mm:ss");
-    private static final int PAGE = 50;
+    private static final int PAGE = B1AlarmEngine.MAX_EVENTS;
     // colori dal controllo WinCC (BGR -> RGB): titolo 0xEFE0DE... usiamo l'azzurro chiaro equivalente
     private static final Color TITLE = new Color(0xDE, 0xE0, 0xEF);
     private static final Color ROW2 = new Color(0xF0, 0xF0, 0xF0);
