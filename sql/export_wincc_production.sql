@@ -14,13 +14,13 @@ ORDER BY t.name, c.column_id;
 GO
 
 -- 2) Le produzioni (tutte le colonne)
-SELECT * FROM dbo.D_PRODUCTION;
+IF OBJECT_ID('dbo.D_PRODUCTION') IS NOT NULL SELECT * FROM dbo.D_PRODUCTION;
 GO
 
--- 3) Altre tabelle di produzione (anche se vuote, per vedere la struttura)
-SELECT TOP (50) * FROM dbo.D_PRODUCTION_BATCHES;
+-- 3) Altre tabelle di produzione, solo se esistono (anche se vuote, per vedere la struttura)
+IF OBJECT_ID('dbo.D_PRODUCTION_BATCHES') IS NOT NULL SELECT TOP (50) * FROM dbo.D_PRODUCTION_BATCHES;
 GO
-SELECT TOP (50) * FROM dbo.D_PRODUZIONE_MACCHINA;
+IF OBJECT_ID('dbo.D_PRODUZIONE_MACCHINA') IS NOT NULL SELECT TOP (50) * FROM dbo.D_PRODUZIONE_MACCHINA;
 GO
 
 -- 4) Procedure memorizzate legate alle produzioni (il codice mostra cosa fa "avvia produzione")
