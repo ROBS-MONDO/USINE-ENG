@@ -539,7 +539,7 @@ public class PLC3_Main extends JFrame {
         private static final int RAM_TRAVEL_MS = 1500;
         private static final int FLOW_TIMER_MS = 40;
         private static final double RAM_STEP = (double) FLOW_TIMER_MS / RAM_TRAVEL_MS;
-        private static final int RAM_BEAM_UP_Y = 48;
+        private static final int RAM_BEAM_UP_Y = 38;
         private static final int RAM_BEAM_DOWN_Y = 90;
         // Corpi dei cilindri idraulici: fissi in basso, gli steli salgono fino alla traversa
         private static final int RAM_CYL_TOP_Y = 136;
