@@ -501,7 +501,7 @@ public class B1RecipeEditor extends JFrame {
             loading = true;
             listModel.clear();
             for (B1RecipeRepository.Entry e : allEntries) {
-                if (q.isEmpty() || e.name.toLowerCase(Locale.ROOT).contains(q)) {
+                if (q.isEmpty() || e.name.toLowerCase(Locale.ROOT).contains(q) || e.toString().toLowerCase(Locale.ROOT).contains(q)) { // anche col simbolo dei gradi
                     listModel.addElement(e);
                 }
             }

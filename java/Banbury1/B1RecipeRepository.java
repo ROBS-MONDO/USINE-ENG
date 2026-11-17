@@ -26,9 +26,10 @@ public interface B1RecipeRepository {
             this.recipeNo = recipeNo;
         }
 
+        /** Nell'elenco il nome appare col simbolo dei gradi (come in WinCC); il nome salvato resta ASCII per il PLC. */
         @Override
         public String toString() {
-            return name;
+            return B1RecipeBridge.pretty(name);
         }
     }
 
