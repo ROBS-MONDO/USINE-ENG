@@ -21,7 +21,7 @@ public final class B1RecipePage {
     static final int[] COLS_X = {46, 416, 474, 532, 600, 632, 664, 700, 732, 788, 846, 914, 946};
     static final String[] OP_NAMES = {"Gomme", "Add.", "All Black", "Plastif.", "Cerac.", "Silano", "Half Black", "Degas", "Net.", "D\u00e9ch."};
     static final int[] OP_BITS = {0, 1, 2, 3, 4, 5, 6, 13, 14, 15};
-    static final int GRID_Y = 282, ROW_H = 31, ROWS = 10;
+    static final int GRID_Y = 280, ROW_H = 29, ROWS = 10;
     static final int BIT_DOOR = 0x02, BIT_UP = 0x04, BIT_DOWN = 0x10, CT_AND = 0x01, CT_OR = 0x02, CT_SKIP = 0x8000;
 
     private static final String[] HK = {"safety_time", "max_energy", "restart_temp", "safety_temp", "drop_door"};
@@ -32,6 +32,8 @@ public final class B1RecipePage {
     private final Supplier<Component> parent;
     private final Runnable repaint;
     private int phase; // fase in modifica 0..9
+    private final B1Recipe.Phase buf = new B1Recipe.Phase();
+    private boolean onBuf;
     private volatile String message = "";
     private volatile long messageUntil;
 
@@ -42,6 +44,7 @@ public final class B1RecipePage {
         this.parent = parent;
         this.repaint = repaint;
         ed.refreshList();
+        buf.ops = 0;
     }
 
     // ---------------------------------------------------------------- ingresso da altre pagine
@@ -165,70 +168,81 @@ public final class B1RecipePage {
         String txt = System.currentTimeMillis() < messageUntil ? message : ed.problemsText();
         boolean ok = txt != null && txt.startsWith("Recette valide");
         g.setColor(ok ? new Color(0xD8F5D8) : new Color(0xFFF4D0));
-        g.fillRect(8, 606, 1008, 40);
+        g.fillRect(8, 612, 1008, 34);
         g.setColor(new Color(0x808080));
-        g.drawRect(8, 606, 1008, 40);
+        g.drawRect(8, 612, 1008, 34);
         g.setFont(new Font("Arial", Font.PLAIN, 12));
         g.setColor(new Color(0x202020));
         String[] lines = (txt == null ? "" : txt).split("\n");
         for (int i = 0; i < Math.min(2, lines.length); i++) {
-            g.drawString(lines[i], 14, 622 + i * 15);
+            g.drawString(lines[i], 14, 626 + i * 15);
         }
     }
 
+    private static int sx(int x) {
+        return x >= 416 ? x + 20 : x;
+    }
+
     private void drawGrid(Graphics2D g, B1Recipe r) {
-        // intestazioni di gruppo
         int gy = 232;
         group(g, 46, gy, 360, "OP\u00c9RATION");
-        group(g, 416, gy, 272, "CONSIGNE");
-        group(g, 700, gy, 276, "CONTR\u00d4LE");
+        group(g, sx(416), gy, 272, "CONSIGNE");
+        group(g, sx(700), gy, 276, "CONTR\u00d4LE");
         label(g, "Phase", 8, 268);
         for (int i = 0; i < OP_NAMES.length; i++) {
             head(g, OP_NAMES[i], 46 + i * 36, 256, 36);
         }
-        head(g, "Timeout (s)", 416, 256, 56);
-        head(g, "Rotor (rpm)", 474, 256, 56);
-        head(g, "Press.(bar)", 532, 256, 66);
-        head(g, "Porte", 600, 256, 30);
-        head(g, "Pist.", 632, 256, 30);
-        head(g, "Saut", 700, 256, 30);
-        head(g, "Temps (s)", 732, 256, 54);
-        head(g, "Temp. (\u00b0C)", 788, 256, 56);
-        head(g, "\u00c9n.(kWh)", 846, 256, 66);
-        head(g, "ET", 914, 256, 30);
-        head(g, "OU", 946, 256, 30);
+        head(g, "Timeout (s)", sx(416), 256, 56);
+        head(g, "Rotor (rpm)", sx(474), 256, 56);
+        head(g, "Press.(bar)", sx(532), 256, 66);
+        head(g, "Porte", sx(600), 256, 30);
+        head(g, "Pist.", sx(632), 256, 30);
+        head(g, "Saut", sx(700), 256, 30);
+        head(g, "Temps (s)", sx(732), 256, 54);
+        head(g, "Temp. (\u00b0C)", sx(788), 256, 56);
+        head(g, "\u00c9n.(kWh)", sx(846), 256, 66);
+        head(g, "ET", sx(914), 256, 30);
+        head(g, "OU", sx(946), 256, 30);
+        // riga di modifica (fase 0): i valori si scrivono in una fase con il "+" della sua riga
+        drawRow(g, GRID_Y, buf, "0", false, true);
         for (int i = 0; i < ROWS; i++) {
-            int y = GRID_Y + i * ROW_H;
-            boolean sel = i == phase;
-            Color c0 = sel ? new Color(0xFFE066) : (i % 2 == 0 ? new Color(0xB8C8E4) : new Color(0xA4B6D8));
-            Color c1 = sel ? new Color(0xE0B000) : new Color(0x8DA2CC);
-            g.setPaint(new GradientPaint(4, y, c0, 4, y + ROW_H - 2, c1));
-            g.fillRoundRect(4, y, 984, ROW_H - 2, 6, 6);
             B1Recipe.Phase p = r == null || i >= r.phases.size() ? null : r.phases.get(i);
-            box(g, 8, y + 3, 34, 24, String.valueOf(i + 1), 0, true);
-            if (p == null) {
-                continue;
-            }
-            int ops = p.ops & 0xFFFF;
-            for (int k = 0; k < 10; k++) {
-                sq(g, 46 + k * 36 + 6, y + 3, 24, (ops & (1 << OP_BITS[k])) != 0, new Color(0x3CFF3C), new Color(0x0C4A0C));
-            }
-            box(g, 416, y + 3, 56, 24, fmt(pval(p, "timeout"), pf("timeout")), 1, false);
-            box(g, 474, y + 3, 56, 24, fmt(pval(p, "rpm"), pf("rpm")), 1, false);
-            box(g, 532, y + 3, 66, 24, fmt(pval(p, "press"), pf("press")), 1, false);
-            int bits = pval(p, "set_bits") & 0xFFFF;
-            sq(g, 603, y + 3, 24, (bits & BIT_DOOR) != 0, new Color(0xFF3A3A), new Color(0x5A1010));
-            boolean up = (bits & BIT_UP) != 0, down = (bits & BIT_DOWN) != 0;
-            tri(g, 636, y + 2, up, true);
-            tri(g, 636, y + 16, down, false);
-            int ctrl = pval(p, "ctrl_bits") & 0xFFFF;
-            sq(g, 703, y + 3, 24, (ctrl & CT_SKIP) != 0, new Color(0xE0E0E0), new Color(0x404048));
-            box(g, 732, y + 3, 54, 24, fmt(pval(p, "time"), pf("time")), 1, false);
-            box(g, 788, y + 3, 56, 24, fmt(pval(p, "temp"), pf("temp")), 1, false);
-            box(g, 846, y + 3, 66, 24, fmt(pval(p, "energy"), pf("energy")), 1, false);
-            sq(g, 917, y + 3, 24, (ctrl & CT_AND) != 0, new Color(0x40A0FF), new Color(0x103060));
-            sq(g, 949, y + 3, 24, (ctrl & CT_OR) != 0, new Color(0x40A0FF), new Color(0x103060));
+            drawRow(g, GRID_Y + ROW_H + i * ROW_H, p, String.valueOf(i + 1), i == phase, false);
         }
+    }
+
+    private void drawRow(Graphics2D g, int y, B1Recipe.Phase p, String label, boolean sel, boolean editRow) {
+        Color c0 = editRow ? new Color(0x9ADCC8) : sel ? new Color(0xFFE066) : new Color(0xB8C8E4);
+        Color c1 = editRow ? new Color(0x6EBBA2) : sel ? new Color(0xE0B000) : new Color(0x8DA2CC);
+        g.setPaint(new GradientPaint(4, y, c0, 4, y + ROW_H - 2, c1));
+        g.fillRoundRect(4, y, 1012, ROW_H - 2, 6, 6);
+        box(g, 8, y + 2, 34, ROW_H - 6, label, 0, true);
+        if (!editRow) {
+            button(g, 410, y + 2, 20, ROW_H - 6, "+");
+        }
+        if (p == null) {
+            return;
+        }
+        int h = ROW_H - 6, by = y + 2, s = h;
+        int ops = p.ops & 0xFFFF;
+        for (int k = 0; k < 10; k++) {
+            sq(g, 46 + k * 36 + 5, by, s, (ops & (1 << OP_BITS[k])) != 0, new Color(0x3CFF3C), new Color(0x0C4A0C));
+        }
+        box(g, sx(416), by, 56, h, fmt(pval(p, "timeout"), pf("timeout")), 1, false);
+        box(g, sx(474), by, 56, h, fmt(pval(p, "rpm"), pf("rpm")), 1, false);
+        box(g, sx(532), by, 66, h, fmt(pval(p, "press"), pf("press")), 1, false);
+        int bits = pval(p, "set_bits") & 0xFFFF;
+        sq(g, sx(603), by, s, (bits & BIT_DOOR) != 0, new Color(0xFF3A3A), new Color(0x5A1010));
+        boolean up = (bits & BIT_UP) != 0, down = (bits & BIT_DOWN) != 0;
+        tri(g, sx(636), y + 1, up, true);
+        tri(g, sx(636), y + 15, down, false);
+        int ctrl = pval(p, "ctrl_bits") & 0xFFFF;
+        sq(g, sx(703), by, s, (ctrl & CT_SKIP) != 0, new Color(0xE0E0E0), new Color(0x404048));
+        box(g, sx(732), by, 54, h, fmt(pval(p, "time"), pf("time")), 1, false);
+        box(g, sx(788), by, 56, h, fmt(pval(p, "temp"), pf("temp")), 1, false);
+        box(g, sx(846), by, 66, h, fmt(pval(p, "energy"), pf("energy")), 1, false);
+        sq(g, sx(917), by, s, (ctrl & CT_AND) != 0, new Color(0x40A0FF), new Color(0x103060));
+        sq(g, sx(949), by, s, (ctrl & CT_OR) != 0, new Color(0x40A0FF), new Color(0x103060));
     }
 
     // ---------------------------------------------------------------- clic
@@ -285,11 +299,30 @@ public final class B1RecipePage {
             ed.copyPhaseDown(phase);
             return true;
         }
-        if (y >= GRID_Y && y < GRID_Y + ROWS * ROW_H && x >= 4 && x < 988) {
-            int row = (y - GRID_Y) / ROW_H;
-            phase = row;
-            if (r != null && row < r.phases.size()) {
-                cell(r.phases.get(row), x, y - (GRID_Y + row * ROW_H));
+        if (y >= GRID_Y && y < GRID_Y + (ROWS + 1) * ROW_H && x >= 4 && x < 1016) {
+            int row = (y - GRID_Y) / ROW_H - 1; // -1 = riga di modifica
+            int dy = (y - GRID_Y) % ROW_H;
+            if (row < 0) {
+                onBuf = true;
+                if (x >= 430) {
+                    cell(buf, x - 20, dy);
+                } else if (x < 406) {
+                    cell(buf, x, dy);
+                }
+                onBuf = false;
+            } else if (x >= 8 && x < 42) {
+                phase = row; // numero di fase: la carica nella riga di modifica
+                loadBuffer(r, row);
+            } else if (x >= 410 && x < 430) {
+                phase = row;
+                if (r != null && row < r.phases.size()) {
+                    r.phases.set(row, buf.copy());
+                    ed.edited();
+                    say("Phase " + (row + 1) + " \u00e9crite depuis la ligne de modification (n'oubliez pas Enregistrer)");
+                }
+            } else if (r != null && row < r.phases.size()) {
+                phase = row;
+                cell(r.phases.get(row), x >= 430 ? x - 20 : x, dy);
             }
             repaint.run();
             return true;
@@ -297,11 +330,20 @@ public final class B1RecipePage {
         return false;
     }
 
+    private void loadBuffer(B1Recipe r, int row) {
+        if (r != null && row < r.phases.size()) {
+            B1Recipe.Phase c = r.phases.get(row).copy();
+            buf.ops = c.ops;
+            buf.values.clear();
+            buf.values.putAll(c.values);
+        }
+    }
+
     private void cell(B1Recipe.Phase p, int x, int dy) {
         for (int k = 0; k < 10; k++) {
             if (x >= 46 + k * 36 && x < 46 + (k + 1) * 36) {
                 p.ops ^= 1 << OP_BITS[k];
-                ed.edited();
+                touch();
                 return;
             }
         }
@@ -338,7 +380,7 @@ public final class B1RecipePage {
         int v = pval(p, key) & 0xFFFF;
         v = (v & bit) != 0 ? v & ~bit : (v | bit) & ~clear;
         p.values.put(key, v);
-        ed.edited();
+        touch();
     }
 
     private void editPhase(B1Recipe.Phase p, String key, String title) {
@@ -349,7 +391,7 @@ public final class B1RecipePage {
         String s = ask(title + " - phase " + (phase + 1), fmt(pval(p, key), f));
         if (s != null && parseOk(s)) {
             p.values.put(key, B1RecipeEditor.EditorPanel.toRaw(s, f));
-            ed.edited();
+            touch();
         } else if (s != null) {
             say("Valeur non valide : " + s);
         }
@@ -359,9 +401,15 @@ public final class B1RecipePage {
         String s = ask(title, fmt(r.header.getOrDefault(f.key, 0), f));
         if (s != null && parseOk(s)) {
             r.header.put(f.key, B1RecipeEditor.EditorPanel.toRaw(s, f));
-            ed.edited();
+            touch();
         } else if (s != null) {
             say("Valeur non valide : " + s);
+        }
+    }
+
+    private void touch() {
+        if (!onBuf) {
+            ed.edited();
         }
     }
 
@@ -505,7 +553,7 @@ public final class B1RecipePage {
 
     private static void tri(Graphics2D g, int x, int y, boolean lit, boolean up) {
         int[] xs = {x + 12, x + 2, x + 22};
-        int[] ys = up ? new int[]{y, y + 13, y + 13} : new int[]{y + 13, y, y};
+        int[] ys = up ? new int[]{y, y + 10, y + 10} : new int[]{y + 10, y, y};
         g.setColor(lit ? new Color(0x20C020) : new Color(0x50706A));
         g.fillPolygon(xs, ys, 3);
     }
