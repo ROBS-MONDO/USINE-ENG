@@ -561,8 +561,19 @@ public final class B1TrendPanel extends JPanel {
                 rows.add(String.format(Locale.ITALY, "%s: %.1f %s", extra.get(k).label, v, extra.get(k).unit));
             }
         }
+        // ricetta (o modo manuale) in quel momento, come nel grafico PLC3
+        String mode = eventAt("mode", t);
+        String recipe = eventAt("recipe", t);
+        if (mode != null && mode.toLowerCase(Locale.ROOT).startsWith("m")) {
+            rows.add("Recette : MANUEL");
+        } else if (recipe != null && !recipe.isEmpty()) {
+            rows.add("Recette : " + B1RecipeBridge.pretty(recipe));
+        }
         g2.setFont(new Font("Consolas", Font.PLAIN, 12));
         int bw = 230;
+        for (String r : rows) {
+            bw = Math.max(bw, g2.getFontMetrics().stringWidth(r) + 14);
+        }
         int bx = hoverX + 12 + bw > c.x + c.width ? hoverX - 12 - bw : hoverX + 12;
         g2.setColor(new Color(255, 255, 225, 240));
         g2.fillRect(bx, c.y + 6, bw, 16 * rows.size() + 6);
@@ -572,6 +583,19 @@ public final class B1TrendPanel extends JPanel {
         for (int i = 0; i < rows.size(); i++) {
             g2.drawString(rows.get(i), bx + 6, c.y + 20 + i * 16);
         }
+    }
+
+    /** Ultimo evento del tipo indicato (ricetta, modo) avvenuto fino all'istante t; null se non ce n'e'. */
+    private String eventAt(String kind, long t) {
+        String res = null;
+        for (B1TrendStore.Event e : store.events(kind)) {
+            if (e.time <= t) {
+                res = e.text;
+            } else {
+                break;
+            }
+        }
+        return res;
     }
 
     private int tempDivisions() {
@@ -864,6 +888,10 @@ public final class B1TrendPanel extends JPanel {
             p.measure1 = now - 200 * 60_000L;
             p.measure2 = now - 170 * 60_000L;
             p.updateMeasureLabel();
+        }
+        String hov = System.getProperty("b1.snapshot.hover"); // prova: cursore a una certa x (pixel) per vedere il righello
+        if (hov != null) {
+            p.hoverX = Integer.parseInt(hov);
         }
         p.updateValue();
         p.updateRange();
