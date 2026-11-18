@@ -108,7 +108,6 @@
   "Как зарегистрироваться?": "How do I register?",
   "Выбери подходящий билет или формат участия и заполни регистрационную форму. После отправки заявки ты получишь информацию о дальнейших шагах и организационных деталях.": "Choose the ticket or participation format that suits you and fill in the registration form. After you submit your application, you will receive information about next steps and organisational details.",
   "Спикер главной сцены": "Main Stage Speaker",
-  "Стоимость: 1500 евро": "Price: 1,500 euros",
   "Для экспертов, которые хотят поделиться своей ключевой идеей с широкой аудиторией фестиваля, представить авторский подход и занять заметное место в программе.": "For experts who want to share their key idea with the festival's wide audience, present their own approach and take a prominent place in the programme.",
   "Вы получаете:": "You get:",
   "Выступление на главной сцене": "A talk on the main stage",
@@ -547,7 +546,8 @@
   "Эксперты и участницы фестиваля": "Experts and participants of the festival",
   "Участницы фестиваля вместе празднуют и общаются": "Festival participants celebrating and talking together",
   "Неформальное общение за столом": "Informal conversation at a table",
-  "Участницы фестиваля общаются и обмениваются опытом": "Festival participants talking and sharing experience"
+  "Участницы фестиваля общаются и обмениваются опытом": "Festival participants talking and sharing experience",
+  "Осталось 2 места, условия индивидуальны": "2 places left, terms are individual"
  },
  "script": {
   "Проверка не загрузилась. Обновите страницу или напишите нам: info@luxembourgfestival.com": "The check could not load. Refresh the page or write to us: info@luxembourgfestival.com",

@@ -108,7 +108,6 @@
   "Как зарегистрироваться?": "Comment s'inscrire ?",
   "Выбери подходящий билет или формат участия и заполни регистрационную форму. После отправки заявки ты получишь информацию о дальнейших шагах и организационных деталях.": "Choisissez le billet ou le format de participation qui vous convient et remplissez le formulaire d'inscription. Après l'envoi de votre candidature, vous recevrez des informations sur les prochaines étapes et les détails d'organisation.",
   "Спикер главной сцены": "Intervenant de la scène principale",
-  "Стоимость: 1500 евро": "Prix : 1 500 euros",
   "Для экспертов, которые хотят поделиться своей ключевой идеей с широкой аудиторией фестиваля, представить авторский подход и занять заметное место в программе.": "Pour les experts qui souhaitent partager leur idée clé avec un large public du festival, présenter leur approche d'auteur et occuper une place visible dans le programme.",
   "Вы получаете:": "Vous obtenez :",
   "Выступление на главной сцене": "Intervention sur la scène principale",
@@ -547,7 +546,8 @@
   "Эксперты и участницы фестиваля": "Experts et participantes du festival",
   "Участницы фестиваля вместе празднуют и общаются": "Participantes du festival qui fêtent et discutent ensemble",
   "Неформальное общение за столом": "Échange informel à table",
-  "Участницы фестиваля общаются и обмениваются опытом": "Participantes du festival qui discutent et partagent leur expérience"
+  "Участницы фестиваля общаются и обмениваются опытом": "Participantes du festival qui discutent et partagent leur expérience",
+  "Осталось 2 места, условия индивидуальны": "Il reste 2 places, conditions sur mesure"
  },
  "script": {
   "Проверка не загрузилась. Обновите страницу или напишите нам: info@luxembourgfestival.com": "La vérification n'a pas pu se charger. Actualisez la page ou écrivez-nous : info@luxembourgfestival.com",
