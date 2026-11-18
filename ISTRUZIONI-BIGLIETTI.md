@@ -1,6 +1,6 @@
 # Biglietti con QR: installazione su Aruba
 
-Dopo il pagamento del biglietto da 60 euro Stripe avvisa il sito, che crea un biglietto con QR per ogni biglietto acquistato, lo salva nel database e lo invia per email. All'ingresso lo staff scansiona il QR con il telefono dalla pagina `/scan/`.
+Dopo il pagamento di un biglietto (30 euro, 1+1 40 euro, adulto + ragazzo 30 euro) Stripe avvisa il sito, che crea un biglietto con QR per ogni biglietto acquistato, lo salva nel database e lo invia per email. All'ingresso lo staff scansiona il QR con il telefono dalla pagina `/scan/`.
 
 ## File da caricare nella cartella principale del sito
 - `stripe-webhook.php`
