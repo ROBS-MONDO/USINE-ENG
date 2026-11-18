@@ -60,6 +60,7 @@ public class B1_Main extends JFrame {
         panel = new SynPanel(src, bridge, tags);
         INSTANCE = this;
         BRIDGE = bridge;
+        SOURCE = src;
         TAGS = tags;
         setContentPane(panel);
         pack();
@@ -136,6 +137,8 @@ public class B1_Main extends JFrame {
                 Thread.sleep(100);
             }
             Thread.sleep(700);
+            BRIDGE = bridge;
+            SOURCE = src;
             B1ScreensWindow.snapshot(src, screen, snap, overlay);
             src.close();
             System.exit(0);
@@ -167,6 +170,7 @@ public class B1_Main extends JFrame {
     /** Finestra principale (per il pulsante Synoptic delle altre finestre), ricetta e tag condivisi. */
     static volatile B1_Main INSTANCE;
     static volatile B1RecipeBridge BRIDGE;
+    static volatile B1Source SOURCE;
     /** Archivio delle produzioni (pagina Production). */
     static volatile B1ProductionRepository PRODUCTIONS;
     static volatile B1Tags TAGS;

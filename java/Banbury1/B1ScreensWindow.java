@@ -85,6 +85,31 @@ public class B1ScreensWindow extends JFrame {
         });
     }
 
+    private static volatile B1Source lastSrc;
+
+    /** Apre la pagina Recettes (stile WinCC); false se non c'e' una sorgente dati (si usa allora l'editor classico). */
+    static boolean openRecipes(String name, boolean send, Integer quantity) {
+        final B1Source s = lastSrc != null ? lastSrc : B1_Main.SOURCE;
+        if (s == null || B1_Main.BRIDGE == null) {
+            return false;
+        }
+        SwingUtilities.invokeLater(() -> {
+            open(s, "006_Recipes");
+            ScreenPanel p;
+            synchronized (B1ScreensWindow.class) {
+                p = shared == null ? null : shared.panel;
+            }
+            if (p != null && p.recipePage != null) {
+                if (send && name != null && !name.trim().isEmpty()) {
+                    p.recipePage.selectAndSend(name, quantity);
+                } else {
+                    p.recipePage.select(name);
+                }
+            }
+        });
+        return true;
+    }
+
     /** Disegna una schermata in un PNG (verifica senza schermo). */
     public static void snapshot(B1Source src, String screen, String out, boolean overlay) throws Exception {
         ScreenPanel p = new ScreenPanel(src, screen);
@@ -117,9 +142,12 @@ public class B1ScreensWindow extends JFrame {
         private long messageUntil;
         /** Pagina Production (solo quando e' la schermata attiva). */
         private B1ProductionPage prodPage;
+        /** Pagina Recettes: resta in memoria tra una visita e l'altra (le modifiche non salvate non si perdono). */
+        B1RecipePage recipePage;
 
         ScreenPanel(B1Source src, String first) {
             this.src = src;
+            lastSrc = src;
             this.top = B1Screen.load("100_TopBar");
             setPreferredSize(new Dimension(W, H));
             javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
@@ -147,6 +175,10 @@ public class B1ScreensWindow extends JFrame {
                     if (prodPage != null && prodPage.click(x, y)) {
                         return;
                     }
+                    if (recipePage != null && "006_Recipes".equals(contentName) && y < 648 && y > 60 && recipePage.click(x, y)) {
+                        repaint();
+                        return;
+                    }
                     for (B1BottomBar.Btn b : barButtons()) {
                         if (b.contains(x - BAR_X, y - BAR_Y)) {
                             if (b.action != null) {
@@ -172,6 +204,11 @@ public class B1ScreensWindow extends JFrame {
                 prodPage.refreshAsync();
             } else {
                 prodPage = null;
+            }
+            if ("006_Recipes".equals(screen) && recipePage == null && B1_Main.BRIDGE != null) {
+                B1RecipeBridge b = B1_Main.BRIDGE;
+                recipePage = new B1RecipePage(b.repo(), b.layout(), b.plcIp(), src,
+                        () -> SwingUtilities.getWindowAncestor(ScreenPanel.this), this::repaint);
             }
             barButtons = null; // la barra cambia secondo la pagina (es. Production senza i pulsanti Govoni/B2/...)
             repaint();
@@ -204,11 +241,14 @@ public class B1ScreensWindow extends JFrame {
 
             @Override
             public boolean extraButtons() {
-                return !"007_Production".equals(contentName);
+                return !"007_Production".equals(contentName) && !"006_Recipes".equals(contentName);
             }
 
             @Override
             public java.util.List<B1BottomBar.Btn> customButtons() {
+                if ("006_Recipes".equals(contentName)) {
+                    return recipePage == null ? null : recipePage.barButtons();
+                }
                 return prodPage == null ? null : prodPage.barButtons();
             }
 
@@ -264,6 +304,9 @@ public class B1ScreensWindow extends JFrame {
                 }
                 if (prodPage != null && "007_Production".equals(contentName)) {
                     prodPage.paint(g);
+                }
+                if (recipePage != null && "006_Recipes".equals(contentName)) {
+                    recipePage.paint(g);
                 }
             } else {
                 g.setColor(Color.DARK_GRAY);
@@ -435,7 +478,7 @@ public class B1ScreensWindow extends JFrame {
             drawArrow(g, 664, y + 8, up, true);
             drawArrow(g, 664, y + 25, down, false);
             int ctrl = v == null ? 0 : (int) v[5] & 0xFFFF;
-            drawSq(g, 702, y + 10, 26, v != null && (ctrl & 0x04) != 0, new Color(0xE0E0E0), new Color(0x404048));
+            drawSq(g, 702, y + 10, 26, v != null && (ctrl & 0x8000) != 0, new Color(0xE0E0E0), new Color(0x404048));
             fieldBox(g, 732, y + 8, 54, 28, v == null ? null : fmt(v[6], 0), false);
             fieldBox(g, 788, y + 8, 56, 28, v == null ? null : fmt(v[7], 0), false);
             fieldBox(g, 846, y + 8, 66, 28, v == null ? null : fmt(v[8], 1), false);

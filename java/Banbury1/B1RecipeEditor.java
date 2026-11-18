@@ -228,9 +228,9 @@ public class B1RecipeEditor extends JFrame {
         private static final Font FB = new Font("Arial", Font.BOLD, 13);
 
         private final JFrame owner;
-        private final B1RecipeRepository repo;
-        private final B1RecipeLayout layout;
-        private final String plcIp;
+        final B1RecipeRepository repo;
+        final B1RecipeLayout layout;
+        final String plcIp;
         private final String user = System.getProperty("user.name", "?");
 
         private final DefaultListModel<B1RecipeRepository.Entry> listModel = new DefaultListModel<>();
@@ -239,16 +239,16 @@ public class B1RecipeEditor extends JFrame {
         private final JTextField txtName = new JTextField(24);
         private final JTextField txtNo = new JTextField(5);
         private final Map<String, JTextField> headerFields = new java.util.LinkedHashMap<>();
-        private final JLabel lblInfo = new JLabel(" ");
-        private final JTextArea problems = new JTextArea(4, 40);
-        private final JLabel lblStatus = new JLabel(" ");
+        final JLabel lblInfo = new JLabel(" ");
+        final JTextArea problems = new JTextArea(4, 40);
+        final JLabel lblStatus = new JLabel(" ");
         private final PhaseModel model;
-        private final JTable table;
+        final JTable table;
 
-        private B1Recipe current;
-        private boolean dirty;
+        B1Recipe current;
+        boolean dirty;
         private boolean loading;
-        private List<B1RecipeRepository.Entry> allEntries = new ArrayList<>();
+        List<B1RecipeRepository.Entry> allEntries = new ArrayList<>();
 
         EditorPanel(JFrame owner, B1RecipeRepository repo, B1RecipeLayout layout, String plcIp) {
             super(new BorderLayout(8, 8));
@@ -475,6 +475,19 @@ public class B1RecipeEditor extends JFrame {
             revalidateRecipe();
         }
 
+        /** La pagina Recettes (stile WinCC) ha modificato la ricetta: segna le modifiche e rivalida. */
+        void edited() {
+            if (current != null) {
+                dirty = true;
+                revalidateRecipe();
+            }
+        }
+
+        /** Esito dei controlli (testo mostrato nel riquadro "Controlli"). */
+        String problemsText() {
+            return problems.getText();
+        }
+
         void revalidateRecipe() {
             List<String> err = B1RecipeCodec.validate(current, layout);
             problems.setBackground(err.isEmpty() ? new Color(0xD8F5D8) : new Color(0xFFF4D0));
@@ -492,7 +505,7 @@ public class B1RecipeEditor extends JFrame {
             return r == JOptionPane.YES_OPTION;
         }
 
-        private void refreshList() {
+        void refreshList() {
             try {
                 allEntries = repo.list();
             } catch (IOException e) {
@@ -514,7 +527,7 @@ public class B1RecipeEditor extends JFrame {
             loading = false;
         }
 
-        private void openEntry(B1RecipeRepository.Entry e) {
+        void openEntry(B1RecipeRepository.Entry e) {
             if (current != null && e.uid.equals(current.uid)) {
                 return;
             }
@@ -528,14 +541,14 @@ public class B1RecipeEditor extends JFrame {
             }
         }
 
-        private void newRecipe() {
+        void newRecipe() {
             if (confirmDiscard()) {
                 list.clearSelection();
                 show(B1Recipe.blank(layout), false, "Nouvelle recette");
             }
         }
 
-        private void duplicate() {
+        void duplicate() {
             if (current == null) {
                 return;
             }
@@ -547,7 +560,7 @@ public class B1RecipeEditor extends JFrame {
             show(c, true, "Copie pas encore enregistr\u00e9e");
         }
 
-        private void deleteRecipe() {
+        void deleteRecipe() {
             if (current == null || current.revision == 0) {
                 return;
             }
@@ -565,7 +578,7 @@ public class B1RecipeEditor extends JFrame {
             }
         }
 
-        private void save() {
+        void save() {
             if (current == null) {
                 return;
             }
@@ -672,7 +685,7 @@ public class B1RecipeEditor extends JFrame {
             doImport(plcIp);
         }
 
-        private void importFromPlc() {
+        void importFromPlc() {
             if (!confirmDiscard()) {
                 return;
             }
@@ -684,7 +697,7 @@ public class B1RecipeEditor extends JFrame {
         }
 
         /** Invio al PLC: legge DB201 e DB110, mostra l'anteprima e (solo se abilitato) scrive con copia di sicurezza e verifica. */
-        private void sendToPlc() {
+        void sendToPlc() {
             if (current == null) {
                 return;
             }
@@ -851,7 +864,7 @@ public class B1RecipeEditor extends JFrame {
             }.execute();
         }
 
-        private void exportCsv() {
+        void exportCsv() {
             if (current == null) {
                 return;
             }
@@ -883,7 +896,7 @@ public class B1RecipeEditor extends JFrame {
             }
         }
 
-        private void clearPhase() {
+        void clearPhase() {
             int r = table.getSelectedRow();
             if (r < 0 || current == null) {
                 return;
@@ -896,7 +909,21 @@ public class B1RecipeEditor extends JFrame {
             revalidateRecipe();
         }
 
-        private void copyPhaseDown() {
+        void clearPhase(int r) {
+            if (r >= 0 && r < table.getRowCount()) {
+                table.setRowSelectionInterval(r, r);
+                clearPhase();
+            }
+        }
+
+        void copyPhaseDown(int r) {
+            if (r >= 0 && r < table.getRowCount()) {
+                table.setRowSelectionInterval(r, r);
+                copyPhaseDown();
+            }
+        }
+
+        void copyPhaseDown() {
             int r = table.getSelectedRow();
             if (r < 0 || current == null || r + 1 >= current.phases.size()) {
                 return;
@@ -908,17 +935,17 @@ public class B1RecipeEditor extends JFrame {
             revalidateRecipe();
         }
 
-        private void error(String msg) {
+        void error(String msg) {
             JOptionPane.showMessageDialog(this, msg, "Erreur", JOptionPane.ERROR_MESSAGE);
         }
 
         // ---------------- conversioni ----------------
-        private static String fmt(int raw, B1RecipeLayout.Field f) {
+        static String fmt(int raw, B1RecipeLayout.Field f) {
             double v = raw * f.scale;
             return v == Math.rint(v) ? String.valueOf((long) v) : String.format(Locale.ITALY, "%.2f", v);
         }
 
-        private static int toRaw(String s, B1RecipeLayout.Field f) {
+        static int toRaw(String s, B1RecipeLayout.Field f) {
             try {
                 double v = Double.parseDouble(s.trim().replace(',', '.'));
                 return (int) Math.round(v / f.scale);

@@ -96,6 +96,10 @@ final class B1BottomBar {
             case "Copier": return "COPIER - nouvelle production \u00e0 partir de la s\u00e9lectionn\u00e9e";
             case "Enregistrer": return "ENREGISTRER - sauvegarder la production";
             case "T\u00e9l\u00e9charger": return "T\u00c9L\u00c9CHARGER - envoyer la recette de la production au PLC (aper\u00e7u et confirmation)";
+            case "Dupliquer": return "DUPLIQUER - copie de la recette (nom + _COPIE)";
+            case "Importer PLC": return "IMPORTER DU PLC - lit la recette en machine et l'ajoute / met \u00e0 jour l'archive";
+            case "CSV": return "CSV - exporter la recette";
+            case "Envoyer PLC": return "ENVOYER AU PLC - aper\u00e7u et confirmation avant l'\u00e9criture";
             case "EXIT": return "EXIT - ferme cette fen\u00eatre";
             default: return name;
         }

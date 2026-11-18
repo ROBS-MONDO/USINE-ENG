@@ -78,6 +78,10 @@ public final class B1RecipeBridge {
         return repo;
     }
 
+    public String plcIp() {
+        return plcIp;
+    }
+
     public B1RecipeLayout layout() {
         return layout;
     }
@@ -187,11 +191,15 @@ public final class B1RecipeBridge {
 
     /** Come sopra, con il totale miscele della produzione (scritto solo se b1_recipe_transfer.properties ha write_quantity=true). */
     public void openEditorAndSend(String name, Integer quantity) {
-        B1RecipeEditor.openShared(repo, layout, plcIp, name, true, quantity);
+        if (!B1ScreensWindow.openRecipes(name, true, quantity)) {
+            B1RecipeEditor.openShared(repo, layout, plcIp, name, true, quantity);
+        }
     }
 
     /** Apre (o porta in primo piano) l'editor; con name seleziona/importa la ricetta in macchina. */
     public void openEditor(String name) {
-        B1RecipeEditor.openShared(repo, layout, plcIp, name);
+        if (!B1ScreensWindow.openRecipes(name, false, null)) {
+            B1RecipeEditor.openShared(repo, layout, plcIp, name);
+        }
     }
 }
