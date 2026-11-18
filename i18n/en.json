@@ -162,7 +162,6 @@
   "-Нетворкинг с участниками и экспертами": "-Networking with participants and experts",
   "-Доступ в закрытый Telegram-канал для тренеров": "-Access to the private Telegram channel for trainers",
   "!! Выгодное предложение": "!! Best offer",
-  "780 евро (количество мест ограничено)": "780 euros (limited places)",
   "Обсудить формат участия": "Discuss the participation format",
   "Формат объединяет:": "This format combines:",
   "-Участие в двух форматах фестиваля": "-Participation in two festival formats",
@@ -548,7 +547,8 @@
   "Неформальное общение за столом": "Informal conversation at a table",
   "Участницы фестиваля общаются и обмениваются опытом": "Festival participants talking and sharing experience",
   "Осталось 2 места, условия индивидуальны": "2 places left, terms are individual",
-  "Стоимость: 300 евро": "Price: 300 euros"
+  "Стоимость: 300 евро": "Price: 300 euros",
+  "Места закончены": "No places left"
  },
  "script": {
   "Проверка не загрузилась. Обновите страницу или напишите нам: info@luxembourgfestival.com": "The check could not load. Refresh the page or write to us: info@luxembourgfestival.com",

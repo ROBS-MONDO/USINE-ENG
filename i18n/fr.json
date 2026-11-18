@@ -162,7 +162,6 @@
   "-Нетворкинг с участниками и экспертами": "-Networking avec les participants et les experts",
   "-Доступ в закрытый Telegram-канал для тренеров": "-Accès au canal Telegram privé pour les formateurs",
   "!! Выгодное предложение": "!! Offre avantageuse",
-  "780 евро (количество мест ограничено)": "780 euros (nombre de places limité)",
   "Обсудить формат участия": "Discuter du format de participation",
   "Формат объединяет:": "Ce format réunit :",
   "-Участие в двух форматах фестиваля": "-La participation aux deux formats du festival",
@@ -548,7 +547,8 @@
   "Неформальное общение за столом": "Échange informel à table",
   "Участницы фестиваля общаются и обмениваются опытом": "Participantes du festival qui discutent et partagent leur expérience",
   "Осталось 2 места, условия индивидуальны": "Il reste 2 places, conditions sur mesure",
-  "Стоимость: 300 евро": "Prix : 300 euros"
+  "Стоимость: 300 евро": "Prix : 300 euros",
+  "Места закончены": "Plus aucune place disponible"
  },
  "script": {
   "Проверка не загрузилась. Обновите страницу или напишите нам: info@luxembourgfestival.com": "La vérification n'a pas pu se charger. Actualisez la page ou écrivez-nous : info@luxembourgfestival.com",
