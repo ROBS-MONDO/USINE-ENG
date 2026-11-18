@@ -112,8 +112,19 @@ public final class B1RecipeSelfTest {
         check("nome da mostrare = nome in archivio",
                 B1RecipeBridge.displayName("ALTRA").equals(B1RecipeBridge.pretty(arch.name.trim())));
         check("apertura editor con il nome in archivio", B1RecipeBridge.archiveName("ALTRA").equals(arch.name.trim()));
+        // il WinCC non riscrive il nome nel PLC ("gomma2" resta): conta il numero ricetta
+        byte[] byNo = renamed.clone();
+        B1RecipeCodec.putWord(byNo, 42 + 12, 40); // valori diversi dall'archivio, ma stesso numero (24)
+        B1RecipeBridge.Status sn = B1RecipeBridge.compare(byNo, repo2, l);
+        check("stesso numero ricetta, nome diverso e valori diversi: DIVERSA dall'archivio (non 'non in archivio')",
+                sn.state == B1RecipeBridge.State.DIFFERENT && sn.name.equals(B1RecipeBridge.pretty(arch.name.trim())));
+        byte[] byContent = renamed.clone();
+        B1RecipeCodec.putWord(byContent, l.recipeNoOffset, 99); // numero sconosciuto ma stessi valori
+        check("numero sconosciuto ma stessi valori: riconosciuta dai valori",
+                B1RecipeBridge.compare(byContent, repo2, l).state == B1RecipeBridge.State.SAME);
         byte[] otherDb = renamed.clone();
         B1RecipeCodec.putWord(otherDb, 42 + 12, 40);
+        B1RecipeCodec.putWord(otherDb, l.recipeNoOffset, 99); // altro numero ricetta e altri valori
         check("altro nome e altri valori: non in archivio",
                 B1RecipeBridge.compare(otherDb, repo2, l).state == B1RecipeBridge.State.NOT_ARCHIVED);
         check("alias tolto se non riconosciuta", B1RecipeBridge.displayName("ALTRA").equals("ALTRA"));

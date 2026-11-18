@@ -114,6 +114,28 @@ public final class B1RecipeBridge {
         }
         try {
             List<B1RecipeRepository.Entry> entries = repo.list();
+            // 1) per NUMERO ricetta (DB201.DBW2 = ID WinCC): il WinCC non riscrive il nome nel PLC (resta l'etichetta vecchia,
+            //    es. "gomma2"), mentre il numero cambia a ogni download (verificato nel registro del 17/11/2026)
+            if (live.recipeNo > 0) {
+                B1RecipeRepository.Entry byNo = null;
+                int sameNo = 0;
+                for (B1RecipeRepository.Entry e : entries) {
+                    if (e.recipeNo == live.recipeNo) {
+                        if (byNo == null) {
+                            byNo = e;
+                        }
+                        sameNo++;
+                    }
+                }
+                if (byNo != null) {
+                    B1Recipe archived = repo.load(byNo.uid);
+                    ALIASES.put(name.toLowerCase(), byNo.name.trim());
+                    if (B1RecipeCodec.sameContent(live, archived, layout)) {
+                        return new Status(State.SAME, pretty(byNo.name.trim()), "= archive (r\u00e9v. " + archived.revision + ")");
+                    }
+                    return new Status(State.DIFFERENT, pretty(byNo.name.trim()), "DIFF\u00c9RENTE de l'archive (r\u00e9v. " + archived.revision + ")");
+                }
+            }
             int found = 0;
             String lastRev = "";
             for (B1RecipeRepository.Entry e : entries) {

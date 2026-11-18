@@ -29,7 +29,7 @@ public final class B1TrendRecorder {
                         v[i] = d == null ? Double.NaN : d;
                     }
                     store.add(now, v);
-                    String recipe = src.str("recipe_name");
+                    String recipe = B1RecipeBridge.archiveName(src.str("recipe_name")); // nome in archivio se riconosciuta (il nome nel PLC e' un'etichetta ferma)
                     if (recipe != null && !recipe.isEmpty()) {
                         store.addEvent("recipe", now, recipe);
                     }

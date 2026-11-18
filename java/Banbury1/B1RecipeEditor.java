@@ -785,6 +785,9 @@ public class B1RecipeEditor extends JFrame {
             }.execute();
         }
 
+        /** Nome della ricetta in archivio aggiornata dall'importazione (null = ricetta nuova). */
+        private volatile String importedFor;
+
         private void doImport(String hostSpec) {
             String h = hostSpec;
             int port = 102;
@@ -796,6 +799,7 @@ public class B1RecipeEditor extends JFrame {
             final String host = h;
             final int portF = port;
             lblStatus.setText("Lecture du PLC " + host + "...");
+            importedFor = null;
             new SwingWorker<B1Recipe, Void>() {
                 @Override
                 protected B1Recipe doInBackground() throws Exception {
@@ -809,6 +813,20 @@ public class B1RecipeEditor extends JFrame {
                         B1Recipe r = B1RecipeCodec.decode(d, layout);
                         r.uid = java.util.UUID.randomUUID().toString();
                         r.revision = 0;
+                        // il nome nel PLC e' un'etichetta che il WinCC non aggiorna: se il numero ricetta e' in archivio, si
+                        // aggiorna quella ricetta (nome e identita' dell'archivio, valori del PLC)
+                        if (r.recipeNo > 0) {
+                            for (B1RecipeRepository.Entry e : repo.list()) {
+                                if (e.recipeNo == r.recipeNo) {
+                                    B1Recipe old = repo.load(e.uid);
+                                    r.uid = old.uid;
+                                    r.revision = old.revision;
+                                    r.name = old.name;
+                                    importedFor = e.name;
+                                    break;
+                                }
+                            }
+                        }
                         return r;
                     }
                 }
@@ -818,7 +836,12 @@ public class B1RecipeEditor extends JFrame {
                     try {
                         B1Recipe r = get();
                         list.clearSelection();
-                        show(r, true, "Import\u00e9e du PLC " + host + " (DB" + layout.db + ") - pas encore enregistr\u00e9e");
+                        if (importedFor != null) {
+                            show(r, true, "Import\u00e9e du PLC " + host + " : valeurs actuelles de la recette n\u00b0 " + r.recipeNo + " \u00ab "
+                                    + B1RecipeBridge.pretty(importedFor) + " \u00bb - Enregistrer pour mettre \u00e0 jour l'archive");
+                        } else {
+                            show(r, true, "Import\u00e9e du PLC " + host + " (DB" + layout.db + ") - pas encore enregistr\u00e9e");
+                        }
                         lblStatus.setText("Importation termin\u00e9e (lecture seule)");
                     } catch (Exception e) {
                         Throwable t = e.getCause() != null ? e.getCause() : e;
