@@ -134,8 +134,46 @@
   </url>
   <url>
     <loc>https://www.luxembourgfestival.com/bilet-uchastnika.html</loc>
-    <lastmod>2026-11-14</lastmod>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.luxembourgfestival.com/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.luxembourgfestival.com/en/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.luxembourgfestival.com/fr/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.luxembourgfestival.com/de/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.luxembourgfestival.com/bilet-uchastnika.html"/>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.luxembourgfestival.com/en/bilet-uchastnika.html</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.luxembourgfestival.com/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.luxembourgfestival.com/en/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.luxembourgfestival.com/fr/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.luxembourgfestival.com/de/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.luxembourgfestival.com/bilet-uchastnika.html"/>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.luxembourgfestival.com/fr/bilet-uchastnika.html</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.luxembourgfestival.com/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.luxembourgfestival.com/en/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.luxembourgfestival.com/fr/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.luxembourgfestival.com/de/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.luxembourgfestival.com/bilet-uchastnika.html"/>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.luxembourgfestival.com/de/bilet-uchastnika.html</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.luxembourgfestival.com/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.luxembourgfestival.com/en/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.luxembourgfestival.com/fr/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.luxembourgfestival.com/de/bilet-uchastnika.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.luxembourgfestival.com/bilet-uchastnika.html"/>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>

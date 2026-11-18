@@ -6,6 +6,11 @@
 <meta name="description" content="«Звёздный час» — международный трансформационный фестиваль в Люксембурге. Игры, мастер-классы, консультации, нетворкинг и новые возможности. Билет участника — 30 €.">
 <meta name="theme-color" content="#421326">
 <link rel="canonical" href="https://www.luxembourgfestival.com/bilet-uchastnika.html">
+<link rel="alternate" hreflang="ru" href="https://www.luxembourgfestival.com/bilet-uchastnika.html">
+<link rel="alternate" hreflang="en" href="https://www.luxembourgfestival.com/en/bilet-uchastnika.html">
+<link rel="alternate" hreflang="fr" href="https://www.luxembourgfestival.com/fr/bilet-uchastnika.html">
+<link rel="alternate" hreflang="de" href="https://www.luxembourgfestival.com/de/bilet-uchastnika.html">
+<link rel="alternate" hreflang="x-default" href="https://www.luxembourgfestival.com/bilet-uchastnika.html">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:site_name" content="Luxembourg Festival">
@@ -64,9 +69,21 @@ html,body{max-width:100%;overflow-x:hidden}
 .hero-grid>*,.network>*,.take-grid>*,.benefits>*,.program-grid>*{min-width:0}
 @media(max-width:800px){.hero-grid{grid-template-columns:minmax(0,1fr)}.eyebrow{width:auto;max-width:100%;line-height:1.4;white-space:normal}.btn{width:auto;max-width:100%;text-align:center;white-space:normal;line-height:1.35}.brand-break .wrap{grid-template-columns:1fr!important}h1,h2{overflow-wrap:break-word}h1{font-size:clamp(30px,8.4vw,52px)}.includes>div{min-width:0}}
 @media(max-width:520px){.wrap{width:min(100% - 32px,1160px)}section{padding:60px 0}.benefits,.program-grid{grid-template-columns:1fr}.hero-copy{padding:55px 20px 42px}.hero-photo{min-height:260px}.price-number{font-size:58px}.includes{grid-template-columns:1fr}.program-card img{height:210px}}
+  /* Selettore della lingua (bandiere + codice) */
+  .langs { position: absolute; top: 14px; right: 14px; z-index: 60; display: flex; gap: 4px; padding: 4px; background: rgba(20, 6, 13, .6); border: 1px solid rgba(233, 201, 135, .4); border-radius: 999px; font: 700 12px/1 Arial, sans-serif; }
+  .langs .lang { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border-radius: 999px; color: #efe3e6; text-decoration: none; letter-spacing: .04em; }
+  .langs .lang:hover, .langs .lang:focus-visible { background: rgba(233, 201, 135, .22); }
+  .langs .lang.active { background: #d2a864; color: #2b0d1d; }
+  .langs .fl { display: inline-block; width: 18px; height: 12px; border-radius: 2px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .3); }
+  .fl-ru { background: linear-gradient(#fff 33.3%, #0039a6 33.3% 66.6%, #d52b1e 66.6%); }
+  .fl-fr { background: linear-gradient(90deg, #0055a4 33.3%, #fff 33.3% 66.6%, #ef4135 66.6%); }
+  .fl-en { background: #012169 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30'%3E%3CclipPath id='s'%3E%3Cpath d='M0,0 v30 h60 v-30 z'/%3E%3C/clipPath%3E%3Cpath d='M0,0 L60,30 M60,0 L0,30' stroke='%23fff' stroke-width='6'/%3E%3Cpath d='M0,0 L60,30 M60,0 L0,30' clip-path='url(%23s)' stroke='%23C8102E' stroke-width='3'/%3E%3Cpath d='M30,0 v30 M0,15 h60' stroke='%23fff' stroke-width='10'/%3E%3Cpath d='M30,0 v30 M0,15 h60' stroke='%23C8102E' stroke-width='6'/%3E%3C/svg%3E") center / cover; }
+  .fl-de { background: linear-gradient(#000 33.3%, #dd0000 33.3% 66.6%, #ffce00 66.6%); }
+  .langbar{background:var(--navy);padding:8px 16px;display:flex;justify-content:flex-end}.langbar .langs{position:static}
 </style>
 </head>
 <body>
+<div class="langbar"><div class="langs" role="navigation" aria-label="Language"><a href="/bilet-uchastnika.html" class="lang active" hreflang="ru" lang="ru"><i class="fl fl-ru"></i>RU</a><a href="/en/bilet-uchastnika.html" class="lang" hreflang="en" lang="en"><i class="fl fl-en"></i>EN</a><a href="/fr/bilet-uchastnika.html" class="lang" hreflang="fr" lang="fr"><i class="fl fl-fr"></i>FR</a><a href="/de/bilet-uchastnika.html" class="lang" hreflang="de" lang="de"><i class="fl fl-de"></i>DE</a></div></div>
 <div class="topline">LUXEMBOURG · INTERNATIONAL TRANSFORMATION FESTIVAL</div>
 <header class="hero">
  <div class="hero-grid">
@@ -182,5 +199,5 @@ html,body{max-width:100%;overflow-x:hidden}
   <p style="font-size:15px;margin-top:25px;color:var(--blue);font-weight:bold">Мы объединяем — ты раскрываешься.</p>
  </div>
 </section>
-<footer>ЗВЁЗДНЫЙ ЧАС · LUXEMBOURG · 12.12.2026<br><a href="/" style="text-decoration:none">LUXEMBOURGFESTIVAL.COM</a> &nbsp;·&nbsp; <a href="privacy.html" style="text-decoration:none">ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ</a></footer>
+<footer>ЗВЁЗДНЫЙ ЧАС · LUXEMBOURG · 12.12.2026<br><a href="./" style="text-decoration:none">LUXEMBOURGFESTIVAL.COM</a> &nbsp;·&nbsp; <a href="privacy.html" style="text-decoration:none">ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ</a></footer>
 </body></html>
