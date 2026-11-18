@@ -198,6 +198,9 @@ public class B1ScreensWindow extends JFrame {
         void show(String screen) {
             contentName = screen;
             content = B1Screen.load(screen);
+            if (content == null && "006_Recipes".equals(screen)) {
+                content = new B1Screen(screen); // la page Recettes se dessine seule: pas besoin du fichier .b1s
+            }
             if ("007_Production".equals(screen)) {
                 prodPage = new B1ProductionPage(B1_Main.PRODUCTIONS, B1_Main.BRIDGE,
                         () -> SwingUtilities.getWindowAncestor(ScreenPanel.this), this::repaint);

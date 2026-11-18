@@ -68,7 +68,7 @@ public final class B1Screen {
     public final String name;
     public final List<Obj> objects = new ArrayList<>();
 
-    private B1Screen(String name) {
+    B1Screen(String name) {
         this.name = name;
     }
 
