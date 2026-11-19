@@ -4,6 +4,13 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Paper;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.io.*;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +18,7 @@ import java.sql.*;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -438,6 +446,8 @@ public final class VentesNationClient {
         JButton btRun = new JButton("Refresh");
         JButton btCsv = new JButton("Esporta CSV...");
         btCsv.setEnabled(false);
+        JButton btPrint = new JButton("Anteprima / Stampa...");
+        btPrint.setEnabled(false);
         JLabel status = new JLabel(" ");
 
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
@@ -453,6 +463,7 @@ public final class VentesNationClient {
         top.add(cbDet);
         top.add(btRun);
         top.add(btCsv);
+        top.add(btPrint);
 
         DefaultTableModel model = new DefaultTableModel();
         final AtomicReference<List<OutLine>> shown = new AtomicReference<>(new ArrayList<>());
@@ -505,6 +516,7 @@ public final class VentesNationClient {
             final boolean det = cbDet.isSelected();
             btRun.setEnabled(false);
             btCsv.setEnabled(false);
+            btPrint.setEnabled(false);
             status.setText("Estrazione in corso...");
             new SwingWorker<Result, Void>() {
                 @Override
@@ -523,6 +535,7 @@ public final class VentesNationClient {
                         shown.set(r.lines);
                         model.setDataVector(r.rows(true).toArray(new Object[0][]), r.headers().toArray());
                         btCsv.setEnabled(true);
+                        btPrint.setEnabled(true);
                         BigDecimal tot = r.lines.get(r.lines.size() - 1).valore;
                         status.setText((r.lines.size() - 1) + " righe - totale generale: " + fmt(tot, true));
                     } catch (Exception ex) {
@@ -532,6 +545,10 @@ public final class VentesNationClient {
                     }
                 }
             }.execute();
+        });
+
+        btPrint.addActionListener(ev -> {
+            if (last[0] != null) showPreview(f, last[0]);
         });
 
         btCsv.addActionListener(ev -> {
@@ -550,9 +567,235 @@ public final class VentesNationClient {
         f.add(top, BorderLayout.NORTH);
         f.add(new JScrollPane(table), BorderLayout.CENTER);
         f.add(status, BorderLayout.SOUTH);
-        f.setSize(1350, 700);
+        f.setSize(1500, 700);
         f.setLocationRelativeTo(null);
         f.setVisible(true);
+    }
+
+    // ------------------------------------------------------------------ stampa e anteprima
+
+    /** Impaginazione A4 del report: intestazione e piè di pagina su ogni foglio, colonne adattate alla larghezza. */
+    static final class ReportPrintable implements Printable {
+        private static final int LINE_H = 12, HEADER_H = 64, FOOTER_H = 22, GAP = 14;
+        private final Result r;
+        private final List<String> hdr;
+        private final List<String[]> rows;
+        private final Font base = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
+        private final Font bold = base.deriveFont(Font.BOLD);
+        private double[] colX, colW;
+        private double scale = 1;
+        private int rowsPerPage = 1, pages = 1;
+        private double laidW = -1, laidH = -1;
+
+        ReportPrintable(Result r) {
+            this.r = r;
+            this.hdr = r.headers();
+            this.rows = r.rows(true);
+        }
+
+        int pageCount(PageFormat pf) {
+            layout(pf);
+            return pages;
+        }
+
+        private void layout(PageFormat pf) {
+            double w = pf.getImageableWidth(), h = pf.getImageableHeight();
+            if (w == laidW && h == laidH) return;
+            laidW = w;
+            laidH = h;
+            Graphics2D g = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).createGraphics();
+            FontMetrics fm = g.getFontMetrics(bold);
+            int n = hdr.size();
+            colW = new double[n];
+            colX = new double[n];
+            for (int i = 0; i < n; i++) {
+                int m = fm.stringWidth(hdr.get(i));
+                for (String[] row : rows) m = Math.max(m, fm.stringWidth(row[i]));
+                colW[i] = m + GAP;
+            }
+            double total = 0;
+            for (int i = 0; i < n; i++) {
+                colX[i] = total;
+                total += colW[i];
+            }
+            g.dispose();
+            scale = Math.min(1.0, w / total);
+            double usableH = h / scale;
+            rowsPerPage = Math.max(1, (int) ((usableH - HEADER_H - FOOTER_H) / LINE_H));
+            pages = Math.max(1, (rows.size() + rowsPerPage - 1) / rowsPerPage);
+        }
+
+        @Override
+        public int print(Graphics gr, PageFormat pf, int idx) {
+            layout(pf);
+            if (idx < 0 || idx >= pages) return NO_SUCH_PAGE;
+            Graphics2D g = (Graphics2D) gr.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g.translate(pf.getImageableX(), pf.getImageableY());
+            g.scale(scale, scale);
+            double w = pf.getImageableWidth() / scale, h = pf.getImageableHeight() / scale;
+            g.setColor(Color.BLACK);
+
+            g.setFont(bold.deriveFont(11f));
+            g.drawString("MONDO LUX", 0, 11);
+            g.setFont(bold.deriveFont(10f));
+            g.drawString(r.type.title, 0, 25);
+            g.setFont(base);
+            g.drawString("Du " + DMY.format(r.from) + " au " + DMY.format(r.to), 0, 38);
+
+            int y = HEADER_H - 6;
+            g.setFont(bold);
+            for (int i = 0; i < hdr.size(); i++) drawCell(g, hdr.get(i), i, y);
+            g.drawLine(0, y + 3, (int) w, y + 3);
+
+            int first = idx * rowsPerPage, last = Math.min(rows.size(), first + rowsPerPage);
+            y = HEADER_H + LINE_H - 2;
+            for (int k = first; k < last; k++, y += LINE_H) {
+                char kind = r.lines.get(k).kind;
+                if (kind == 'N' || kind == 'T') {
+                    g.setColor(kind == 'T' ? new Color(0xD5DFEF) : new Color(0xE8EEF7));
+                    g.fill(new Rectangle2D.Double(0, y - LINE_H + 3, w, LINE_H));
+                    g.setColor(Color.BLACK);
+                    g.setFont(bold);
+                } else {
+                    g.setFont(base);
+                    g.setColor(kind == 'D' ? new Color(0x444444) : Color.BLACK);
+                }
+                String[] row = rows.get(k);
+                for (int i = 0; i < row.length; i++) drawCell(g, row[i], i, y);
+                g.setColor(Color.BLACK);
+            }
+
+            g.setFont(base);
+            double fy = h - 4;
+            g.drawLine(0, (int) (fy - 10), (int) w, (int) (fy - 10));
+            g.drawString("Stampato il " + java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+                    .format(LocalDateTime.now()), 0, (int) fy);
+            String pg = "Pagina " + (idx + 1) + " / " + pages;
+            g.drawString(pg, (int) (w - g.getFontMetrics().stringWidth(pg)), (int) fy);
+            g.dispose();
+            return PAGE_EXISTS;
+        }
+
+        private void drawCell(Graphics2D g, String text, int col, int y) {
+            boolean left = col < 2 || col == hdr.size() - 1;
+            if (left) {
+                g.drawString(text, (float) colX[col], y);
+            } else {
+                int tw = g.getFontMetrics().stringWidth(text);
+                g.drawString(text, (float) (colX[col] + colW[col] - GAP / 2.0 - tw), y);
+            }
+        }
+    }
+
+    private static PageFormat a4(boolean landscape) {
+        Paper paper = new Paper();
+        paper.setSize(595, 842);
+        paper.setImageableArea(28, 28, 539, 786);
+        PageFormat pf = new PageFormat();
+        pf.setPaper(paper);
+        pf.setOrientation(landscape ? PageFormat.LANDSCAPE : PageFormat.PORTRAIT);
+        return pf;
+    }
+
+    /** Finestra di anteprima: pagine A4 con zoom, orientamento e pulsante Stampa. */
+    static void showPreview(Frame owner, Result r) {
+        final ReportPrintable doc = new ReportPrintable(r);
+        final PageFormat[] pf = {a4(true)};
+        final int[] page = {0};
+        final double[] zoom = {1.0};
+
+        final JLabel lbPage = new JLabel();
+        final JPanel canvas = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g0) {
+                super.paintComponent(g0);
+                Graphics2D g = (Graphics2D) g0.create();
+                double pw = pf[0].getWidth() * zoom[0], ph = pf[0].getHeight() * zoom[0];
+                g.setColor(new Color(0x777777));
+                g.fillRect(24, 24, (int) pw, (int) ph);
+                g.setColor(Color.WHITE);
+                g.fillRect(20, 20, (int) pw, (int) ph);
+                g.translate(20, 20);
+                g.setClip(0, 0, (int) pw, (int) ph);
+                g.scale(zoom[0], zoom[0]);
+                doc.print(g, pf[0], page[0]);
+                g.dispose();
+            }
+
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension((int) (pf[0].getWidth() * zoom[0]) + 44, (int) (pf[0].getHeight() * zoom[0]) + 44);
+            }
+        };
+        canvas.setBackground(new Color(0xA0A0A0));
+
+        final JDialog d = new JDialog(owner, "Anteprima di stampa", true);
+        final Runnable refresh = () -> {
+            int n = doc.pageCount(pf[0]);
+            if (page[0] >= n) page[0] = n - 1;
+            lbPage.setText("Pagina " + (page[0] + 1) + " / " + n);
+            canvas.revalidate();
+            canvas.repaint();
+        };
+
+        JButton prev = new JButton("◀"), next = new JButton("▶");
+        JButton zin = new JButton("Zoom +"), zout = new JButton("Zoom −");
+        JComboBox<String> orient = new JComboBox<>(new String[]{"Orizzontale", "Verticale"});
+        JButton print = new JButton("Stampa...");
+        JButton close = new JButton("Chiudi");
+
+        prev.addActionListener(e -> {
+            if (page[0] > 0) page[0]--;
+            refresh.run();
+        });
+        next.addActionListener(e -> {
+            if (page[0] < doc.pageCount(pf[0]) - 1) page[0]++;
+            refresh.run();
+        });
+        zin.addActionListener(e -> {
+            zoom[0] = Math.min(3.0, zoom[0] + 0.25);
+            refresh.run();
+        });
+        zout.addActionListener(e -> {
+            zoom[0] = Math.max(0.5, zoom[0] - 0.25);
+            refresh.run();
+        });
+        orient.addActionListener(e -> {
+            pf[0] = a4(orient.getSelectedIndex() == 0);
+            page[0] = 0;
+            refresh.run();
+        });
+        print.addActionListener(e -> {
+            try {
+                PrinterJob job = PrinterJob.getPrinterJob();
+                job.setJobName(r.type.title);
+                job.setPrintable(doc, pf[0]);
+                if (job.printDialog()) job.print();
+            } catch (PrinterException ex) {
+                JOptionPane.showMessageDialog(d, ex.getMessage(), "Errore di stampa", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        close.addActionListener(e -> d.dispose());
+
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
+        bar.add(print);
+        bar.add(prev);
+        bar.add(lbPage);
+        bar.add(next);
+        bar.add(zout);
+        bar.add(zin);
+        bar.add(new JLabel("Orientamento:"));
+        bar.add(orient);
+        bar.add(close);
+
+        d.add(bar, BorderLayout.NORTH);
+        d.add(new JScrollPane(canvas), BorderLayout.CENTER);
+        refresh.run();
+        d.setSize(960, 700);
+        d.setLocationRelativeTo(owner);
+        d.setVisible(true);
     }
 
     // ------------------------------------------------------------------ main

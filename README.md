@@ -29,3 +29,6 @@ utente di default `poker`, password chiesta all'avvio (o `--password` / `VENTES_
 Regole replicate dai Crystal: Caou = somma `STAT_PAV2.RB_VALORE`, escluse parti `WSPETRA*`/`WIMPCORTRA*`
 e `RB_STF = 'I'` (`--no-stf-filter` per toglierlo); Ballons = `STAT_GIO2` con `RB_TIPOR` in (DF,PK,SI),
 valore = `RB_VALORE / TB_CAMBIO` in EUR (note di credito negative), pezzi x `PARTI_JOLLYN1` per `PARTI_G1='SES'`.
+
+Dal form, dopo il Refresh, il pulsante **Anteprima / Stampa...** apre l'anteprima A4
+(pagine, zoom, orientamento orizzontale/verticale) e da lì la stampa su una qualsiasi stampante di sistema.
