@@ -450,6 +450,7 @@ public final class B1RecipePage {
         l.add(new B1BottomBar.Btn(800, 0, 58, 52, "Importer PLC", () -> run(ed::importFromPlc)));
         l.add(new B1BottomBar.Btn(860, 0, 34, 52, "CSV", () -> run(ed::exportCsv)));
         l.add(new B1BottomBar.Btn(896, 0, 34, 52, "Envoyer PLC", () -> run(ed::sendToPlc)));
+        l.add(new B1BottomBar.Btn(520, 0, 56, 52, "Steps", () -> B1RecipeSteps.openShared(ed.repo, ed.layout, ed.plcIp, null)));
         return l;
     }
 
