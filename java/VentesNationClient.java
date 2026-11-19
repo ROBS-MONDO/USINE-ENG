@@ -770,11 +770,12 @@ public final class VentesNationClient {
         private final JComboBox<String> orient = new JComboBox<>(new String[]{"Verticale", "Orizzontale"});
         private final JButton prev = new JButton("◀"), next = new JButton("▶"),
                 zin = new JButton("Zoom +"), zout = new JButton("Zoom −"),
+                preview = new JButton("Anteprima di stampa..."),
                 print = new JButton("Stampa..."), pdf = new JButton("Esporta PDF..."), csv = new JButton("Esporta CSV...");
         private final JPanel canvas;
         private final JLabel status;
 
-        ReportPane(JLabel status) {
+        ReportPane(JLabel status, boolean withPreviewButton) {
             super(new BorderLayout());
             this.status = status;
             canvas = new JPanel() {
@@ -811,6 +812,7 @@ public final class VentesNationClient {
             bar.add(zin);
             bar.add(new JLabel("Orientamento:"));
             bar.add(orient);
+            if (withPreviewButton) bar.add(preview);
             bar.add(print);
             bar.add(pdf);
             bar.add(csv);
@@ -832,6 +834,7 @@ public final class VentesNationClient {
                 page = 0;
                 refresh();
             });
+            preview.addActionListener(e -> showPreviewDialog());
             print.addActionListener(e -> doPrint());
             pdf.addActionListener(e -> doExport(true));
             csv.addActionListener(e -> doExport(false));
@@ -839,7 +842,7 @@ public final class VentesNationClient {
         }
 
         private void setEnabledAll(boolean on) {
-            for (JComponent c : new JComponent[]{prev, next, zin, zout, orient, print, pdf, csv}) c.setEnabled(on);
+            for (JComponent c : new JComponent[]{prev, next, zin, zout, orient, preview, print, pdf, csv}) c.setEnabled(on);
         }
 
         void setResult(Result r) {
@@ -866,6 +869,28 @@ public final class VentesNationClient {
             lbPage.setText("Pagina " + (page + 1) + " / " + n);
             canvas.revalidate();
             canvas.repaint();
+        }
+
+        /** Finestra di anteprima di stampa: stessa pagina, con Stampa ed Esporta. */
+        private void showPreviewDialog() {
+            if (result == null) return;
+            Window owner = SwingUtilities.getWindowAncestor(this);
+            JDialog d = new JDialog(owner, "Anteprima di stampa", Dialog.ModalityType.APPLICATION_MODAL);
+            ReportPane inner = new ReportPane(status, false);
+            inner.setResult(result);
+            inner.pf = pf;
+            inner.orient.setSelectedIndex(pf.getOrientation() == PageFormat.LANDSCAPE ? 1 : 0);
+            inner.page = page;
+            inner.refresh();
+            JButton close = new JButton("Chiudi");
+            close.addActionListener(e -> d.dispose());
+            JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 6));
+            south.add(close);
+            d.add(inner, BorderLayout.CENTER);
+            d.add(south, BorderLayout.SOUTH);
+            d.setSize(1000, 800);
+            d.setLocationRelativeTo(owner);
+            d.setVisible(true);
         }
 
         private void doPrint() {
@@ -924,7 +949,7 @@ public final class VentesNationClient {
         top.add(cbDet);
         top.add(btRun);
 
-        ReportPane pane = new ReportPane(status);
+        ReportPane pane = new ReportPane(status, true);
 
         btRun.addActionListener(ev -> {
             final ReportType type = (ReportType) cbReport.getSelectedItem();
