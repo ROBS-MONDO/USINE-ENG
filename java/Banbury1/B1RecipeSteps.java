@@ -282,7 +282,93 @@ public final class B1RecipeSteps extends JFrame {
         center.add(left, BorderLayout.WEST);
         center.add(right, BorderLayout.CENTER);
         root.add(center, BorderLayout.CENTER);
+        JPanel exitRow = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 0));
+        exitRow.setOpaque(false);
+        exitRow.add(exitButton());
+        root.add(exitRow, BorderLayout.SOUTH);
         return root;
+    }
+
+    // ---------------------------------------------------------------- bouton de sortie (comme B2)
+
+    private static java.awt.image.BufferedImage exitIcon;
+
+    private static java.awt.image.BufferedImage loadExitIcon() {
+        if (exitIcon != null) {
+            return exitIcon;
+        }
+        try (java.io.InputStream is = B1RecipeSteps.class.getResourceAsStream("/src/icons/Exit.png")) {
+            if (is != null) {
+                exitIcon = javax.imageio.ImageIO.read(is);
+            }
+        } catch (java.io.IOException ignored) {
+            // essai suivant
+        }
+        if (exitIcon == null) {
+            try {
+                java.io.File fb = new java.io.File("C:\\_Tools\\Banbury2\\icons\\Exit.png");
+                if (fb.exists()) {
+                    exitIcon = javax.imageio.ImageIO.read(fb);
+                }
+            } catch (java.io.IOException ignored) {
+                // pas d'icone: texte EXIT
+            }
+        }
+        return exitIcon;
+    }
+
+    private JButton exitButton() {
+        final java.awt.image.BufferedImage icon = loadExitIcon();
+        JButton b = new JButton() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                Color top = new Color(238, 238, 238);
+                Color bot = new Color(198, 198, 198);
+                if (getModel().isRollover()) {
+                    top = new Color(248, 248, 248);
+                    bot = new Color(215, 215, 215);
+                }
+                if (getModel().isPressed()) {
+                    top = new Color(188, 188, 188);
+                    bot = new Color(165, 165, 165);
+                }
+                g2.setPaint(new java.awt.GradientPaint(0, 0, top, 0, getHeight(), bot));
+                g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 14, 14);
+                g2.setColor(new Color(140, 140, 140));
+                g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 14, 14);
+                g2.setColor(new Color(255, 255, 255, 120));
+                g2.drawRoundRect(2, 2, getWidth() - 5, getHeight() / 2, 12, 12);
+                if (icon != null) {
+                    int m = Math.max(7, Math.min(getWidth(), getHeight()) / 7);
+                    g2.drawImage(icon, m, m, getWidth() - 2 * m, getHeight() - 2 * m, null);
+                } else {
+                    g2.setColor(Color.BLACK);
+                    g2.setFont(new Font("SansSerif", Font.BOLD, Math.max(10, getHeight() / 3)));
+                    FontMetrics fm = g2.getFontMetrics();
+                    g2.drawString("EXIT", (getWidth() - fm.stringWidth("EXIT")) / 2, (getHeight() + fm.getAscent()) / 2 - 3);
+                }
+                g2.dispose();
+            }
+        };
+        b.setPreferredSize(new Dimension(78, 60));
+        b.setMinimumSize(new Dimension(78, 60));
+        b.setMaximumSize(new Dimension(78, 60));
+        b.setRolloverEnabled(true);
+        b.setMargin(new Insets(0, 0, 0, 0));
+        b.setFocusable(false);
+        b.setContentAreaFilled(false);
+        b.setOpaque(false);
+        b.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+        b.setToolTipText("EXIT - fermer cette fen\u00eatre");
+        b.addActionListener(e -> {
+            if (ed.confirmDiscard()) {
+                B1EditAuth.end();
+                dispose();
+            }
+        });
+        return b;
     }
 
     private static JLabel label(String t) {
