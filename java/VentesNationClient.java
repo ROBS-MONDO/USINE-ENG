@@ -189,8 +189,8 @@ public final class VentesNationClient {
                 + (detail ? ", s.TB_NFAT AS NFAT, TO_CHAR(s.TB_DFAT,'DD-MM-YYYY') AS DFAT, s.TB_TIPO AS TIPO " : " ")
                 + "FROM POKER.STAT_GIO2 s "
                 + "LEFT JOIN POKER.PARTI p ON p.PARTI_COD = s.RB_PARTE "
-                + "LEFT JOIN POKER.ANAG a ON a.AN_COD = s.RB_CLFO "
                 + "LEFT JOIN POKER.CLIFOR c ON c.CF_COD = s.RB_CLFO "
+                + "LEFT JOIN POKER.ANAG a ON a.AN_COD = c.CF_ANAG "
                 + "LEFT JOIN POKER.T_009 n ON n.T009_COD = a.AN_CODNAZ "
                 + "WHERE s.TB_DFAT BETWEEN ? AND ? "
                 + "AND s.RB_TIPOR IN ('DF','PK','SI') "
@@ -217,8 +217,8 @@ public final class VentesNationClient {
                 + "SUM(s.RB_VALORE) AS VALORE "
                 + (detail ? ", s.NFATT AS NFAT, TO_CHAR(s.TB_DFAT,'DD-MM-YYYY') AS DFAT, s.TB_TIPO AS TIPO " : " ")
                 + "FROM POKER.STAT_PAV2 s "
-                + "LEFT JOIN POKER.ANAG a ON a.AN_COD = s.RB_CLFO "
                 + "LEFT JOIN POKER.CLIFOR c ON c.CF_COD = s.RB_CLFO "
+                + "LEFT JOIN POKER.ANAG a ON a.AN_COD = c.CF_ANAG "
                 + "LEFT JOIN PUBMONDO.T_029 n ON n.T029_COD = a.AN_CODNAZ "
                 + "WHERE s.TB_DFAT BETWEEN ? AND ? "
                 + "AND (s.RB_PARTE IS NULL OR (s.RB_PARTE NOT LIKE 'WSPETRA%' AND s.RB_PARTE NOT LIKE 'WIMPCORTRA%')) "
