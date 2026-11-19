@@ -23,8 +23,8 @@ final class B1EditAuth {
 
     static final int DURATION_SECONDS = 15 * 60;
     private static final DateTimeFormatter LOG_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final Path LOG_FILE = Files.isDirectory(Paths.get("C:\\_tools\\Banbury1"))
-            ? Paths.get("C:\\_tools\\Banbury1\\b1_recipe_change_log.txt") : Paths.get("b1_recipe_change_log.txt");
+    private static final Path LOG_FILE = Paths.get("C:\\_tools\\Banbury1\\b1_recipe_change_log.txt");
+    private static final Path LOG_FALLBACK = Paths.get("b1_recipe_change_log.txt");
 
     private static Object user;
     private static String userName = "";
@@ -116,10 +116,21 @@ final class B1EditAuth {
         String line = LOG_DATE.format(LocalDateTime.now()) + " | Action=" + safe(action) + " | Recette=" + recipeNo + " " + safe(recipeName)
                 + " | Step=" + safe(step) + " | User=" + safe(userName) + " | Principal=" + safe(principal)
                 + " | Champ=" + safe(param) + " | OldValue=" + safe(oldV) + " | NewValue=" + safe(newV) + System.lineSeparator();
+        byte[] data = line.getBytes(StandardCharsets.UTF_8);
         try {
-            Files.write(LOG_FILE, line.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            System.err.println("Journal modifications illisible: " + e.getMessage());
+            // comme B2: le dossier du journal est cree s'il n'existe pas
+            Path parent = LOG_FILE.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.write(LOG_FILE, data, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (IOException | RuntimeException e) {
+            System.err.println("Journal modifications: ecriture impossible dans " + LOG_FILE + " (" + e + "), essai dans le dossier courant");
+            try {
+                Files.write(LOG_FALLBACK, data, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            } catch (IOException e2) {
+                System.err.println("Journal modifications illisible: " + e2.getMessage());
+            }
         }
     }
 }
