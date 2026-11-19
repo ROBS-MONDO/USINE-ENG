@@ -468,8 +468,6 @@ public final class VentesNationClient {
         JComboBox<ReportType> cbReport = new JComboBox<>(ReportType.values());
         JTextField tfFrom = new JTextField(LocalDate.now().withDayOfYear(1).format(DMY), 10);
         JTextField tfTo = new JTextField(LocalDate.now().format(DMY), 10);
-        JPasswordField pf = new JPasswordField(cfg.password == null ? "" : cfg.password, 10);
-        pf.setEnabled(cfg.url != null || !hasOracleManager()); // con DbOracleManager la password non serve
         JCheckBox cbStf = new JCheckBox("Escludi RB_STF = 'I' (Caou)", true);
         JCheckBox cbDet = new JCheckBox("Dettaglio fatture", true);
         JButton btRun = new JButton("Refresh");
@@ -486,8 +484,6 @@ public final class VentesNationClient {
         top.add(tfFrom);
         top.add(new JLabel("ToDate:"));
         top.add(tfTo);
-        top.add(new JLabel("Password:"));
-        top.add(pf);
         top.add(cbStf);
         top.add(cbDet);
         top.add(btRun);
@@ -535,7 +531,7 @@ public final class VentesNationClient {
             DbConfig c = new DbConfig();
             c.url = cfg.url;
             c.user = cfg.user;
-            c.password = new String(pf.getPassword());
+            c.password = cfg.password; // da --password / VENTES_DB_PASSWORD / properties (solo senza DbOracleManager)
             if (c.url == null && !hasOracleManager()) {
                 c.url = JOptionPane.showInputDialog(f, "URL JDBC (es. jdbc:oracle:thin:@//SERVER:1521/E):");
                 if (c.url == null) return;
