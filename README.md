@@ -36,3 +36,8 @@ Dal form, dopo il Refresh, il pulsante **Anteprima / Stampa...** apre l'anteprim
 Connessione automatica: se nel progetto è presente `SVC.DbOracleManager` (come in ProdMelBanb),
 `VentesNationClient` usa `DbOracleManager.getConnection()` e non chiede né URL né password.
 Solo se la classe manca (o se è indicato `--url` / `db.url`) si usa l'URL JDBC.
+
+Visualizzazione, stampa ed esportazione PDF usano la stessa impaginazione del PDF del Crystal
+(A4, intestazione con periodo, riquadro colonne, nazioni in grassetto con totale, "Total generale",
+piè di pagina con data/ora e "Page n of N"). Il PDF si può generare anche da riga di comando:
+`--out fatturato.pdf`. Il nome file proposto è `fatturato_flooring_ddMMyyyy_-_ddMMyyyy.pdf`.

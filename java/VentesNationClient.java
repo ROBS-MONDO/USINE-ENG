@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
@@ -53,15 +54,19 @@ public final class VentesNationClient {
     // ------------------------------------------------------------------ modello
 
     enum ReportType {
-        CAOU("Caou", "VENTES TOTAL Caou PAR NATION/CLIENT -Statpav2-"),
-        BALLONS("Ballons", "VENTES TOTAL BALLONS PAR NATION/CLIENT - EURO");
+        CAOU("Caou", "VENTES TOTAL Caou PAR NATION/CLIENT -Statpav2- (Author Destefanis)",
+                "VENTES TOTAL Caou PAR NATION/CLIENT -Statpav2- (Author Destefanis)"),
+        BALLONS("Ballons", "VENTES TOTAL BALLONS PAR NATION/CLIENT - EURO",
+                "VENTES TOTAL Ballons PAR NATION/CLIENT (Author Destefanis)");
 
         final String label;
         final String title;
+        final String footer;
 
-        ReportType(String label, String title) {
+        ReportType(String label, String title, String footer) {
             this.label = label;
             this.title = title;
+            this.footer = footer;
         }
 
         static ReportType parse(String s) {
@@ -459,7 +464,442 @@ public final class VentesNationClient {
         }
     }
 
+    // ------------------------------------------------------------------ impaginazione (come il PDF del Crystal)
+
+    /** Superficie di disegno astratta: la stessa impaginazione va a schermo, in stampa e nel PDF. */
+    interface Canvas {
+        void text(String s, double x, double y, boolean bold, double size, Color c);
+
+        void line(double x1, double y1, double x2, double y2, double lw, boolean dotted);
+
+        void fill(double x, double y, double w, double h, Color c);
+
+        void box(double x, double y, double w, double h);
+    }
+
+    private static final FontRenderContext FRC = new FontRenderContext(null, true, true);
+    private static final Font PLAIN100 = new Font(Font.SANS_SERIF, Font.PLAIN, 100);
+    private static final Font BOLD100 = new Font(Font.SANS_SERIF, Font.BOLD, 100);
+    private static final DateTimeFormatter DMY2 = DateTimeFormatter.ofPattern("dd-MM-yy");
+    private static final DateTimeFormatter HMS = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+    static double textWidth(String s, boolean bold, double size) {
+        return (bold ? BOLD100 : PLAIN100).getStringBounds(s, FRC).getWidth() * size / 100.0;
+    }
+
+    /** Pagina in stile "VENTES TOTAL ... PAR NATION/CLIENT": intestazione, riquadro colonne, gruppi per nazione, piè di pagina. */
+    static final class ReportLayout {
+        static final double ROW_H = 12.5, HEADER_H = 66, FOOTER_H = 16;
+        private static final Color BLACK = Color.BLACK, GREY = new Color(0x555555);
+
+        private final Result r;
+        private final List<String[]> rows;
+        private final List<String> hdr;
+        private final boolean caou;
+        private final double[] edges;      // bordo destro (frazione della larghezza) delle colonne numeriche
+        private final double natEdge = 0.50, codeX = 0.865, nameX = 0.075;
+        private final LocalDateTime stamp = LocalDateTime.now();
+
+        ReportLayout(Result r) {
+            this.r = r;
+            this.rows = r.rows(true);
+            this.hdr = r.headers();
+            this.caou = r.type == ReportType.CAOU;
+            this.edges = caou ? new double[]{0.62, 0.80} : new double[]{0.38, 0.50, 0.61, 0.72, 0.83};
+        }
+
+        int rowsPerPage(double h) {
+            return Math.max(1, (int) ((h - HEADER_H - FOOTER_H) / ROW_H));
+        }
+
+        int pages(double h) {
+            int per = rowsPerPage(h);
+            return Math.max(1, (rows.size() + per - 1) / per);
+        }
+
+        void draw(Canvas c, int page, double w, double h) {
+            // intestazione di pagina
+            c.text("MONDO LUX", 0, 10, true, 9, BLACK);
+            c.text(r.type.title, 0, 26, false, 7.5, BLACK);
+            c.text("A partir du Mois", 6, 38, false, 7.5, BLACK);
+            c.text(DMY2.format(r.from), w * 0.17, 38, true, 7.5, BLACK);
+            c.text("Au mois du", w * 0.30, 38, false, 7.5, BLACK);
+            c.text(DMY2.format(r.to), w * 0.42, 38, true, 7.5, BLACK);
+
+            // riquadro con i titoli di colonna
+            double by = 44, bh = 14;
+            c.box(0, by, w, bh);
+            c.text("Nation / Client", 3, by + 10, false, 7, BLACK);
+            for (int k = 0; k < edges.length; k++) {
+                String t = hdr.get(2 + k);
+                c.text(t, w * edges[k] - textWidth(t, false, 7), by + 10, false, 7, BLACK);
+            }
+            c.text("Code Ass.Cre.", w * codeX, by + 10, false, 7, BLACK);
+
+            // righe
+            int per = rowsPerPage(h);
+            int first = page * per, last = Math.min(rows.size(), first + per);
+            double y0 = by + bh;
+            double nameLimit = (caou ? natEdge : edges[0]) * w - 62 - nameX * w;
+            for (int k = first; k < last; k++) {
+                char kind = r.lines.get(k).kind;
+                String[] row = rows.get(k);
+                double base = y0 + (k - first) * ROW_H + 10;
+                boolean bold = kind == 'N' || kind == 'T';
+                double sz = kind == 'D' ? 6.5 : 7.5;
+                Color col = kind == 'D' ? GREY : BLACK;
+
+                if (kind == 'N' && k > first) c.line(0, base - 10.5, w, base - 10.5, 0.6, true);
+                if (kind == 'T') c.line(0, base - 10.5, w, base - 10.5, 0.8, false);
+
+                String code = row[0].trim();
+                c.text(code, kind == 'D' ? 14 : 3, base, bold, sz, col);
+
+                String name = row[1];
+                if (kind == 'T') {
+                    c.text(caou ? "Total generale" : name, (caou ? 0.30 : nameX) * w, base, true, 7.5, BLACK);
+                } else {
+                    while (name.length() > 1 && textWidth(name, bold, sz) > nameLimit) name = name.substring(0, name.length() - 1);
+                    c.text(name, nameX * w, base, bold, sz, col);
+                }
+
+                for (int i = 0; i < edges.length; i++) {
+                    String t = row[2 + i];
+                    if (t.isEmpty()) continue;
+                    double edge = (caou && i == 0 && (kind == 'N' || kind == 'T')) ? natEdge : edges[i];
+                    boolean b = bold || (caou && kind == 'C');
+                    c.text(t, w * edge - textWidth(t, b, sz), base, b, sz, col);
+                }
+                String ca = row[row.length - 1];
+                if (!ca.isEmpty()) c.text(ca, w * codeX, base, false, sz, col);
+            }
+
+            // piè di pagina
+            double fy = h - 3;
+            c.text("** " + r.type.footer, 0, fy, false, 6.5, BLACK);
+            c.text(DMY2.format(stamp) + "   " + HMS.format(stamp), w * 0.42, fy, false, 6.5, BLACK);
+            String pg = "Page " + (page + 1) + " of " + pages(h);
+            c.text(pg, w - textWidth(pg, false, 6.5), fy, false, 6.5, BLACK);
+        }
+    }
+
+    /** Canvas su Graphics2D (schermo e stampante). */
+    static final class GfxCanvas implements Canvas {
+        private final Graphics2D g;
+
+        GfxCanvas(Graphics2D g) {
+            this.g = g;
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        }
+
+        @Override
+        public void text(String s, double x, double y, boolean bold, double size, Color c) {
+            g.setColor(c);
+            g.setFont((bold ? BOLD100 : PLAIN100).deriveFont((float) size));
+            g.drawString(s, (float) x, (float) y);
+        }
+
+        @Override
+        public void line(double x1, double y1, double x2, double y2, double lw, boolean dotted) {
+            g.setColor(Color.BLACK);
+            g.setStroke(dotted ? new BasicStroke((float) lw, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f,
+                    new float[]{1.2f, 1.8f}, 0f) : new BasicStroke((float) lw));
+            g.draw(new java.awt.geom.Line2D.Double(x1, y1, x2, y2));
+        }
+
+        @Override
+        public void fill(double x, double y, double w, double h, Color c) {
+            g.setColor(c);
+            g.fill(new Rectangle2D.Double(x, y, w, h));
+        }
+
+        @Override
+        public void box(double x, double y, double w, double h) {
+            g.setColor(Color.BLACK);
+            g.setStroke(new BasicStroke(0.7f));
+            g.draw(new Rectangle2D.Double(x, y, w, h));
+        }
+    }
+
+    /** Canvas che produce il contenuto di una pagina PDF (Helvetica standard, nessuna libreria). */
+    static final class PdfCanvas implements Canvas {
+        final StringBuilder sb = new StringBuilder();
+
+        private static String n(double v) {
+            return String.format(Locale.ROOT, "%.2f", v);
+        }
+
+        private static String esc(String s) {
+            StringBuilder o = new StringBuilder();
+            for (char ch : s.toCharArray()) {
+                int c = ch == '€' ? 0x80 : ch;
+                if (c > 255) c = '?';
+                if (c == '(' || c == ')' || c == '\\') o.append('\\').append((char) c);
+                else if (c < 32 || c > 126) o.append(String.format("\\%03o", c));
+                else o.append((char) c);
+            }
+            return o.toString();
+        }
+
+        private static String rgb(Color c) {
+            return n(c.getRed() / 255.0) + " " + n(c.getGreen() / 255.0) + " " + n(c.getBlue() / 255.0);
+        }
+
+        @Override
+        public void text(String s, double x, double y, boolean bold, double size, Color c) {
+            sb.append(rgb(c)).append(" rg BT /F").append(bold ? 2 : 1).append(' ').append(n(size)).append(" Tf ")
+                    .append(n(x)).append(' ').append(n(-y)).append(" Td (").append(esc(s)).append(") Tj ET\n");
+        }
+
+        @Override
+        public void line(double x1, double y1, double x2, double y2, double lw, boolean dotted) {
+            sb.append("0 G ").append(n(lw)).append(" w ").append(dotted ? "[1.2 1.8] 0 d " : "[] 0 d ")
+                    .append(n(x1)).append(' ').append(n(-y1)).append(" m ")
+                    .append(n(x2)).append(' ').append(n(-y2)).append(" l S [] 0 d\n");
+        }
+
+        @Override
+        public void fill(double x, double y, double w, double h, Color c) {
+            sb.append(rgb(c)).append(" rg ").append(n(x)).append(' ').append(n(-(y + h))).append(' ')
+                    .append(n(w)).append(' ').append(n(h)).append(" re f\n");
+        }
+
+        @Override
+        public void box(double x, double y, double w, double h) {
+            sb.append("0 G 0.7 w [] 0 d ").append(n(x)).append(' ').append(n(-(y + h))).append(' ')
+                    .append(n(w)).append(' ').append(n(h)).append(" re S\n");
+        }
+    }
+
+    /** Scrive il report come PDF (una pagina per foglio, stessa impaginazione della stampa). */
+    static void writePdf(Result r, PageFormat pf, OutputStream os) throws IOException {
+        ReportLayout lay = new ReportLayout(r);
+        double w = pf.getImageableWidth(), h = pf.getImageableHeight();
+        int pages = lay.pages(h);
+        List<byte[]> objs = new ArrayList<>();
+        StringBuilder kids = new StringBuilder();
+        for (int i = 0; i < pages; i++) kids.append(5 + 2 * i).append(" 0 R ");
+        objs.add(latin1("<< /Type /Catalog /Pages 2 0 R >>"));
+        objs.add(latin1("<< /Type /Pages /Kids [" + kids + "] /Count " + pages + " >>"));
+        objs.add(latin1("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"));
+        objs.add(latin1("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>"));
+        for (int i = 0; i < pages; i++) {
+            PdfCanvas pc = new PdfCanvas();
+            lay.draw(pc, i, w, h);
+            String content = "1 0 0 1 " + PdfCanvas.n(pf.getImageableX()) + " "
+                    + PdfCanvas.n(pf.getHeight() - pf.getImageableY()) + " cm\n" + pc.sb;
+            byte[] cb = latin1(content);
+            objs.add(latin1("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + PdfCanvas.n(pf.getWidth()) + " "
+                    + PdfCanvas.n(pf.getHeight()) + "] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents "
+                    + (6 + 2 * i) + " 0 R >>"));
+            ByteArrayOutputStream st = new ByteArrayOutputStream();
+            st.write(latin1("<< /Length " + cb.length + " >>\nstream\n"));
+            st.write(cb);
+            st.write(latin1("\nendstream"));
+            objs.add(st.toByteArray());
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        out.write(latin1("%PDF-1.4\n"));
+        int[] off = new int[objs.size()];
+        for (int i = 0; i < objs.size(); i++) {
+            off[i] = out.size();
+            out.write(latin1((i + 1) + " 0 obj\n"));
+            out.write(objs.get(i));
+            out.write(latin1("\nendobj\n"));
+        }
+        int xref = out.size();
+        StringBuilder x = new StringBuilder("xref\n0 " + (objs.size() + 1) + "\n0000000000 65535 f \n");
+        for (int o : off) x.append(String.format(Locale.ROOT, "%010d 00000 n \n", o));
+        x.append("trailer\n<< /Size ").append(objs.size() + 1).append(" /Root 1 0 R >>\nstartxref\n")
+                .append(xref).append("\n%%EOF\n");
+        out.write(latin1(x.toString()));
+        os.write(out.toByteArray());
+    }
+
+    private static byte[] latin1(String s) {
+        return s.getBytes(StandardCharsets.ISO_8859_1);
+    }
+
+    /** Stampa su stampante di sistema. */
+    static final class ReportPrintable implements Printable {
+        private final ReportLayout lay;
+
+        ReportPrintable(Result r) {
+            this.lay = new ReportLayout(r);
+        }
+
+        @Override
+        public int print(Graphics gr, PageFormat pf, int idx) {
+            if (idx < 0 || idx >= lay.pages(pf.getImageableHeight())) return NO_SUCH_PAGE;
+            Graphics2D g = (Graphics2D) gr.create();
+            g.translate(pf.getImageableX(), pf.getImageableY());
+            lay.draw(new GfxCanvas(g), idx, pf.getImageableWidth(), pf.getImageableHeight());
+            g.dispose();
+            return PAGE_EXISTS;
+        }
+    }
+
+    private static PageFormat a4(boolean landscape) {
+        Paper paper = new Paper();
+        paper.setSize(595, 842);
+        paper.setImageableArea(24, 24, 547, 794);
+        PageFormat pf = new PageFormat();
+        pf.setPaper(paper);
+        pf.setOrientation(landscape ? PageFormat.LANDSCAPE : PageFormat.PORTRAIT);
+        return pf;
+    }
+
+    static String defaultFileName(Result r, String ext) {
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("ddMMyyyy");
+        return "fatturato_" + (r.type == ReportType.CAOU ? "flooring" : "ballons") + "_" + f.format(r.from)
+                + "_-_" + f.format(r.to) + "." + ext;
+    }
+
     // ------------------------------------------------------------------ GUI
+
+    /** Pannello pagina (anteprima), con scorrimento pagine, zoom, orientamento, stampa ed esportazione. */
+    static final class ReportPane extends JPanel {
+        private Result result;
+        private ReportLayout layout;
+        private PageFormat pf = a4(false);
+        private int page = 0;
+        private double zoom = 1.25;
+        private final JLabel lbPage = new JLabel(" ");
+        private final JComboBox<String> orient = new JComboBox<>(new String[]{"Verticale", "Orizzontale"});
+        private final JButton prev = new JButton("◀"), next = new JButton("▶"),
+                zin = new JButton("Zoom +"), zout = new JButton("Zoom −"),
+                print = new JButton("Stampa..."), pdf = new JButton("Esporta PDF..."), csv = new JButton("Esporta CSV...");
+        private final JPanel canvas;
+        private final JLabel status;
+
+        ReportPane(JLabel status) {
+            super(new BorderLayout());
+            this.status = status;
+            canvas = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g0) {
+                    super.paintComponent(g0);
+                    if (layout == null) return;
+                    Graphics2D g = (Graphics2D) g0.create();
+                    double pw = pf.getWidth() * zoom, ph = pf.getHeight() * zoom;
+                    g.setColor(new Color(0x777777));
+                    g.fillRect(24, 24, (int) pw, (int) ph);
+                    g.setColor(Color.WHITE);
+                    g.fillRect(20, 20, (int) pw, (int) ph);
+                    g.translate(20, 20);
+                    g.setClip(0, 0, (int) pw, (int) ph);
+                    g.scale(zoom, zoom);
+                    g.translate(pf.getImageableX(), pf.getImageableY());
+                    layout.draw(new GfxCanvas(g), page, pf.getImageableWidth(), pf.getImageableHeight());
+                    g.dispose();
+                }
+
+                @Override
+                public Dimension getPreferredSize() {
+                    return new Dimension((int) (pf.getWidth() * zoom) + 44, (int) (pf.getHeight() * zoom) + 44);
+                }
+            };
+            canvas.setBackground(new Color(0xA0A0A0));
+
+            JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
+            bar.add(prev);
+            bar.add(lbPage);
+            bar.add(next);
+            bar.add(zout);
+            bar.add(zin);
+            bar.add(new JLabel("Orientamento:"));
+            bar.add(orient);
+            bar.add(print);
+            bar.add(pdf);
+            bar.add(csv);
+            add(bar, BorderLayout.NORTH);
+            add(new JScrollPane(canvas), BorderLayout.CENTER);
+
+            prev.addActionListener(e -> go(-1));
+            next.addActionListener(e -> go(1));
+            zin.addActionListener(e -> {
+                zoom = Math.min(3.0, zoom + 0.25);
+                refresh();
+            });
+            zout.addActionListener(e -> {
+                zoom = Math.max(0.5, zoom - 0.25);
+                refresh();
+            });
+            orient.addActionListener(e -> {
+                pf = a4(orient.getSelectedIndex() == 1);
+                page = 0;
+                refresh();
+            });
+            print.addActionListener(e -> doPrint());
+            pdf.addActionListener(e -> doExport(true));
+            csv.addActionListener(e -> doExport(false));
+            setEnabledAll(false);
+        }
+
+        private void setEnabledAll(boolean on) {
+            for (JComponent c : new JComponent[]{prev, next, zin, zout, orient, print, pdf, csv}) c.setEnabled(on);
+        }
+
+        void setResult(Result r) {
+            this.result = r;
+            this.layout = new ReportLayout(r);
+            boolean land = r.type == ReportType.BALLONS;
+            pf = a4(land);
+            orient.setSelectedIndex(land ? 1 : 0);
+            page = 0;
+            setEnabledAll(true);
+            refresh();
+        }
+
+        private void go(int d) {
+            int n = layout.pages(pf.getImageableHeight());
+            page = Math.max(0, Math.min(n - 1, page + d));
+            refresh();
+        }
+
+        private void refresh() {
+            if (layout == null) return;
+            int n = layout.pages(pf.getImageableHeight());
+            if (page >= n) page = n - 1;
+            lbPage.setText("Pagina " + (page + 1) + " / " + n);
+            canvas.revalidate();
+            canvas.repaint();
+        }
+
+        private void doPrint() {
+            try {
+                PrinterJob job = PrinterJob.getPrinterJob();
+                job.setJobName(result.type.title);
+                job.setPrintable(new ReportPrintable(result), pf);
+                if (job.printDialog()) job.print();
+            } catch (PrinterException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore di stampa", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
+        private void doExport(boolean asPdf) {
+            JFileChooser fc = new JFileChooser();
+            fc.setSelectedFile(new File(defaultFileName(result, asPdf ? "pdf" : "csv")));
+            if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File f = fc.getSelectedFile();
+            try {
+                if (asPdf) {
+                    try (OutputStream os = new FileOutputStream(f)) {
+                        writePdf(result, pf, os);
+                    }
+                } else {
+                    try (Writer w = new OutputStreamWriter(new FileOutputStream(f), StandardCharsets.UTF_8)) {
+                        writeCsv(result, w);
+                    }
+                }
+                status.setText("Salvato: " + f);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore salvataggio", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 
     private static void showGui(DbConfig cfg) {
         JFrame f = new JFrame("Ventes par nation / client - Mondo Lux");
@@ -469,12 +909,8 @@ public final class VentesNationClient {
         JTextField tfFrom = new JTextField(LocalDate.now().withDayOfYear(1).format(DMY), 10);
         JTextField tfTo = new JTextField(LocalDate.now().format(DMY), 10);
         JCheckBox cbStf = new JCheckBox("Escludi RB_STF = 'I' (Caou)", true);
-        JCheckBox cbDet = new JCheckBox("Dettaglio fatture", true);
+        JCheckBox cbDet = new JCheckBox("Dettaglio fatture", false);
         JButton btRun = new JButton("Refresh");
-        JButton btCsv = new JButton("Esporta CSV...");
-        btCsv.setEnabled(false);
-        JButton btPrint = new JButton("Anteprima / Stampa...");
-        btPrint.setEnabled(false);
         JLabel status = new JLabel(" ");
 
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
@@ -487,35 +923,8 @@ public final class VentesNationClient {
         top.add(cbStf);
         top.add(cbDet);
         top.add(btRun);
-        top.add(btCsv);
-        top.add(btPrint);
 
-        DefaultTableModel model = new DefaultTableModel();
-        final AtomicReference<List<OutLine>> shown = new AtomicReference<>(new ArrayList<>());
-        JTable table = new JTable(model) {
-            @Override
-            public boolean isCellEditable(int r, int c) {
-                return false;
-            }
-        };
-        table.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
-                Component comp = super.getTableCellRendererComponent(t, v, sel, foc, r, c);
-                char kind = r < shown.get().size() ? shown.get().get(r).kind : 'C';
-                comp.setFont(t.getFont().deriveFont(kind == 'N' || kind == 'T' ? Font.BOLD : Font.PLAIN));
-                int cols = t.getColumnCount();
-                setHorizontalAlignment(c < 2 || c == cols - 1 ? SwingConstants.LEFT : SwingConstants.RIGHT);
-                if (!sel) comp.setBackground(kind == 'N' ? new Color(0xE8EEF7) : kind == 'T' ? new Color(0xD5DFEF)
-                        : kind == 'D' ? new Color(0xF7F7F7) : Color.WHITE);
-                return comp;
-            }
-        };
-        table.setDefaultRenderer(Object.class, renderer);
-
-        final Result[] last = new Result[1];
+        ReportPane pane = new ReportPane(status);
 
         btRun.addActionListener(ev -> {
             final ReportType type = (ReportType) cbReport.getSelectedItem();
@@ -531,7 +940,7 @@ public final class VentesNationClient {
             DbConfig c = new DbConfig();
             c.url = cfg.url;
             c.user = cfg.user;
-            c.password = cfg.password; // da --password / VENTES_DB_PASSWORD / properties (solo senza DbOracleManager)
+            c.password = cfg.password; // usati solo senza DbOracleManager
             if (c.url == null && !hasOracleManager()) {
                 c.url = JOptionPane.showInputDialog(f, "URL JDBC (es. jdbc:oracle:thin:@//SERVER:1521/E):");
                 if (c.url == null) return;
@@ -540,8 +949,6 @@ public final class VentesNationClient {
             final boolean stf = cbStf.isSelected();
             final boolean det = cbDet.isSelected();
             btRun.setEnabled(false);
-            btCsv.setEnabled(false);
-            btPrint.setEnabled(false);
             status.setText("Estrazione in corso...");
             new SwingWorker<Result, Void>() {
                 @Override
@@ -556,11 +963,7 @@ public final class VentesNationClient {
                     btRun.setEnabled(true);
                     try {
                         Result r = get();
-                        last[0] = r;
-                        shown.set(r.lines);
-                        model.setDataVector(r.rows(true).toArray(new Object[0][]), r.headers().toArray());
-                        btCsv.setEnabled(true);
-                        btPrint.setEnabled(true);
+                        pane.setResult(r);
                         BigDecimal tot = r.lines.get(r.lines.size() - 1).valore;
                         status.setText((r.lines.size() - 1) + " righe - totale generale: " + fmt(tot, true));
                     } catch (Exception ex) {
@@ -572,255 +975,12 @@ public final class VentesNationClient {
             }.execute();
         });
 
-        btPrint.addActionListener(ev -> {
-            if (last[0] != null) showPreview(f, last[0]);
-        });
-
-        btCsv.addActionListener(ev -> {
-            if (last[0] == null) return;
-            JFileChooser fc = new JFileChooser();
-            fc.setSelectedFile(new File("ventes_" + last[0].type.label.toLowerCase(Locale.ROOT) + ".csv"));
-            if (fc.showSaveDialog(f) != JFileChooser.APPROVE_OPTION) return;
-            try (Writer w = new OutputStreamWriter(new FileOutputStream(fc.getSelectedFile()), StandardCharsets.UTF_8)) {
-                writeCsv(last[0], w);
-                status.setText("Salvato: " + fc.getSelectedFile());
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(f, ex.getMessage(), "Errore salvataggio", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
         f.add(top, BorderLayout.NORTH);
-        f.add(new JScrollPane(table), BorderLayout.CENTER);
+        f.add(pane, BorderLayout.CENTER);
         f.add(status, BorderLayout.SOUTH);
-        f.setSize(1500, 700);
+        f.setSize(1100, 800);
         f.setLocationRelativeTo(null);
         f.setVisible(true);
-    }
-
-    // ------------------------------------------------------------------ stampa e anteprima
-
-    /** Impaginazione A4 del report: intestazione e piè di pagina su ogni foglio, colonne adattate alla larghezza. */
-    static final class ReportPrintable implements Printable {
-        private static final int LINE_H = 12, HEADER_H = 64, FOOTER_H = 22, GAP = 14;
-        private final Result r;
-        private final List<String> hdr;
-        private final List<String[]> rows;
-        private final Font base = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
-        private final Font bold = base.deriveFont(Font.BOLD);
-        private double[] colX, colW;
-        private double scale = 1;
-        private int rowsPerPage = 1, pages = 1;
-        private double laidW = -1, laidH = -1;
-
-        ReportPrintable(Result r) {
-            this.r = r;
-            this.hdr = r.headers();
-            this.rows = r.rows(true);
-        }
-
-        int pageCount(PageFormat pf) {
-            layout(pf);
-            return pages;
-        }
-
-        private void layout(PageFormat pf) {
-            double w = pf.getImageableWidth(), h = pf.getImageableHeight();
-            if (w == laidW && h == laidH) return;
-            laidW = w;
-            laidH = h;
-            Graphics2D g = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).createGraphics();
-            FontMetrics fm = g.getFontMetrics(bold);
-            int n = hdr.size();
-            colW = new double[n];
-            colX = new double[n];
-            for (int i = 0; i < n; i++) {
-                int m = fm.stringWidth(hdr.get(i));
-                for (String[] row : rows) m = Math.max(m, fm.stringWidth(row[i]));
-                colW[i] = m + GAP;
-            }
-            double total = 0;
-            for (int i = 0; i < n; i++) {
-                colX[i] = total;
-                total += colW[i];
-            }
-            g.dispose();
-            scale = Math.min(1.0, w / total);
-            double usableH = h / scale;
-            rowsPerPage = Math.max(1, (int) ((usableH - HEADER_H - FOOTER_H) / LINE_H));
-            pages = Math.max(1, (rows.size() + rowsPerPage - 1) / rowsPerPage);
-        }
-
-        @Override
-        public int print(Graphics gr, PageFormat pf, int idx) {
-            layout(pf);
-            if (idx < 0 || idx >= pages) return NO_SUCH_PAGE;
-            Graphics2D g = (Graphics2D) gr.create();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            g.translate(pf.getImageableX(), pf.getImageableY());
-            g.scale(scale, scale);
-            double w = pf.getImageableWidth() / scale, h = pf.getImageableHeight() / scale;
-            g.setColor(Color.BLACK);
-
-            g.setFont(bold.deriveFont(11f));
-            g.drawString("MONDO LUX", 0, 11);
-            g.setFont(bold.deriveFont(10f));
-            g.drawString(r.type.title, 0, 25);
-            g.setFont(base);
-            g.drawString("Du " + DMY.format(r.from) + " au " + DMY.format(r.to), 0, 38);
-
-            int y = HEADER_H - 6;
-            g.setFont(bold);
-            for (int i = 0; i < hdr.size(); i++) drawCell(g, hdr.get(i), i, y);
-            g.drawLine(0, y + 3, (int) w, y + 3);
-
-            int first = idx * rowsPerPage, last = Math.min(rows.size(), first + rowsPerPage);
-            y = HEADER_H + LINE_H - 2;
-            for (int k = first; k < last; k++, y += LINE_H) {
-                char kind = r.lines.get(k).kind;
-                if (kind == 'N' || kind == 'T') {
-                    g.setColor(kind == 'T' ? new Color(0xD5DFEF) : new Color(0xE8EEF7));
-                    g.fill(new Rectangle2D.Double(0, y - LINE_H + 3, w, LINE_H));
-                    g.setColor(Color.BLACK);
-                    g.setFont(bold);
-                } else {
-                    g.setFont(base);
-                    g.setColor(kind == 'D' ? new Color(0x444444) : Color.BLACK);
-                }
-                String[] row = rows.get(k);
-                for (int i = 0; i < row.length; i++) drawCell(g, row[i], i, y);
-                g.setColor(Color.BLACK);
-            }
-
-            g.setFont(base);
-            double fy = h - 4;
-            g.drawLine(0, (int) (fy - 10), (int) w, (int) (fy - 10));
-            g.drawString("Stampato il " + java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
-                    .format(LocalDateTime.now()), 0, (int) fy);
-            String pg = "Pagina " + (idx + 1) + " / " + pages;
-            g.drawString(pg, (int) (w - g.getFontMetrics().stringWidth(pg)), (int) fy);
-            g.dispose();
-            return PAGE_EXISTS;
-        }
-
-        private void drawCell(Graphics2D g, String text, int col, int y) {
-            boolean left = col < 2 || col == hdr.size() - 1;
-            if (left) {
-                g.drawString(text, (float) colX[col], y);
-            } else {
-                int tw = g.getFontMetrics().stringWidth(text);
-                g.drawString(text, (float) (colX[col] + colW[col] - GAP / 2.0 - tw), y);
-            }
-        }
-    }
-
-    private static PageFormat a4(boolean landscape) {
-        Paper paper = new Paper();
-        paper.setSize(595, 842);
-        paper.setImageableArea(28, 28, 539, 786);
-        PageFormat pf = new PageFormat();
-        pf.setPaper(paper);
-        pf.setOrientation(landscape ? PageFormat.LANDSCAPE : PageFormat.PORTRAIT);
-        return pf;
-    }
-
-    /** Finestra di anteprima: pagine A4 con zoom, orientamento e pulsante Stampa. */
-    static void showPreview(Frame owner, Result r) {
-        final ReportPrintable doc = new ReportPrintable(r);
-        final PageFormat[] pf = {a4(true)};
-        final int[] page = {0};
-        final double[] zoom = {1.0};
-
-        final JLabel lbPage = new JLabel();
-        final JPanel canvas = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g0) {
-                super.paintComponent(g0);
-                Graphics2D g = (Graphics2D) g0.create();
-                double pw = pf[0].getWidth() * zoom[0], ph = pf[0].getHeight() * zoom[0];
-                g.setColor(new Color(0x777777));
-                g.fillRect(24, 24, (int) pw, (int) ph);
-                g.setColor(Color.WHITE);
-                g.fillRect(20, 20, (int) pw, (int) ph);
-                g.translate(20, 20);
-                g.setClip(0, 0, (int) pw, (int) ph);
-                g.scale(zoom[0], zoom[0]);
-                doc.print(g, pf[0], page[0]);
-                g.dispose();
-            }
-
-            @Override
-            public Dimension getPreferredSize() {
-                return new Dimension((int) (pf[0].getWidth() * zoom[0]) + 44, (int) (pf[0].getHeight() * zoom[0]) + 44);
-            }
-        };
-        canvas.setBackground(new Color(0xA0A0A0));
-
-        final JDialog d = new JDialog(owner, "Anteprima di stampa", true);
-        final Runnable refresh = () -> {
-            int n = doc.pageCount(pf[0]);
-            if (page[0] >= n) page[0] = n - 1;
-            lbPage.setText("Pagina " + (page[0] + 1) + " / " + n);
-            canvas.revalidate();
-            canvas.repaint();
-        };
-
-        JButton prev = new JButton("◀"), next = new JButton("▶");
-        JButton zin = new JButton("Zoom +"), zout = new JButton("Zoom −");
-        JComboBox<String> orient = new JComboBox<>(new String[]{"Orizzontale", "Verticale"});
-        JButton print = new JButton("Stampa...");
-        JButton close = new JButton("Chiudi");
-
-        prev.addActionListener(e -> {
-            if (page[0] > 0) page[0]--;
-            refresh.run();
-        });
-        next.addActionListener(e -> {
-            if (page[0] < doc.pageCount(pf[0]) - 1) page[0]++;
-            refresh.run();
-        });
-        zin.addActionListener(e -> {
-            zoom[0] = Math.min(3.0, zoom[0] + 0.25);
-            refresh.run();
-        });
-        zout.addActionListener(e -> {
-            zoom[0] = Math.max(0.5, zoom[0] - 0.25);
-            refresh.run();
-        });
-        orient.addActionListener(e -> {
-            pf[0] = a4(orient.getSelectedIndex() == 0);
-            page[0] = 0;
-            refresh.run();
-        });
-        print.addActionListener(e -> {
-            try {
-                PrinterJob job = PrinterJob.getPrinterJob();
-                job.setJobName(r.type.title);
-                job.setPrintable(doc, pf[0]);
-                if (job.printDialog()) job.print();
-            } catch (PrinterException ex) {
-                JOptionPane.showMessageDialog(d, ex.getMessage(), "Errore di stampa", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-        close.addActionListener(e -> d.dispose());
-
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
-        bar.add(print);
-        bar.add(prev);
-        bar.add(lbPage);
-        bar.add(next);
-        bar.add(zout);
-        bar.add(zin);
-        bar.add(new JLabel("Orientamento:"));
-        bar.add(orient);
-        bar.add(close);
-
-        d.add(bar, BorderLayout.NORTH);
-        d.add(new JScrollPane(canvas), BorderLayout.CENTER);
-        refresh.run();
-        d.setSize(960, 700);
-        d.setLocationRelativeTo(owner);
-        d.setVisible(true);
     }
 
     // ------------------------------------------------------------------ main
@@ -843,7 +1003,7 @@ public final class VentesNationClient {
     private static void usage() {
         System.out.println("Uso:\n"
                 + "  (senza argomenti)  apre l'interfaccia grafica\n"
-                + "  --report caou|ballons --from gg-mm-aaaa --to gg-mm-aaaa [--out file.csv]\n"
+                + "  --report caou|ballons --from gg-mm-aaaa --to gg-mm-aaaa [--out file.pdf|file.csv]\n"
                 + "  [--detail]  aggiunge il dettaglio per fattura sotto ogni cliente\n"
                 + "  [--no-stf-filter]  (Caou: non applica RB_STF <> 'I')\n"
                 + "  [--url jdbc:oracle:thin:@//SERVER:1521/E] [--user poker] [--password ...] [--config file]\n"
@@ -886,7 +1046,12 @@ public final class VentesNationClient {
             try (Connection con = connect(cfg)) {
                 r = run(con, type, from, to, !a.containsKey("no-stf-filter"), a.containsKey("detail"));
             }
-            if (a.containsKey("out")) {
+            if (a.containsKey("out") && a.get("out").toLowerCase(Locale.ROOT).endsWith(".pdf")) {
+                try (OutputStream os = new FileOutputStream(a.get("out"))) {
+                    writePdf(r, a4(r.type == ReportType.BALLONS), os);
+                }
+                System.out.println("Scritto " + a.get("out"));
+            } else if (a.containsKey("out")) {
                 try (Writer w = new OutputStreamWriter(new FileOutputStream(a.get("out")), StandardCharsets.UTF_8)) {
                     writeCsv(r, w);
                 }
