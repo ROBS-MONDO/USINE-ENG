@@ -48,6 +48,8 @@ public final class B1RecipeSteps extends JFrame {
     static final String VERSION = "V1.00";
     static final String TITLE = "Banbury 1 - Recipes - " + VERSION;
     private static B1RecipeSteps shared;
+    /** Vrai quand le programme est lance seul (jar executable): fermer la fenetre termine le programme. */
+    private static boolean standalone;
 
     private static final Color BG = new Color(0xFF, 0xF6, 0xC8); // jaune clair = Banbury 1
     private static final Font F18 = new Font("SansSerif", Font.PLAIN, 18);
@@ -136,12 +138,55 @@ public final class B1RecipeSteps extends JFrame {
                 synchronized (B1RecipeSteps.class) {
                     shared = null;
                 }
+                if (standalone) {
+                    System.exit(0);
+                }
             }
         });
         refreshList();
         // l'archive, l'import du PLC (asynchrone) et l'editeur invisible changent la recette: on suit la recette courante
         new Timer(300, e -> sync()).start();
         ed.importNow();
+    }
+
+    /**
+     * Demarrage autonome (runnable jar): B1RecipeSteps [--plc IP] [--layout fichier] [--dir dossier-archive].
+     * Les fichiers de configuration sont lus dans C:\\_tools\\Banbury1 (ou le dossier courant), comme l'editeur de recettes.
+     */
+    public static void main(String[] args) throws Exception {
+        java.nio.file.Path layoutFile = B1RecipeEditor.DEFAULT_LAYOUT;
+        java.nio.file.Path dir = B1RecipeEditor.DEFAULT_DIR;
+        String plc = B1RecipeEditor.DEFAULT_PLC;
+        for (int i = 0; i < args.length - 1; i++) {
+            switch (args[i]) {
+                case "--plc":
+                    plc = args[++i];
+                    break;
+                case "--layout":
+                    layoutFile = java.nio.file.Paths.get(args[++i]);
+                    break;
+                case "--dir":
+                    dir = java.nio.file.Paths.get(args[++i]);
+                    break;
+                default:
+            }
+        }
+        if (!java.nio.file.Files.exists(layoutFile) && java.nio.file.Files.exists(java.nio.file.Paths.get("b1_recipe_layout.properties"))) {
+            layoutFile = java.nio.file.Paths.get("b1_recipe_layout.properties");
+        }
+        if (!java.nio.file.Files.isDirectory(dir) && !System.getProperty("os.name", "").toLowerCase().contains("win")) {
+            dir = java.nio.file.Paths.get("b1_recipes");
+        }
+        final B1RecipeLayout layout = B1RecipeLayout.load(layoutFile);
+        final B1RecipeRepository repo = B1RecipeRepositories.open(layout, dir);
+        final String ip = plc;
+        try {
+            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignored) {
+            // aspect par defaut
+        }
+        standalone = true;
+        openShared(repo, layout, ip, null);
     }
 
     /** Ouvre (ou met au premier plan) la fenetre; avec name, selectionne la recette en archive. */
@@ -367,6 +412,9 @@ public final class B1RecipeSteps extends JFrame {
             if (ed.confirmDiscard()) {
                 B1EditAuth.end();
                 dispose();
+                if (standalone) {
+                    System.exit(0);
+                }
             }
         });
         return b;
