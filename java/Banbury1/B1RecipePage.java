@@ -443,14 +443,13 @@ public final class B1RecipePage {
     /** Pulsanti della barra in basso (al posto di Govoni/B2/...). */
     public List<B1BottomBar.Btn> barButtons() {
         List<B1BottomBar.Btn> l = new ArrayList<>();
-        l.add(new B1BottomBar.Btn(578, 0, 52, 52, "Nouvelle", () -> run(ed::newRecipe)));
-        l.add(new B1BottomBar.Btn(632, 0, 52, 52, "Supprimer", () -> run(ed::deleteRecipe)));
-        l.add(new B1BottomBar.Btn(686, 0, 52, 52, "Dupliquer", () -> run(ed::duplicate)));
-        l.add(new B1BottomBar.Btn(740, 0, 58, 52, "Enregistrer", () -> run(ed::save)));
-        l.add(new B1BottomBar.Btn(800, 0, 58, 52, "Importer PLC", () -> run(ed::importFromPlc)));
-        l.add(new B1BottomBar.Btn(860, 0, 34, 52, "CSV", () -> run(ed::exportCsv)));
-        l.add(new B1BottomBar.Btn(896, 0, 34, 52, "Envoyer PLC", () -> run(ed::sendToPlc)));
-        l.add(new B1BottomBar.Btn(520, 0, 56, 52, "Steps", () -> B1RecipeSteps.openShared(ed.repo, ed.layout, ed.plcIp, null)));
+        String[] names = {"Nouvelle", "Supprimer", "Dupliquer", "Enregistrer", "Importer PLC", "CSV", "Steps", "Envoyer PLC"};
+        Runnable[] acts = {() -> run(ed::newRecipe), () -> run(ed::deleteRecipe), () -> run(ed::duplicate), () -> run(ed::save),
+            () -> run(ed::importFromPlc), () -> run(ed::exportCsv),
+            () -> B1RecipeSteps.openShared(ed.repo, ed.layout, ed.plcIp, null), () -> run(ed::sendToPlc)};
+        for (int i = 0; i < names.length; i++) {
+            l.add(new B1BottomBar.Btn(578 + i * 44, 0, 42, 52, names[i], acts[i]));
+        }
         return l;
     }
 
