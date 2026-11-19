@@ -486,9 +486,8 @@ public final class B1RecipeSteps extends JFrame {
         JButton bEdit = new JButton("Modifier ID / Nom");
         JButton bImport = new JButton("Importer du PLC");
         JButton bDelete = new JButton("Supprimer");
-        JButton bSave = new JButton("ENREGISTRER");
         JButton bClose = new JButton("FERMER");
-        for (JButton b : new JButton[]{bRefresh, bNew, bCopy, bEdit, bImport, bDelete, bSave, bClose}) {
+        for (JButton b : new JButton[]{bRefresh, bNew, bCopy, bEdit, bImport, bDelete, bClose}) {
             b.setFont(bf);
         }
         bRefresh.addActionListener(e -> reload.run());
@@ -505,7 +504,7 @@ public final class B1RecipeSteps extends JFrame {
                 B1EditAuth.log("NOUVELLE RECETTE", ed.current.recipeNo, ed.current.name, "-", "-", "-", "-");
                 sync();
                 dialog.dispose();
-                lblStatus.setText("Nouvelle recette : saisissez les STEPS puis Enregistrer.");
+                lblStatus.setText("Nouvelle recette : saisissez les STEPS, elle sera enregistr\u00e9e d\u00e8s qu'elle est valide.");
             }
         });
         bCopy.addActionListener(e -> {
@@ -529,7 +528,7 @@ public final class B1RecipeSteps extends JFrame {
                 B1EditAuth.log("COPIE", ed.current.recipeNo, ed.current.name, "-", "source", String.valueOf(en.recipeNo), v[0]);
                 sync();
                 dialog.dispose();
-                lblStatus.setText("Copie pas encore enregistr\u00e9e : Enregistrer pour la cr\u00e9er.");
+                autoSave();
             }
         });
         bEdit.addActionListener(e -> {
@@ -571,15 +570,6 @@ public final class B1RecipeSteps extends JFrame {
                 sync();
             }
         });
-        bSave.addActionListener(e -> {
-            if (ed.current == null) {
-                return;
-            }
-            B1EditAuth.log("ENREGISTRER", ed.current.recipeNo, ed.current.name, "-", "-", "-", "-");
-            ed.save();
-            reload.run();
-            sync();
-        });
         bClose.addActionListener(e -> dialog.dispose());
         JPanel top = new JPanel(new BorderLayout(8, 8));
         top.setOpaque(false);
@@ -593,7 +583,6 @@ public final class B1RecipeSteps extends JFrame {
         JPanel close = new JPanel(new BorderLayout());
         close.setOpaque(false);
         close.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
-        close.add(bSave, BorderLayout.WEST);
         close.add(bClose, BorderLayout.EAST);
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setOpaque(false);
@@ -652,6 +641,7 @@ public final class B1RecipeSteps extends JFrame {
             r.recipeNo = no;
             ed.edited();
             logChange("-", "Identification", od, nw);
+            autoSave();
         }
     }
 
@@ -734,6 +724,21 @@ public final class B1RecipeSteps extends JFrame {
             return false;
         }
         return true;
+    }
+
+    /** Comme B2: chaque modification confirmee est enregistree tout de suite (si la recette est valide). */
+    private void autoSave() {
+        B1Recipe r = ed.current;
+        if (r == null) {
+            return;
+        }
+        if (!B1RecipeCodec.validate(r, ed.layout).isEmpty()) {
+            lblStatus.setText("Modification m\u00e9moris\u00e9e mais pas encore enregistr\u00e9e : la recette n'est pas encore valide.");
+            return;
+        }
+        ed.save();
+        refreshList();
+        lblStatus.setText("MODE MODIFICATION ACTIF - modification enregistr\u00e9e dans l'archive (recette " + r.recipeNo + ").");
     }
 
     private void logChange(String step, String param, String oldV, String newV) {
@@ -843,6 +848,7 @@ public final class B1RecipeSteps extends JFrame {
                         r.header.put(f.key, raw);
                         ed.edited();
                         logChange("ENT\u00caTE", HEAD_LABELS[row], od, nw);
+                        autoSave();
                     }
                     fireTableRowsUpdated(row, row);
                 }
@@ -947,6 +953,7 @@ public final class B1RecipeSteps extends JFrame {
                 }
                 ed.edited();
                 logChange(stepName, w.label, od, nw);
+                autoSave();
                 fireTableRowsUpdated(row, row);
             }
         };

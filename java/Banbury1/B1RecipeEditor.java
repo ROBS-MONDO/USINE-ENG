@@ -475,9 +475,22 @@ public class B1RecipeEditor extends JFrame {
             revalidateRecipe();
         }
 
+        /** Riallinea i campi (nascosti) dell'editor alla ricetta corrente: save() rilegge nome, numero e testata da li'. */
+        private void syncFields() {
+            boolean old = loading;
+            loading = true;
+            txtName.setText(current.name);
+            txtNo.setText(String.valueOf(current.recipeNo));
+            for (B1RecipeLayout.Field f : layout.header) {
+                headerFields.get(f.key).setText(fmt(current.header.getOrDefault(f.key, 0), f));
+            }
+            loading = old;
+        }
+
         /** La pagina Recettes (stile WinCC) ha modificato la ricetta: segna le modifiche e rivalida. */
         void edited() {
             if (current != null) {
+                syncFields();
                 dirty = true;
                 revalidateRecipe();
             }
