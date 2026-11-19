@@ -271,16 +271,21 @@ public final class B1RecipeSteps extends JFrame {
         south.setOpaque(false);
         south.add(lblMode);
         south.add(lblStatus);
-        right.add(south, BorderLayout.SOUTH);
+
 
         JPanel center = new JPanel(new BorderLayout(10, 10));
         center.setOpaque(false);
         center.add(left, BorderLayout.WEST);
         center.add(right, BorderLayout.CENTER);
         root.add(center, BorderLayout.CENTER);
-        JPanel exitRow = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 0));
+        // en bas: etat a gauche, bouton de sortie a droite
+        JPanel exitRow = new JPanel(new BorderLayout(8, 0));
         exitRow.setOpaque(false);
-        exitRow.add(exitButton());
+        exitRow.add(south, BorderLayout.WEST);
+        JPanel exitBox = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 0));
+        exitBox.setOpaque(false);
+        exitBox.add(exitButton());
+        exitRow.add(exitBox, BorderLayout.EAST);
         root.add(exitRow, BorderLayout.SOUTH);
         return root;
     }
@@ -1001,7 +1006,7 @@ public final class B1RecipeSteps extends JFrame {
                 return o != null ? new ComboEditor(o) : super.getCellEditor(row, col);
             }
         };
-        table.setRowHeight(32);
+        table.setRowHeight(28);
         table.setFont(F18);
         table.getTableHeader().setFont(F18B);
         table.setGridColor(new Color(120, 120, 120));
