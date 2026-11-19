@@ -72,11 +72,12 @@ public final class VentesNationClient {
     /** Una riga cliente come restituita dalla query (già aggregata per cliente). */
     static final class ClientLine {
         String nat, natDesc, cli, nome, fidoCa;
+        String nfat, dfat, tipo; // solo con il dettaglio fatture
         BigDecimal pezzi = BigDecimal.ZERO, valore = BigDecimal.ZERO,
                 addeb = BigDecimal.ZERO, accre = BigDecimal.ZERO, fido = BigDecimal.ZERO;
     }
 
-    /** Riga del report finale: N = nazione (subtotale), C = cliente, T = totale generale. */
+    /** Riga del report finale: N = nazione (subtotale), C = cliente, D = fattura (dettaglio), T = totale generale. */
     static final class OutLine {
         final char kind;
         final String code, desc;
@@ -160,7 +161,7 @@ public final class VentesNationClient {
      *   <li>{@code @TPEZZI} = RB_QTA, moltiplicato per PARTI_JOLLYN1 se PARTI_G1='SES', negativo per ACC.</li>
      * </ul>
      */
-    static String ballonsSql() {
+    static String ballonsSql(boolean detail) {
         String qty = "s.RB_QTA * CASE WHEN p.PARTI_G1 = 'SES' THEN p.PARTI_JOLLYN1 ELSE 1 END";
         String val = "(s.RB_VALORE / s.TB_CAMBIO)";
         String plus = "s.TB_TIPO IN (" + BALLONS_INVOICE_TYPES + "," + BALLONS_DEBIT_TYPES + ")";
@@ -172,6 +173,7 @@ public final class VentesNationClient {
                 + "SUM(CASE WHEN " + plus + " THEN " + val + " WHEN " + minus + " THEN -" + val + " END) AS VALORE, "
                 + "SUM(CASE WHEN s.TB_TIPO IN (" + BALLONS_DEBIT_TYPES + ") THEN " + val + " END) AS ADDEB, "
                 + "SUM(CASE WHEN " + minus + " THEN " + val + " END) AS ACCRE "
+                + (detail ? ", s.TB_NFAT AS NFAT, TO_CHAR(s.TB_DFAT,'DD-MM-YYYY') AS DFAT, s.TB_TIPO AS TIPO " : " ")
                 + "FROM POKER.STAT_GIO2 s "
                 + "LEFT JOIN POKER.PARTI p ON p.PARTI_COD = s.RB_PARTE "
                 + "LEFT JOIN POKER.ANAG a ON a.AN_COD = s.RB_CLFO "
@@ -181,8 +183,9 @@ public final class VentesNationClient {
                 + "AND s.RB_TIPOR IN ('DF','PK','SI') "
                 + "AND s.TB_TIPO IN ('A002','D002','D005','D006','F002','F003','G002','GA01','GA02','GA03','GDCE','GREE','GRRE') "
                 + "AND (s.RB_PARTE IS NULL OR s.RB_PARTE NOT LIKE 'WSPETRA%') "
-                + "GROUP BY NVL(a.AN_CODNAZ,'--'), NVL(s.RB_CLFO,' ') "
-                + "ORDER BY 1, 3";
+                + "GROUP BY NVL(a.AN_CODNAZ,'--'), NVL(s.RB_CLFO,' ')"
+                + (detail ? ", s.TB_DFAT, s.TB_NFAT, s.TB_TIPO" : "")
+                + " ORDER BY 1, 3" + (detail ? ", s.TB_DFAT, s.TB_NFAT" : "");
     }
 
     /**
@@ -194,11 +197,12 @@ public final class VentesNationClient {
      *       RB_STF diverso da 'I' (filtro aggiunto a mano dal docx "RB STF is not equal to I").</li>
      * </ul>
      */
-    static String caouSql(boolean excludeStfI) {
+    static String caouSql(boolean excludeStfI, boolean detail) {
         return "SELECT NVL(a.AN_CODNAZ,'--') AS NAT, MAX(n.T029_DESC) AS NAT_DESC, "
                 + "NVL(s.RB_CLFO,' ') AS CLI, MAX(a.AN_RAGSOC1) AS NOME, "
                 + "MAX(c.CF_FIDO) AS FIDO, MAX(c.CF_FIDOCA) AS FIDOCA, "
                 + "SUM(s.RB_VALORE) AS VALORE "
+                + (detail ? ", s.NFATT AS NFAT, TO_CHAR(s.TB_DFAT,'DD-MM-YYYY') AS DFAT, s.TB_TIPO AS TIPO " : " ")
                 + "FROM POKER.STAT_PAV2 s "
                 + "LEFT JOIN POKER.ANAG a ON a.AN_COD = s.RB_CLFO "
                 + "LEFT JOIN POKER.CLIFOR c ON c.CF_COD = s.RB_CLFO "
@@ -206,13 +210,15 @@ public final class VentesNationClient {
                 + "WHERE s.TB_DFAT BETWEEN ? AND ? "
                 + "AND (s.RB_PARTE IS NULL OR (s.RB_PARTE NOT LIKE 'WSPETRA%' AND s.RB_PARTE NOT LIKE 'WIMPCORTRA%')) "
                 + (excludeStfI ? "AND (s.RB_STF IS NULL OR s.RB_STF <> 'I') " : "")
-                + "GROUP BY NVL(a.AN_CODNAZ,'--'), NVL(s.RB_CLFO,' ') "
-                + "ORDER BY 1, 3";
+                + "GROUP BY NVL(a.AN_CODNAZ,'--'), NVL(s.RB_CLFO,' ')"
+                + (detail ? ", s.TB_DFAT, s.NFATT, s.TB_TIPO" : "")
+                + " ORDER BY 1, 3" + (detail ? ", s.TB_DFAT, s.NFATT" : "");
     }
 
-    static Result run(Connection con, ReportType type, LocalDate from, LocalDate to, boolean excludeStfI)
+    static Result run(Connection con, ReportType type, LocalDate from, LocalDate to, boolean excludeStfI,
+                      boolean detail)
             throws SQLException {
-        String sql = type == ReportType.BALLONS ? ballonsSql() : caouSql(excludeStfI);
+        String sql = type == ReportType.BALLONS ? ballonsSql(detail) : caouSql(excludeStfI, detail);
         List<ClientLine> clients = new ArrayList<>();
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setDate(1, java.sql.Date.valueOf(from));
@@ -227,6 +233,11 @@ public final class VentesNationClient {
                     l.fidoCa = trim(rs.getString("FIDOCA"));
                     l.fido = nz(rs.getBigDecimal("FIDO"));
                     l.valore = nz(rs.getBigDecimal("VALORE"));
+                    if (detail) {
+                        l.nfat = trim(rs.getString("NFAT"));
+                        l.dfat = trim(rs.getString("DFAT"));
+                        l.tipo = trim(rs.getString("TIPO"));
+                    }
                     if (type == ReportType.BALLONS) {
                         l.pezzi = nz(rs.getBigDecimal("PEZZI"));
                         l.addeb = nz(rs.getBigDecimal("ADDEB"));
@@ -236,37 +247,59 @@ public final class VentesNationClient {
                 }
             }
         }
-        return new Result(type, from, to, build(clients));
+        return new Result(type, from, to, build(clients, detail));
     }
 
     /** Raggruppa per nazione (subtotale sopra i clienti, come nel Crystal) e aggiunge il totale generale. */
-    static List<OutLine> build(List<ClientLine> clients) {
-        Map<String, List<ClientLine>> byNat = new LinkedHashMap<>();
-        for (ClientLine c : clients) byNat.computeIfAbsent(c.nat, k -> new ArrayList<>()).add(c);
+    static List<OutLine> build(List<ClientLine> rows, boolean detail) {
+        // nazione -> cliente -> righe (una per cliente, oppure una per fattura con il dettaglio)
+        Map<String, Map<String, List<ClientLine>>> byNat = new LinkedHashMap<>();
+        for (ClientLine c : rows) {
+            byNat.computeIfAbsent(c.nat, k -> new LinkedHashMap<>())
+                    .computeIfAbsent(c.cli, k -> new ArrayList<>()).add(c);
+        }
 
         List<OutLine> out = new ArrayList<>();
-        BigDecimal gP = BigDecimal.ZERO, gV = BigDecimal.ZERO, gD = BigDecimal.ZERO, gC = BigDecimal.ZERO;
-        for (Map.Entry<String, List<ClientLine>> e : byNat.entrySet()) {
-            BigDecimal p = BigDecimal.ZERO, v = BigDecimal.ZERO, d = BigDecimal.ZERO, c = BigDecimal.ZERO;
-            for (ClientLine l : e.getValue()) {
-                p = p.add(l.pezzi);
-                v = v.add(l.valore);
-                d = d.add(l.addeb);
-                c = c.add(l.accre);
+        BigDecimal[] g = zeros();
+        for (Map.Entry<String, Map<String, List<ClientLine>>> n : byNat.entrySet()) {
+            BigDecimal[] nt = zeros();
+            List<OutLine> natLines = new ArrayList<>();
+            String natDesc = null;
+            for (List<ClientLine> inv : n.getValue().values()) {
+                BigDecimal[] ct = zeros();
+                for (ClientLine l : inv) {
+                    add(ct, l);
+                    if (natDesc == null) natDesc = l.natDesc;
+                }
+                ClientLine f = inv.get(0);
+                natLines.add(new OutLine('C', f.cli, f.nome == null ? "" : f.nome,
+                        ct[0], ct[1], ct[2], ct[3], f.fido, f.fidoCa));
+                if (detail) {
+                    for (ClientLine l : inv) {
+                        String d = (l.dfat == null ? "" : l.dfat) + (l.tipo == null ? "" : "  " + l.tipo);
+                        natLines.add(new OutLine('D', "   " + (l.nfat == null ? "" : l.nfat), d,
+                                l.pezzi, l.valore, l.addeb, l.accre, null, null));
+                    }
+                }
+                for (int i = 0; i < 4; i++) nt[i] = nt[i].add(ct[i]);
             }
-            String desc = e.getValue().get(0).natDesc;
-            out.add(new OutLine('N', e.getKey(), desc == null ? "" : desc, p, v, d, c, null, null));
-            for (ClientLine l : e.getValue()) {
-                out.add(new OutLine('C', l.cli, l.nome == null ? "" : l.nome,
-                        l.pezzi, l.valore, l.addeb, l.accre, l.fido, l.fidoCa));
-            }
-            gP = gP.add(p);
-            gV = gV.add(v);
-            gD = gD.add(d);
-            gC = gC.add(c);
+            out.add(new OutLine('N', n.getKey(), natDesc == null ? "" : natDesc, nt[0], nt[1], nt[2], nt[3], null, null));
+            out.addAll(natLines);
+            for (int i = 0; i < 4; i++) g[i] = g[i].add(nt[i]);
         }
-        out.add(new OutLine('T', "", "TOTALE GENERALE", gP, gV, gD, gC, null, null));
+        out.add(new OutLine('T', "", "TOTALE GENERALE", g[0], g[1], g[2], g[3], null, null));
         return out;
+    }
+
+    private static BigDecimal[] zeros() {
+        return new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+    }
+
+    private static void add(BigDecimal[] t, ClientLine l) {
+        t[0] = t[0].add(l.pezzi);
+        t[1] = t[1].add(l.valore);
+        t[2] = t[2].add(l.addeb);
+        t[3] = t[3].add(l.accre);
     }
 
     // ------------------------------------------------------------------ utilità
@@ -330,7 +363,7 @@ public final class VentesNationClient {
         for (String[] row : rows) for (int i = 0; i < row.length; i++) w[i] = Math.max(w[i], row[i].length());
         out.println(pad(h.toArray(new String[0]), w));
         for (int i = 0; i < r.lines.size(); i++) {
-            if (r.lines.get(i).kind != 'C') out.println();
+            if (r.lines.get(i).kind == 'N' || r.lines.get(i).kind == 'T') out.println();
             out.println(pad(rows.get(i), w));
         }
     }
@@ -401,6 +434,7 @@ public final class VentesNationClient {
         JTextField tfTo = new JTextField(LocalDate.now().format(DMY), 10);
         JPasswordField pf = new JPasswordField(cfg.password == null ? "" : cfg.password, 10);
         JCheckBox cbStf = new JCheckBox("Escludi RB_STF = 'I' (Caou)", true);
+        JCheckBox cbDet = new JCheckBox("Dettaglio fatture", true);
         JButton btRun = new JButton("Refresh");
         JButton btCsv = new JButton("Esporta CSV...");
         btCsv.setEnabled(false);
@@ -416,6 +450,7 @@ public final class VentesNationClient {
         top.add(new JLabel("Password:"));
         top.add(pf);
         top.add(cbStf);
+        top.add(cbDet);
         top.add(btRun);
         top.add(btCsv);
 
@@ -434,10 +469,11 @@ public final class VentesNationClient {
             public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
                 Component comp = super.getTableCellRendererComponent(t, v, sel, foc, r, c);
                 char kind = r < shown.get().size() ? shown.get().get(r).kind : 'C';
-                comp.setFont(t.getFont().deriveFont(kind == 'C' ? Font.PLAIN : Font.BOLD));
+                comp.setFont(t.getFont().deriveFont(kind == 'N' || kind == 'T' ? Font.BOLD : Font.PLAIN));
                 int cols = t.getColumnCount();
                 setHorizontalAlignment(c < 2 || c == cols - 1 ? SwingConstants.LEFT : SwingConstants.RIGHT);
-                if (!sel) comp.setBackground(kind == 'N' ? new Color(0xE8EEF7) : kind == 'T' ? new Color(0xD5DFEF) : Color.WHITE);
+                if (!sel) comp.setBackground(kind == 'N' ? new Color(0xE8EEF7) : kind == 'T' ? new Color(0xD5DFEF)
+                        : kind == 'D' ? new Color(0xF7F7F7) : Color.WHITE);
                 return comp;
             }
         };
@@ -466,6 +502,7 @@ public final class VentesNationClient {
                 cfg.url = c.url;
             }
             final boolean stf = cbStf.isSelected();
+            final boolean det = cbDet.isSelected();
             btRun.setEnabled(false);
             btCsv.setEnabled(false);
             status.setText("Estrazione in corso...");
@@ -473,7 +510,7 @@ public final class VentesNationClient {
                 @Override
                 protected Result doInBackground() throws Exception {
                     try (Connection con = connect(c)) {
-                        return VentesNationClient.run(con, type, from, to, stf);
+                        return VentesNationClient.run(con, type, from, to, stf, det);
                     }
                 }
 
@@ -513,7 +550,7 @@ public final class VentesNationClient {
         f.add(top, BorderLayout.NORTH);
         f.add(new JScrollPane(table), BorderLayout.CENTER);
         f.add(status, BorderLayout.SOUTH);
-        f.setSize(1100, 650);
+        f.setSize(1350, 700);
         f.setLocationRelativeTo(null);
         f.setVisible(true);
     }
@@ -525,7 +562,7 @@ public final class VentesNationClient {
         for (int i = 0; i < a.length; i++) {
             if (!a[i].startsWith("--")) throw new IllegalArgumentException("Argomento inatteso: " + a[i]);
             String k = a[i].substring(2);
-            if (k.equals("help") || k.equals("no-stf-filter")) {
+            if (k.equals("help") || k.equals("no-stf-filter") || k.equals("detail")) {
                 m.put(k, "true");
             } else {
                 if (i + 1 >= a.length) throw new IllegalArgumentException("Manca il valore di --" + k);
@@ -539,6 +576,7 @@ public final class VentesNationClient {
         System.out.println("Uso:\n"
                 + "  (senza argomenti)  apre l'interfaccia grafica\n"
                 + "  --report caou|ballons --from gg-mm-aaaa --to gg-mm-aaaa [--out file.csv]\n"
+                + "  [--detail]  aggiunge il dettaglio per fattura sotto ogni cliente\n"
                 + "  [--no-stf-filter]  (Caou: non applica RB_STF <> 'I')\n"
                 + "  [--url jdbc:oracle:thin:@//SERVER:1521/E] [--user poker] [--password ...] [--config file]\n"
                 + "Senza --out il risultato viene stampato a video.");
@@ -578,7 +616,7 @@ public final class VentesNationClient {
             }
             Result r;
             try (Connection con = connect(cfg)) {
-                r = run(con, type, from, to, !a.containsKey("no-stf-filter"));
+                r = run(con, type, from, to, !a.containsKey("no-stf-filter"), a.containsKey("detail"));
             }
             if (a.containsKey("out")) {
                 try (Writer w = new OutputStreamWriter(new FileOutputStream(a.get("out")), StandardCharsets.UTF_8)) {
