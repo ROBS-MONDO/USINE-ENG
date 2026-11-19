@@ -29,8 +29,8 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Sostituisce i due Crystal Report:
  * <ul>
- *   <li>VENTES TOTAL Caou PAR NATION/CLIENT -Statpav2- (Author Destefanis)</li>
- *   <li>VENTES TOTAL Ballons PAR NATION/CLIENT (Author Destefanis)</li>
+ *   <li>VENTES TOTAL Caou PAR NATION/CLIENT -Statpav2-</li>
+ *   <li>VENTES TOTAL Ballons PAR NATION/CLIENT</li>
  * </ul>
  * Fatturato raggruppato per NAZIONE e poi per CLIENTE, con totale generale,
  * affidamento assicurativo (CF_FIDO) e relativo codice (CF_FIDOCA).
@@ -54,10 +54,10 @@ public final class VentesNationClient {
     // ------------------------------------------------------------------ modello
 
     enum ReportType {
-        CAOU("Caou", "VENTES TOTAL Caou PAR NATION/CLIENT -Statpav2- (Author Destefanis)",
-                "VENTES TOTAL Caou PAR NATION/CLIENT -Statpav2- (Author Destefanis)"),
+        CAOU("Caou", "VENTES TOTAL Caou PAR NATION/CLIENT -Statpav2-",
+                "VENTES TOTAL Caou PAR NATION/CLIENT -Statpav2-"),
         BALLONS("Ballons", "VENTES TOTAL BALLONS PAR NATION/CLIENT - EURO",
-                "VENTES TOTAL Ballons PAR NATION/CLIENT (Author Destefanis)");
+                "VENTES TOTAL Ballons PAR NATION/CLIENT");
 
         final String label;
         final String title;
@@ -497,7 +497,7 @@ public final class VentesNationClient {
         private final List<String> hdr;
         private final boolean caou;
         private final double[] edges;      // bordo destro (frazione della larghezza) delle colonne numeriche
-        private final double natEdge = 0.50, codeX = 0.865, nameX = 0.075;
+        private final double natEdge = 0.50, codeX = 0.865, nameX = 0.09;
         private final LocalDateTime stamp = LocalDateTime.now();
 
         ReportLayout(Result r) {
