@@ -201,13 +201,6 @@ public final class B1RecipeSteps extends JFrame {
         lb.setOpaque(false);
         lb.add(button("Actualiser la liste", this::refreshList));
         lb.add(button("Ouvrir", this::openSelected));
-        lb.add(button("Importer du PLC", ed::importFromPlc));
-        lb.add(button("Nouvelle", ed::newRecipe));
-        lb.add(button("Dupliquer", ed::duplicate));
-        lb.add(guarded("Supprimer", () -> {
-            ed.deleteRecipe();
-            refreshList();
-        }));
         lb.add(guarded("Enregistrer", () -> {
             ed.save();
             refreshList();
@@ -215,6 +208,7 @@ public final class B1RecipeSteps extends JFrame {
         JButton send = button("DOWNLOAD", ed::sendToPlc);
         send.setBackground(new Color(255, 230, 120));
         lb.add(send);
+        lb.add(button("SETUP", this::openSetup));
         left.add(lb, BorderLayout.SOUTH);
 
         // droite: identification + onglets
@@ -295,6 +289,222 @@ public final class B1RecipeSteps extends JFrame {
             sync();
         });
         return b;
+    }
+
+    // ---------------------------------------------------------------- SETUP (gestion des recettes), comme MondoLux
+
+    private String[] askIdName(String title, int id, String name) {
+        JTextField tid = new JTextField(String.valueOf(id), 8);
+        JTextField tn = new JTextField(B1RecipeBridge.pretty(name), 28);
+        tid.setFont(F18);
+        tn.setFont(F18);
+        JPanel p = new JPanel(new GridLayout(2, 2, 8, 8));
+        p.add(label("ID :"));
+        p.add(tid);
+        p.add(label("Nom / Description :"));
+        p.add(tn);
+        int r = JOptionPane.showConfirmDialog(this, p, title, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (r != JOptionPane.OK_OPTION) {
+            return null;
+        }
+        try {
+            Integer.parseInt(tid.getText().trim());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "ID non valide : " + tid.getText(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+        return new String[]{tid.getText().trim(), tn.getText().trim().replace('\u00b0', 'o')};
+    }
+
+    private void openSetup() {
+        if (!B1EditAuth.ensure(this)) {
+            return;
+        }
+        final javax.swing.JDialog dialog = new javax.swing.JDialog(this, "SETUP Recettes", true);
+        dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        final javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(new Object[]{"ID", "Nom / Description"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+
+            @Override
+            public Class<?> getColumnClass(int c) {
+                return c == 0 ? Integer.class : String.class;
+            }
+        };
+        final List<B1RecipeRepository.Entry> rows = new ArrayList<>();
+        final Runnable reload = () -> {
+            ed.refreshList();
+            rows.clear();
+            model.setRowCount(0);
+            for (B1RecipeRepository.Entry e : ed.allEntries) {
+                rows.add(e);
+                model.addRow(new Object[]{e.recipeNo, B1RecipeBridge.pretty(e.name)});
+            }
+            refreshList();
+        };
+        reload.run();
+        final JTable table = new JTable(model);
+        table.setRowHeight(32);
+        table.setFont(F18);
+        table.getTableHeader().setFont(F18B);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.getColumnModel().getColumn(0).setMaxWidth(90);
+        javax.swing.table.DefaultTableCellRenderer center = new javax.swing.table.DefaultTableCellRenderer();
+        center.setHorizontalAlignment(SwingConstants.CENTER);
+        table.getColumnModel().getColumn(0).setCellRenderer(center);
+        final javax.swing.table.TableRowSorter<javax.swing.table.DefaultTableModel> sorter = new javax.swing.table.TableRowSorter<>(model);
+        table.setRowSorter(sorter);
+        final JTextField filter = new JTextField();
+        filter.setFont(F18);
+        filter.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            private void upd() {
+                String t = filter.getText().trim();
+                sorter.setRowFilter(t.isEmpty() ? null : javax.swing.RowFilter.regexFilter("(?i)" + java.util.regex.Pattern.quote(t)));
+            }
+
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                upd();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                upd();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                upd();
+            }
+        });
+        final java.util.function.Supplier<B1RecipeRepository.Entry> selected = () -> {
+            int r = table.getSelectedRow();
+            if (r < 0) {
+                JOptionPane.showMessageDialog(dialog, "S\u00e9lectionnez d'abord une recette.", "SETUP", JOptionPane.INFORMATION_MESSAGE);
+                return null;
+            }
+            return rows.get(table.convertRowIndexToModel(r));
+        };
+        Font bf = new Font("SansSerif", Font.BOLD, 16);
+        JButton bRefresh = new JButton("Actualiser");
+        JButton bNew = new JButton("Nouvelle recette");
+        JButton bCopy = new JButton("COPIE");
+        JButton bEdit = new JButton("Modifier ID / Nom");
+        JButton bImport = new JButton("Importer du PLC");
+        JButton bDelete = new JButton("Supprimer");
+        JButton bClose = new JButton("FERMER");
+        for (JButton b : new JButton[]{bRefresh, bNew, bCopy, bEdit, bImport, bDelete, bClose}) {
+            b.setFont(bf);
+        }
+        bRefresh.addActionListener(e -> reload.run());
+        bNew.addActionListener(e -> {
+            String[] v = askIdName("Nouvelle recette", 0, "");
+            if (v == null) {
+                return;
+            }
+            ed.newRecipe();
+            if (ed.current != null && ed.current.revision == 0) {
+                ed.current.recipeNo = Integer.parseInt(v[0]);
+                ed.current.name = v[1];
+                ed.edited();
+                B1EditAuth.log("NOUVELLE RECETTE", ed.current.recipeNo, ed.current.name, "-", "-", "-", "-");
+                sync();
+                dialog.dispose();
+                lblStatus.setText("Nouvelle recette : saisissez les STEPS puis Enregistrer.");
+            }
+        });
+        bCopy.addActionListener(e -> {
+            B1RecipeRepository.Entry en = selected.get();
+            if (en == null) {
+                return;
+            }
+            ed.openEntry(en);
+            if (ed.current == null || !en.uid.equals(ed.current.uid)) {
+                return; // modifications non enregistrees conservees par l'operateur
+            }
+            String[] v = askIdName("COPIE de la recette " + en.recipeNo, en.recipeNo, en.name + "_COPIE");
+            if (v == null) {
+                return;
+            }
+            ed.duplicate();
+            if (ed.current != null) {
+                ed.current.recipeNo = Integer.parseInt(v[0]);
+                ed.current.name = v[1];
+                ed.edited();
+                B1EditAuth.log("COPIE", ed.current.recipeNo, ed.current.name, "-", "source", String.valueOf(en.recipeNo), v[0]);
+                sync();
+                dialog.dispose();
+                lblStatus.setText("Copie pas encore enregistr\u00e9e : Enregistrer pour la cr\u00e9er.");
+            }
+        });
+        bEdit.addActionListener(e -> {
+            B1RecipeRepository.Entry en = selected.get();
+            if (en == null) {
+                return;
+            }
+            ed.openEntry(en);
+            if (ed.current == null || !en.uid.equals(ed.current.uid)) {
+                return;
+            }
+            String[] v = askIdName("Modifier ID / Nom", ed.current.recipeNo, ed.current.name);
+            if (v == null) {
+                return;
+            }
+            String od = ed.current.recipeNo + " / " + ed.current.name;
+            ed.current.recipeNo = Integer.parseInt(v[0]);
+            ed.current.name = v[1];
+            ed.edited();
+            B1EditAuth.log("MODIFIER ID/NOM", ed.current.recipeNo, ed.current.name, "-", "Identification", od, v[0] + " / " + v[1]);
+            ed.save();
+            reload.run();
+            sync();
+        });
+        bImport.addActionListener(e -> {
+            ed.importFromPlc();
+            sync();
+        });
+        bDelete.addActionListener(e -> {
+            B1RecipeRepository.Entry en = selected.get();
+            if (en == null) {
+                return;
+            }
+            ed.openEntry(en);
+            if (ed.current != null && en.uid.equals(ed.current.uid)) {
+                B1EditAuth.log("SUPPRIMER", en.recipeNo, en.name, "-", "-", "-", "-");
+                ed.deleteRecipe();
+                reload.run();
+                sync();
+            }
+        });
+        bClose.addActionListener(e -> dialog.dispose());
+        JPanel top = new JPanel(new BorderLayout(8, 8));
+        top.setOpaque(false);
+        top.add(label("Filtre :"), BorderLayout.WEST);
+        top.add(filter, BorderLayout.CENTER);
+        JPanel actions = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 8));
+        actions.setOpaque(false);
+        for (JButton b : new JButton[]{bRefresh, bNew, bCopy, bEdit, bImport, bDelete}) {
+            actions.add(b);
+        }
+        JPanel close = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 8));
+        close.setOpaque(false);
+        close.add(bClose);
+        JPanel bottom = new JPanel(new BorderLayout());
+        bottom.setOpaque(false);
+        bottom.add(actions, BorderLayout.NORTH);
+        bottom.add(close, BorderLayout.SOUTH);
+        JPanel root = new JPanel(new BorderLayout(10, 10));
+        root.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        root.setBackground(new Color(255, 190, 190)); // meme rose que le mode modification
+        root.add(top, BorderLayout.NORTH);
+        root.add(new JScrollPane(table), BorderLayout.CENTER);
+        root.add(bottom, BorderLayout.SOUTH);
+        dialog.setContentPane(root);
+        dialog.setSize(940, 720);
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 
     private void refreshList() {
