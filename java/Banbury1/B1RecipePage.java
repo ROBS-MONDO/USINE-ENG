@@ -481,7 +481,7 @@ public final class B1RecipePage {
         String[] names = {"Nouvelle", "Supprimer", "Dupliquer", "Enregistrer", "Importer PLC", "CSV", "Steps", "Envoyer PLC"};
         Runnable[] acts = {() -> run(ed::newRecipe), () -> guard("SUPPRIMER", ed::deleteRecipe), () -> run(ed::duplicate), () -> guard("ENREGISTRER", ed::save),
             () -> run(ed::importFromPlc), () -> run(ed::exportCsv),
-            () -> B1RecipeSteps.openShared(ed.repo, ed.layout, ed.plcIp, null), () -> guard("ENVOYER AU PLC", ed::sendToPlc)};
+            () -> B1RecipeSteps.openShared(ed.repo, ed.layout, ed.plcIp, null), () -> run(ed::sendToPlc)};
         for (int i = 0; i < names.length; i++) {
             l.add(new B1BottomBar.Btn(578 + i * 44, 0, 42, 52, names[i], acts[i]));
         }

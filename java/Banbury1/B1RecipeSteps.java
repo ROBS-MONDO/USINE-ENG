@@ -211,7 +211,7 @@ public final class B1RecipeSteps extends JFrame {
             ed.save();
             refreshList();
         }));
-        JButton send = guarded("ENVOYER AU PLC", ed::sendToPlc);
+        JButton send = button("ENVOYER AU PLC", ed::sendToPlc);
         send.setBackground(new Color(255, 230, 120));
         lb.add(send);
         left.add(lb, BorderLayout.SOUTH);
