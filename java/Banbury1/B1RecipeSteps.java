@@ -212,10 +212,6 @@ public final class B1RecipeSteps extends JFrame {
         lb.add(button("SETUP", this::openSetup));
         lb.add(button("Actualiser la liste", this::refreshList));
         lb.add(button("Ouvrir", this::openSelected));
-        lb.add(guarded("Enregistrer", () -> {
-            ed.save();
-            refreshList();
-        }));
         JButton send = button("DOWNLOAD", ed::sendToPlc);
         send.setBackground(new Color(255, 230, 120));
         lb.add(send);
@@ -490,8 +486,9 @@ public final class B1RecipeSteps extends JFrame {
         JButton bEdit = new JButton("Modifier ID / Nom");
         JButton bImport = new JButton("Importer du PLC");
         JButton bDelete = new JButton("Supprimer");
+        JButton bSave = new JButton("ENREGISTRER");
         JButton bClose = new JButton("FERMER");
-        for (JButton b : new JButton[]{bRefresh, bNew, bCopy, bEdit, bImport, bDelete, bClose}) {
+        for (JButton b : new JButton[]{bRefresh, bNew, bCopy, bEdit, bImport, bDelete, bSave, bClose}) {
             b.setFont(bf);
         }
         bRefresh.addActionListener(e -> reload.run());
@@ -574,6 +571,15 @@ public final class B1RecipeSteps extends JFrame {
                 sync();
             }
         });
+        bSave.addActionListener(e -> {
+            if (ed.current == null) {
+                return;
+            }
+            B1EditAuth.log("ENREGISTRER", ed.current.recipeNo, ed.current.name, "-", "-", "-", "-");
+            ed.save();
+            reload.run();
+            sync();
+        });
         bClose.addActionListener(e -> dialog.dispose());
         JPanel top = new JPanel(new BorderLayout(8, 8));
         top.setOpaque(false);
@@ -584,9 +590,11 @@ public final class B1RecipeSteps extends JFrame {
         for (JButton b : new JButton[]{bRefresh, bNew, bCopy, bEdit, bImport, bDelete}) {
             actions.add(b);
         }
-        JPanel close = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 8));
+        JPanel close = new JPanel(new BorderLayout());
         close.setOpaque(false);
-        close.add(bClose);
+        close.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        close.add(bSave, BorderLayout.WEST);
+        close.add(bClose, BorderLayout.EAST);
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setOpaque(false);
         bottom.add(actions, BorderLayout.NORTH);
