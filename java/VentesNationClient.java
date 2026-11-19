@@ -1,4 +1,4 @@
-package Ventes;
+package CRY;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -27,9 +27,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * affidamento assicurativo (CF_FIDO) e relativo codice (CF_FIDOCA).
  *
  * <p>Avvio con interfaccia (come "Refresh" del Crystal: date + password):
- * <pre>  java -cp out:ojdbc8.jar Ventes.VentesNationClient</pre>
+ * <pre>  java -cp out:ojdbc8.jar CRY.VentesNationClient</pre>
  * Avvio da riga di comando (esporta CSV, utile per schedulare):
- * <pre>  java -cp out:ojdbc8.jar Ventes.VentesNationClient --report caou \
+ * <pre>  java -cp out:ojdbc8.jar CRY.VentesNationClient --report caou \
  *       --from 01-01-2018 --to 30-11-2018 --out caou.csv</pre>
  *
  * <p>Connessione (priorità: argomenti &gt; variabili d'ambiente &gt; ventes.properties):
@@ -335,17 +335,23 @@ public final class VentesNationClient {
         }
     }
 
+    private static String spaces(int n) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) sb.append(' ');
+        return sb.toString();
+    }
+
     private static String pad(String[] cells, int[] w) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < cells.length; i++) {
             String c = cells[i];
             boolean left = i < 2 || i == cells.length - 1;
             int n = w[i] - c.length();
-            if (left) sb.append(c).append(" ".repeat(n));
-            else sb.append(" ".repeat(n)).append(c);
+            if (left) sb.append(c).append(spaces(n));
+            else sb.append(spaces(n)).append(c);
             sb.append("  ");
         }
-        return sb.toString().stripTrailing();
+        return sb.toString().replaceAll("\\s+$", "");
     }
 
     // ------------------------------------------------------------------ connessione

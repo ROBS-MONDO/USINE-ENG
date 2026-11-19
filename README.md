@@ -18,9 +18,9 @@ Serve solo il driver JDBC Oracle (`ojdbc8.jar`) nel classpath.
 ```bash
 javac -d out java/VentesNationClient.java
 # interfaccia grafica (report, FromDate, ToDate, password -> Refresh -> Esporta CSV)
-java -cp out:ojdbc8.jar Ventes.VentesNationClient
+java -cp out:ojdbc8.jar CRY.VentesNationClient
 # da riga di comando
-java -cp out:ojdbc8.jar Ventes.VentesNationClient --report caou --from 01-01-2018 --to 30-11-2018 --out caou.csv
+java -cp out:ojdbc8.jar CRY.VentesNationClient --report caou --from 01-01-2018 --to 30-11-2018 --out caou.csv
 ```
 
 Connessione: `--url`, `VENTES_DB_URL` o `ventes.properties` (vedi `java/ventes.properties.example`);
