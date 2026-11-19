@@ -196,6 +196,16 @@ public final class B1RecipeSteps extends JFrame {
         left.add(lr, BorderLayout.NORTH);
         list.setFont(F18);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2 && javax.swing.SwingUtilities.isLeftMouseButton(e) && list.locationToIndex(e.getPoint()) >= 0) {
+                    list.setSelectedIndex(list.locationToIndex(e.getPoint()));
+                    openSelected();
+                    sync();
+                }
+            }
+        });
         left.add(new JScrollPane(list), BorderLayout.CENTER);
         JPanel lb = new JPanel(new GridLayout(0, 1, 5, 5));
         lb.setOpaque(false);
