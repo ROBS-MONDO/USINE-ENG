@@ -478,7 +478,7 @@ public final class B1RecipePage {
     /** Pulsanti della barra in basso (al posto di Govoni/B2/...). */
     public List<B1BottomBar.Btn> barButtons() {
         List<B1BottomBar.Btn> l = new ArrayList<>();
-        String[] names = {"Nouvelle", "Supprimer", "Dupliquer", "Enregistrer", "Importer PLC", "CSV", "Steps", "Envoyer PLC"};
+        String[] names = {"Nouvelle", "Supprimer", "Dupliquer", "Enregistrer", "Importer PLC", "CSV", "Steps", "Download"};
         Runnable[] acts = {() -> run(ed::newRecipe), () -> guard("SUPPRIMER", ed::deleteRecipe), () -> run(ed::duplicate), () -> guard("ENREGISTRER", ed::save),
             () -> run(ed::importFromPlc), () -> run(ed::exportCsv),
             () -> B1RecipeSteps.openShared(ed.repo, ed.layout, ed.plcIp, null), () -> run(ed::sendToPlc)};

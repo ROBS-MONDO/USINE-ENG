@@ -100,7 +100,7 @@ final class B1BottomBar {
             case "Importer PLC": return "IMPORTER DU PLC - lit la recette en machine et l'ajoute / met \u00e0 jour l'archive";
             case "Steps": return "STEPS - \u00e9diteur de recettes par STEP (un onglet par phase)";
             case "CSV": return "CSV - exporter la recette";
-            case "Envoyer PLC": return "ENVOYER AU PLC - aper\u00e7u et confirmation avant l'\u00e9criture";
+            case "Download": return "DOWNLOAD - envoyer la recette au PLC : aper\u00e7u et confirmation avant l'\u00e9criture";
             case "EXIT": return "EXIT - ferme cette fen\u00eatre";
             default: return name;
         }

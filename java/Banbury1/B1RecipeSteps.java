@@ -45,10 +45,11 @@ import javax.swing.table.TableCellRenderer;
  */
 public final class B1RecipeSteps extends JFrame {
 
-    static final String VERSION = "B1 Recettes - STEPS V0.1";
+    static final String VERSION = "V1.00";
+    static final String TITLE = "Banbury 1 - Recipes - " + VERSION;
     private static B1RecipeSteps shared;
 
-    private static final Color BG = new Color(236, 236, 236);
+    private static final Color BG = new Color(0xFF, 0xF6, 0xC8); // jaune clair = Banbury 1
     private static final Font F18 = new Font("SansSerif", Font.PLAIN, 18);
     private static final Font F18B = new Font("SansSerif", Font.BOLD, 18);
 
@@ -123,7 +124,7 @@ public final class B1RecipeSteps extends JFrame {
     }
 
     public B1RecipeSteps(B1RecipeRepository repo, B1RecipeLayout layout, String plcIp) {
-        super(VERSION);
+        super(TITLE);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         ed = new B1RecipeEditor.EditorPanel(null, repo, layout, plcIp);
         setContentPane(build());
@@ -182,7 +183,7 @@ public final class B1RecipeSteps extends JFrame {
         };
         rootPanel = root;
         root.setBorder(BorderFactory.createEmptyBorder(14, 18, 14, 18));
-        JLabel title = new JLabel("Banbury 1 - Recettes par STEP", SwingConstants.CENTER);
+        JLabel title = new JLabel(TITLE, SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 30));
         root.add(title, BorderLayout.NORTH);
 
@@ -211,7 +212,7 @@ public final class B1RecipeSteps extends JFrame {
             ed.save();
             refreshList();
         }));
-        JButton send = button("ENVOYER AU PLC", ed::sendToPlc);
+        JButton send = button("DOWNLOAD", ed::sendToPlc);
         send.setBackground(new Color(255, 230, 120));
         lb.add(send);
         left.add(lb, BorderLayout.SOUTH);
@@ -219,14 +220,26 @@ public final class B1RecipeSteps extends JFrame {
         // droite: identification + onglets
         JPanel right = new JPanel(new BorderLayout(10, 10));
         right.setOpaque(false);
-        JPanel info = new JPanel(new GridLayout(3, 2, 8, 8));
+        JPanel info = new JPanel(new java.awt.GridBagLayout());
         info.setOpaque(false);
-        info.add(label("N\u00b0 Recette :"));
-        info.add(txtNo);
-        info.add(label("Description :"));
-        info.add(txtName);
-        info.add(label("\u00c9tat :"));
-        info.add(lblInfo);
+        java.awt.Component[][] infoRows = {{label("N\u00b0 Recette :"), txtNo}, {label("Description :"), txtName},
+            {label("\u00c9tat :"), lblInfo}};
+        for (int ir = 0; ir < infoRows.length; ir++) {
+            java.awt.GridBagConstraints gl = new java.awt.GridBagConstraints();
+            gl.gridx = 0;
+            gl.gridy = ir;
+            gl.anchor = java.awt.GridBagConstraints.WEST;
+            gl.insets = new Insets(4, 0, 4, 14);
+            info.add(infoRows[ir][0], gl);
+            java.awt.GridBagConstraints gv = new java.awt.GridBagConstraints();
+            gv.gridx = 1;
+            gv.gridy = ir;
+            gv.weightx = 1.0;
+            gv.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            gv.anchor = java.awt.GridBagConstraints.WEST;
+            gv.insets = new Insets(4, 0, 4, 0);
+            info.add(infoRows[ir][1], gv);
+        }
         txtNo.setFont(F18);
         txtName.setFont(F18);
         lblInfo.setFont(new Font("SansSerif", Font.PLAIN, 14));
