@@ -802,6 +802,37 @@ public class B1RecipeEditor extends JFrame {
         private volatile String importedFor;
 
         /** Lettura immediata del PLC configurato (senza domande). */
+        private B1Recipe importedOld;
+
+        /** Meme numero, parametres de tete, operations et valeurs de toutes les phases (les cles absentes valent 0). */
+        static boolean sameContent(B1Recipe a, B1Recipe b) {
+            if (a == null || b == null || a.recipeNo != b.recipeNo || a.phases.size() != b.phases.size()) {
+                return false;
+            }
+            if (!sameMap(a.header, b.header)) {
+                return false;
+            }
+            for (int i = 0; i < a.phases.size(); i++) {
+                B1Recipe.Phase p = a.phases.get(i);
+                B1Recipe.Phase q = b.phases.get(i);
+                if ((p.ops & 0xFFFF) != (q.ops & 0xFFFF) || !sameMap(p.values, q.values)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static boolean sameMap(Map<String, Integer> x, Map<String, Integer> y) {
+            java.util.Set<String> keys = new java.util.HashSet<>(x.keySet());
+            keys.addAll(y.keySet());
+            for (String k : keys) {
+                if (x.getOrDefault(k, 0).intValue() != y.getOrDefault(k, 0).intValue()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         void importNow() {
             doImport(plcIp);
         }
@@ -818,6 +849,7 @@ public class B1RecipeEditor extends JFrame {
             final int portF = port;
             lblStatus.setText("Lecture du PLC " + host + "...");
             importedFor = null;
+            importedOld = null;
             new SwingWorker<B1Recipe, Void>() {
                 @Override
                 protected B1Recipe doInBackground() throws Exception {
@@ -841,6 +873,7 @@ public class B1RecipeEditor extends JFrame {
                                     r.revision = old.revision;
                                     r.name = old.name;
                                     importedFor = e.name;
+                                    importedOld = old;
                                     break;
                                 }
                             }
@@ -854,7 +887,11 @@ public class B1RecipeEditor extends JFrame {
                     try {
                         B1Recipe r = get();
                         list.clearSelection();
-                        if (importedFor != null) {
+                        if (importedFor != null && sameContent(importedOld, r)) {
+                            // identique a l'archive: rien a enregistrer, pas de question "modifications non enregistrees"
+                            show(r, false, "Import\u00e9e du PLC " + host + " : identique \u00e0 la recette n\u00b0 " + r.recipeNo + " \u00ab "
+                                    + B1RecipeBridge.pretty(importedFor) + " \u00bb de l'archive");
+                        } else if (importedFor != null) {
                             show(r, true, "Import\u00e9e du PLC " + host + " : valeurs actuelles de la recette n\u00b0 " + r.recipeNo + " \u00ab "
                                     + B1RecipeBridge.pretty(importedFor) + " \u00bb - Enregistrer pour mettre \u00e0 jour l'archive");
                         } else {
