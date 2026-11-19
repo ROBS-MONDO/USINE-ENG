@@ -32,3 +32,7 @@ valore = `RB_VALORE / TB_CAMBIO` in EUR (note di credito negative), pezzi x `PAR
 
 Dal form, dopo il Refresh, il pulsante **Anteprima / Stampa...** apre l'anteprima A4
 (pagine, zoom, orientamento orizzontale/verticale) e da lì la stampa su una qualsiasi stampante di sistema.
+
+Connessione automatica: se nel progetto è presente `SVC.DbOracleManager` (come in ProdMelBanb),
+`VentesNationClient` usa `DbOracleManager.getConnection()` e non chiede né URL né password.
+Solo se la classe manca (o se è indicato `--url` / `db.url`) si usa l'URL JDBC.

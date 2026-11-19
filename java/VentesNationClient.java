@@ -423,12 +423,40 @@ public final class VentesNationClient {
         return null;
     }
 
-    static Connection connect(DbConfig c) throws SQLException {
-        if (c.url == null) {
-            throw new SQLException("URL JDBC non configurato. Usa --url, VENTES_DB_URL oppure db.url in "
-                    + "ventes.properties (es. jdbc:oracle:thin:@//SERVER:1521/E).");
+    private static final String ORACLE_MANAGER = "SVC.DbOracleManager";
+
+    /** True se nel progetto c'è la classe SVC.DbOracleManager (connessione Oracle già configurata). */
+    static boolean hasOracleManager() {
+        try {
+            Class.forName(ORACLE_MANAGER);
+            return true;
+        } catch (ClassNotFoundException | LinkageError e) {
+            return false;
         }
-        return DriverManager.getConnection(c.url, c.user, c.password == null ? "" : c.password);
+    }
+
+    /**
+     * Se è indicato un URL JDBC (argomento, variabile o properties) si usa quello con utente/password;
+     * altrimenti si usa SVC.DbOracleManager.getConnection() del progetto, senza chiedere nulla.
+     */
+    static Connection connect(DbConfig c) throws SQLException {
+        if (c.url != null) {
+            return DriverManager.getConnection(c.url, c.user, c.password == null ? "" : c.password);
+        }
+        if (!hasOracleManager()) {
+            throw new SQLException("Connessione non configurata: aggiungi SVC.DbOracleManager al progetto oppure usa "
+                    + "--url, VENTES_DB_URL o db.url in ventes.properties (es. jdbc:oracle:thin:@//SERVER:1521/E).");
+        }
+        try {
+            Object con = Class.forName(ORACLE_MANAGER).getMethod("getConnection").invoke(null);
+            return (Connection) con;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            Throwable t = e.getCause() != null ? e.getCause() : e;
+            if (t instanceof SQLException) throw (SQLException) t;
+            throw new SQLException("DbOracleManager.getConnection() ha fallito: " + t.getMessage(), t);
+        } catch (ReflectiveOperationException e) {
+            throw new SQLException("Impossibile usare " + ORACLE_MANAGER + ".getConnection(): " + e, e);
+        }
     }
 
     // ------------------------------------------------------------------ GUI
@@ -441,6 +469,7 @@ public final class VentesNationClient {
         JTextField tfFrom = new JTextField(LocalDate.now().withDayOfYear(1).format(DMY), 10);
         JTextField tfTo = new JTextField(LocalDate.now().format(DMY), 10);
         JPasswordField pf = new JPasswordField(cfg.password == null ? "" : cfg.password, 10);
+        pf.setEnabled(cfg.url != null || !hasOracleManager()); // con DbOracleManager la password non serve
         JCheckBox cbStf = new JCheckBox("Escludi RB_STF = 'I' (Caou)", true);
         JCheckBox cbDet = new JCheckBox("Dettaglio fatture", true);
         JButton btRun = new JButton("Refresh");
@@ -507,7 +536,7 @@ public final class VentesNationClient {
             c.url = cfg.url;
             c.user = cfg.user;
             c.password = new String(pf.getPassword());
-            if (c.url == null) {
+            if (c.url == null && !hasOracleManager()) {
                 c.url = JOptionPane.showInputDialog(f, "URL JDBC (es. jdbc:oracle:thin:@//SERVER:1521/E):");
                 if (c.url == null) return;
                 cfg.url = c.url;
@@ -852,7 +881,7 @@ public final class VentesNationClient {
                 throw new IllegalArgumentException("Servono --from e --to");
             LocalDate from = parseDate(a.get("from")), to = parseDate(a.get("to"));
             if (to.isBefore(from)) throw new IllegalArgumentException("--to precedente a --from");
-            if (cfg.password == null) {
+            if (cfg.password == null && (cfg.url != null || !hasOracleManager())) {
                 Console console = System.console();
                 if (console == null) throw new IllegalArgumentException("Password mancante (--password o VENTES_DB_PASSWORD)");
                 cfg.password = new String(console.readPassword("Password per %s: ", cfg.user));
