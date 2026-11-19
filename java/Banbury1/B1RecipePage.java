@@ -52,14 +52,9 @@ public final class B1RecipePage {
     /** Seleziona la ricetta (o la importa dal PLC se manca). */
     public void select(String name) {
         if (name == null || name.trim().isEmpty()) {
-            boolean blank = ed.current == null || !ed.dirty && ed.current.revision == 0 && ed.current.name.isEmpty();
-            if (blank) {
-                String rn = src != null && src.connected() ? src.str("recipe_name") : null;
-                if (rn != null && !rn.trim().isEmpty()) {
-                    ed.selectByName(B1RecipeBridge.archiveName(rn));
-                } else {
-                    ed.autoImportIfEmpty();
-                }
+            // apertura dal pulsante Recettes: legge subito la ricetta in macchina (sola lettura), salvo modifiche in corso
+            if (!ed.dirty) {
+                ed.importNow();
             }
         } else {
             ed.selectByName(name);

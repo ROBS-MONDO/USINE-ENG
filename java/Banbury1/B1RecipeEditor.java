@@ -801,6 +801,11 @@ public class B1RecipeEditor extends JFrame {
         /** Nome della ricetta in archivio aggiornata dall'importazione (null = ricetta nuova). */
         private volatile String importedFor;
 
+        /** Lettura immediata del PLC configurato (senza domande). */
+        void importNow() {
+            doImport(plcIp);
+        }
+
         private void doImport(String hostSpec) {
             String h = hostSpec;
             int port = 102;
