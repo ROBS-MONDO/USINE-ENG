@@ -72,17 +72,20 @@ public class B1ScreensWindow extends JFrame {
 
     /** Apre (o porta in primo piano) la finestra sulla schermata indicata (es. "005_Display"). */
     public static void open(B1Source src, String screen) {
-        SwingUtilities.invokeLater(() -> {
-            synchronized (B1ScreensWindow.class) {
-                if (shared == null || !shared.isDisplayable()) {
-                    shared = new B1ScreensWindow(src, screen);
-                    shared.setVisible(true);
-                } else {
-                    shared.panel.show(screen);
-                }
-                shared.toFront();
+        SwingUtilities.invokeLater(() -> openNow(src, screen));
+    }
+
+    /** Come open(), ma subito (da chiamare nel thread grafico). */
+    private static void openNow(B1Source src, String screen) {
+        synchronized (B1ScreensWindow.class) {
+            if (shared == null || !shared.isDisplayable()) {
+                shared = new B1ScreensWindow(src, screen);
+                shared.setVisible(true);
+            } else {
+                shared.panel.show(screen);
             }
-        });
+            shared.toFront();
+        }
     }
 
     private static volatile B1Source lastSrc;
@@ -94,7 +97,7 @@ public class B1ScreensWindow extends JFrame {
             return false;
         }
         SwingUtilities.invokeLater(() -> {
-            open(s, "006_Recipes");
+            openNow(s, "006_Recipes");
             ScreenPanel p;
             synchronized (B1ScreensWindow.class) {
                 p = shared == null ? null : shared.panel;
