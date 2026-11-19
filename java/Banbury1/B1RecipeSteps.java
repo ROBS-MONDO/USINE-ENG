@@ -22,6 +22,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -58,6 +59,8 @@ public final class B1RecipeSteps extends JFrame {
     private final JTextField txtNo = new JTextField();
     private final JLabel lblInfo = new JLabel(" ");
     private final JLabel lblStatus = new JLabel(" ");
+    private final JLabel lblMode = new JLabel(" ");
+    private JPanel rootPanel;
     private final JTabbedPane tabs = new JTabbedPane();
     private B1Recipe shown;
     private boolean building;
@@ -166,7 +169,7 @@ public final class B1RecipeSteps extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
-                g2.setColor(BG);
+                g2.setColor(B1EditAuth.active() ? new Color(255, 190, 190) : BG);
                 g2.fillRect(0, 0, getWidth(), getHeight());
                 g2.setColor(new Color(205, 205, 205));
                 for (int y = 0; y < getHeight(); y += 10) {
@@ -177,6 +180,7 @@ public final class B1RecipeSteps extends JFrame {
                 g2.dispose();
             }
         };
+        rootPanel = root;
         root.setBorder(BorderFactory.createEmptyBorder(14, 18, 14, 18));
         JLabel title = new JLabel("Banbury 1 - Recettes par STEP", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 30));
@@ -199,15 +203,15 @@ public final class B1RecipeSteps extends JFrame {
         lb.add(button("Importer du PLC", ed::importFromPlc));
         lb.add(button("Nouvelle", ed::newRecipe));
         lb.add(button("Dupliquer", ed::duplicate));
-        lb.add(button("Supprimer", () -> {
+        lb.add(guarded("Supprimer", () -> {
             ed.deleteRecipe();
             refreshList();
         }));
-        lb.add(button("Enregistrer", () -> {
+        lb.add(guarded("Enregistrer", () -> {
             ed.save();
             refreshList();
         }));
-        JButton send = button("ENVOYER AU PLC", ed::sendToPlc);
+        JButton send = guarded("ENVOYER AU PLC", ed::sendToPlc);
         send.setBackground(new Color(255, 230, 120));
         lb.add(send);
         left.add(lb, BorderLayout.SOUTH);
@@ -248,7 +252,13 @@ public final class B1RecipeSteps extends JFrame {
         tabs.setUI(new StepTabbedPaneUI());
         right.add(tabs, BorderLayout.CENTER);
         lblStatus.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        right.add(lblStatus, BorderLayout.SOUTH);
+        lblMode.setFont(new Font("SansSerif", Font.BOLD, 14));
+        lblMode.setForeground(new Color(150, 0, 0));
+        JPanel south = new JPanel(new GridLayout(2, 1));
+        south.setOpaque(false);
+        south.add(lblMode);
+        south.add(lblStatus);
+        right.add(south, BorderLayout.SOUTH);
 
         JPanel center = new JPanel(new BorderLayout(10, 10));
         center.setOpaque(false);
@@ -302,9 +312,19 @@ public final class B1RecipeSteps extends JFrame {
             txtNo.setText(String.valueOf(r.recipeNo));
         }
         if (!n.equals(r.name) || no != r.recipeNo) {
+            String od = "N\u00b0 " + r.recipeNo + " / " + B1RecipeBridge.pretty(r.name);
+            String nw = "N\u00b0 " + no + " / " + B1RecipeBridge.pretty(n);
+            if (!authorize("-", "Identification de la recette", od, nw)) {
+                building = true;
+                txtName.setText(B1RecipeBridge.pretty(r.name));
+                txtNo.setText(String.valueOf(r.recipeNo));
+                building = false;
+                return;
+            }
             r.name = n;
             r.recipeNo = no;
             ed.edited();
+            logChange("-", "Identification", od, nw);
         }
     }
 
@@ -317,6 +337,13 @@ public final class B1RecipeSteps extends JFrame {
         }
         if (r != null) {
             lblInfo.setText(ed.lblInfo.getText() + (ed.dirty ? "  [modifications non enregistr\u00e9es]" : ""));
+        }
+        boolean act = B1EditAuth.active();
+        lblMode.setText(act ? "MODE MODIFICATION ACTIF - " + B1EditAuth.userName() + " - encore "
+                + B1EditAuth.remainingSeconds() / 60 + " min " + B1EditAuth.remainingSeconds() % 60 + " s"
+                : "Lecture seule : une modification demande l'authentification Active Directory");
+        if (rootPanel != null) {
+            rootPanel.repaint();
         }
         String p = ed.problemsText();
         lblStatus.setText(p == null ? " " : p.replace("\n", "  |  "));
@@ -343,6 +370,68 @@ public final class B1RecipeSteps extends JFrame {
             txtNo.setText("");
         }
         building = false;
+    }
+
+    // ---------------------------------------------------------------- mode modification (authentification AD)
+
+    /** Authentification + confirmation avant de changer une valeur; false = modification annulee. */
+    private boolean authorize(String step, String param, String oldV, String newV) {
+        if (!B1EditAuth.ensure(this)) {
+            lblStatus.setText("Modification annul\u00e9e : authentification Active Directory non confirm\u00e9e.");
+            return false;
+        }
+        B1Recipe r = ed.current;
+        JPanel d = new JPanel(new GridLayout(5, 2, 10, 10));
+        d.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        String[][] rows = {{"Recette :", (r == null ? "" : r.recipeNo + " - " + B1RecipeBridge.pretty(r.name))}, {"STEP :", step},
+            {"Param\u00e8tre :", param}, {"Ancienne valeur :", oldV}, {"Nouvelle valeur :", newV}};
+        for (String[] row : rows) {
+            JLabel a = new JLabel(row[0]);
+            a.setFont(F18B);
+            JLabel b = new JLabel(row[1]);
+            b.setFont(F18);
+            d.add(a);
+            d.add(b);
+        }
+        JPanel p = new JPanel(new BorderLayout(10, 10));
+        JLabel t = new JLabel("CONFIRMATION DE MODIFICATION", SwingConstants.CENTER);
+        t.setFont(new Font("SansSerif", Font.BOLD, 22));
+        t.setForeground(new Color(120, 0, 0));
+        p.add(t, BorderLayout.NORTH);
+        p.add(d, BorderLayout.CENTER);
+        Object[] opt = {"CONFIRMER", "ANNULER"};
+        int res = JOptionPane.showOptionDialog(this, p, "CONFIRMATION DE MODIFICATION", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE, null, opt, opt[1]);
+        if (res != 0) {
+            lblStatus.setText("Modification annul\u00e9e par l'op\u00e9rateur : " + param + " reste \u00e0 " + oldV + ".");
+            return false;
+        }
+        return true;
+    }
+
+    private void logChange(String step, String param, String oldV, String newV) {
+        B1Recipe r = ed.current;
+        B1EditAuth.log("MODIFICATION", r == null ? 0 : r.recipeNo, r == null ? "" : r.name, step, param, oldV, newV);
+    }
+
+    private static String disp(String kind, Object v) {
+        Opt[] o = optionsFor(kind);
+        if (o == null) {
+            return String.valueOf(v);
+        }
+        int n = toInt(v);
+        return n >= 0 && n < o.length ? o[n].label : n + " - ?";
+    }
+
+    /** Un bouton qui modifie l'archive ou le PLC: demande d'abord l'authentification. */
+    private JButton guarded(String t, Runnable r) {
+        return button(t, () -> {
+            if (B1EditAuth.ensure(this)) {
+                B1EditAuth.log(t.toUpperCase(), ed.current == null ? 0 : ed.current.recipeNo, ed.current == null ? "" : ed.current.name,
+                        "-", "-", "-", "-");
+                r.run();
+            }
+        });
     }
 
     // ---------------------------------------------------------------- tableaux
@@ -420,8 +509,14 @@ public final class B1RecipeSteps extends JFrame {
             public void setValueAt(Object v, int row, int col) {
                 B1RecipeLayout.Field f = hf(HEAD_KEYS[row]);
                 if (col == 1 && f != null && numeric(String.valueOf(v))) {
-                    r.header.put(f.key, B1RecipeEditor.EditorPanel.toRaw(String.valueOf(v), f));
-                    ed.edited();
+                    String od = String.valueOf(getValueAt(row, 1));
+                    int raw = B1RecipeEditor.EditorPanel.toRaw(String.valueOf(v), f);
+                    String nw = B1RecipeEditor.EditorPanel.fmt(raw, f);
+                    if (!od.equals(nw) && authorize("ENT\u00caTE", HEAD_LABELS[row], od, nw)) {
+                        r.header.put(f.key, raw);
+                        ed.edited();
+                        logChange("ENT\u00caTE", HEAD_LABELS[row], od, nw);
+                    }
                     fireTableRowsUpdated(row, row);
                 }
             }
@@ -490,6 +585,21 @@ public final class B1RecipeSteps extends JFrame {
                     return;
                 }
                 Row w = rows.get(row);
+                B1RecipeLayout.Field nf = pf(w.key);
+                if ("num".equals(w.kind) && (nf == null || !numeric(String.valueOf(val)))) {
+                    return;
+                }
+                String od = disp(w.kind, getValueAt(row, 1));
+                String nw = "num".equals(w.kind) ? B1RecipeEditor.EditorPanel.fmt(
+                        B1RecipeEditor.EditorPanel.toRaw(String.valueOf(val), nf), nf) : disp(w.kind, val);
+                if (od.equals(nw)) {
+                    return;
+                }
+                String stepName = "STEP " + (idx + 1);
+                if (!authorize(stepName, w.label, od, nw)) {
+                    fireTableRowsUpdated(row, row);
+                    return;
+                }
                 boolean on = toInt(val) != 0;
                 switch (w.kind) {
                     case "op":
@@ -505,15 +615,11 @@ public final class B1RecipeSteps extends JFrame {
                     case "skip": bit("ctrl_bits", B1RecipePage.CT_SKIP, on); break;
                     case "and": bit("ctrl_bits", B1RecipePage.CT_AND, on); break;
                     case "or": bit("ctrl_bits", B1RecipePage.CT_OR, on); break;
-                    default: {
-                        B1RecipeLayout.Field f = pf(w.key);
-                        if (f == null || !numeric(String.valueOf(val))) {
-                            return;
-                        }
-                        p.values.put(w.key, B1RecipeEditor.EditorPanel.toRaw(String.valueOf(val), f));
-                    }
+                    default:
+                        p.values.put(w.key, B1RecipeEditor.EditorPanel.toRaw(String.valueOf(val), nf));
                 }
                 ed.edited();
+                logChange(stepName, w.label, od, nw);
                 fireTableRowsUpdated(row, row);
             }
         };

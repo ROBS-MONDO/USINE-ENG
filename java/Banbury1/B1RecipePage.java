@@ -80,6 +80,22 @@ public final class B1RecipePage {
         return phase;
     }
 
+    /** Mode modification: authentification Active Directory (la ligne 0 de modification n'est pas la recette). */
+    private boolean allow() {
+        if (onBuf || B1EditAuth.ensure(parent.get())) {
+            return true;
+        }
+        say("Modification annul\u00e9e : authentification Active Directory non confirm\u00e9e.");
+        return false;
+    }
+
+    private void logEdit(String step, String param, String oldV, String newV) {
+        B1Recipe r = ed.current;
+        if (!onBuf && r != null) {
+            B1EditAuth.log("MODIFICATION", r.recipeNo, r.name, step, param, oldV, newV);
+        }
+    }
+
     private void say(String m) {
         message = m;
         messageUntil = System.currentTimeMillis() + 4000;
@@ -250,16 +266,18 @@ public final class B1RecipePage {
             return true;
         }
         if (r != null && in(x, y, 350, 86, 300, 28)) {
-            String s = ask("Nom de la recette", B1RecipeBridge.pretty(r.name));
+            String s = allow() ? ask("Nom de la recette", B1RecipeBridge.pretty(r.name)) : null;
             if (s != null) {
+                logEdit("-", "Nom", r.name, s.trim());
                 r.name = s.trim().replace('\u00b0', 'o');
                 ed.edited();
             }
             return true;
         }
         if (r != null && in(x, y, 660, 86, 60, 28)) {
-            String s = ask("N\u00b0 de la recette", String.valueOf(r.recipeNo));
+            String s = allow() ? ask("N\u00b0 de la recette", String.valueOf(r.recipeNo)) : null;
             if (s != null) {
+                logEdit("-", "N\u00b0", String.valueOf(r.recipeNo), s.trim());
                 try {
                     r.recipeNo = Integer.parseInt(s.trim());
                     ed.edited();
@@ -287,11 +305,17 @@ public final class B1RecipePage {
             return true;
         }
         if (in(x, y, 150, 192, 120, 28)) {
-            ed.clearPhase(phase);
+            if (allow()) {
+                logEdit("STEP " + (phase + 1), "Effacer phase", "-", "-");
+                ed.clearPhase(phase);
+            }
             return true;
         }
         if (in(x, y, 276, 192, 150, 28)) {
-            ed.copyPhaseDown(phase);
+            if (allow()) {
+                logEdit("STEP " + (phase + 1), "Copier vers suivante", "-", "-");
+                ed.copyPhaseDown(phase);
+            }
             return true;
         }
         if (y >= GRID_Y && y < GRID_Y + (ROWS + 1) * ROW_H && x >= 4 && x < 1016) {
@@ -310,7 +334,8 @@ public final class B1RecipePage {
                 loadBuffer(r, row);
             } else if (x >= 410 && x < 430) {
                 phase = row;
-                if (r != null && row < r.phases.size()) {
+                if (r != null && row < r.phases.size() && allow()) {
+                    logEdit("STEP " + (row + 1), "Ecrit depuis la ligne 0", "-", "-");
                     r.phases.set(row, buf.copy());
                     ed.edited();
                     say("Phase " + (row + 1) + " \u00e9crite depuis la ligne de modification (n'oubliez pas Enregistrer)");
@@ -337,6 +362,10 @@ public final class B1RecipePage {
     private void cell(B1Recipe.Phase p, int x, int dy) {
         for (int k = 0; k < 10; k++) {
             if (x >= 46 + k * 36 && x < 46 + (k + 1) * 36) {
+                if (!allow()) {
+                    return;
+                }
+                logEdit("STEP " + (phase + 1), OP_NAMES[k], "-", "inverti");
                 p.ops ^= 1 << OP_BITS[k];
                 touch();
                 return;
@@ -372,6 +401,10 @@ public final class B1RecipePage {
     }
 
     private void toggle(B1Recipe.Phase p, String key, int bit, int clear) {
+        if (!allow()) {
+            return;
+        }
+        logEdit("STEP " + (phase + 1), key, String.valueOf(pval(p, key)), "bit " + Integer.toHexString(bit));
         int v = pval(p, key) & 0xFFFF;
         v = (v & bit) != 0 ? v & ~bit : (v | bit) & ~clear;
         p.values.put(key, v);
@@ -383,8 +416,9 @@ public final class B1RecipePage {
         if (f == null) {
             return;
         }
-        String s = ask(title + " - phase " + (phase + 1), fmt(pval(p, key), f));
+        String s = allow() ? ask(title + " - phase " + (phase + 1), fmt(pval(p, key), f)) : null;
         if (s != null && parseOk(s)) {
+            logEdit("STEP " + (phase + 1), title, fmt(pval(p, key), f), s.trim());
             p.values.put(key, B1RecipeEditor.EditorPanel.toRaw(s, f));
             touch();
         } else if (s != null) {
@@ -393,8 +427,9 @@ public final class B1RecipePage {
     }
 
     private void editHeader(B1Recipe r, B1RecipeLayout.Field f, String title) {
-        String s = ask(title, fmt(r.header.getOrDefault(f.key, 0), f));
+        String s = allow() ? ask(title, fmt(r.header.getOrDefault(f.key, 0), f)) : null;
         if (s != null && parseOk(s)) {
+            logEdit("ENT\u00caTE", title, fmt(r.header.getOrDefault(f.key, 0), f), s.trim());
             r.header.put(f.key, B1RecipeEditor.EditorPanel.toRaw(s, f));
             touch();
         } else if (s != null) {
@@ -444,13 +479,21 @@ public final class B1RecipePage {
     public List<B1BottomBar.Btn> barButtons() {
         List<B1BottomBar.Btn> l = new ArrayList<>();
         String[] names = {"Nouvelle", "Supprimer", "Dupliquer", "Enregistrer", "Importer PLC", "CSV", "Steps", "Envoyer PLC"};
-        Runnable[] acts = {() -> run(ed::newRecipe), () -> run(ed::deleteRecipe), () -> run(ed::duplicate), () -> run(ed::save),
+        Runnable[] acts = {() -> run(ed::newRecipe), () -> guard("SUPPRIMER", ed::deleteRecipe), () -> run(ed::duplicate), () -> guard("ENREGISTRER", ed::save),
             () -> run(ed::importFromPlc), () -> run(ed::exportCsv),
-            () -> B1RecipeSteps.openShared(ed.repo, ed.layout, ed.plcIp, null), () -> run(ed::sendToPlc)};
+            () -> B1RecipeSteps.openShared(ed.repo, ed.layout, ed.plcIp, null), () -> guard("ENVOYER AU PLC", ed::sendToPlc)};
         for (int i = 0; i < names.length; i++) {
             l.add(new B1BottomBar.Btn(578 + i * 44, 0, 42, 52, names[i], acts[i]));
         }
         return l;
+    }
+
+    private void guard(String action, Runnable r) {
+        if (allow()) {
+            B1Recipe c = ed.current;
+            B1EditAuth.log(action, c == null ? 0 : c.recipeNo, c == null ? "" : c.name, "-", "-", "-", "-");
+            run(r);
+        }
     }
 
     private void run(Runnable r) {
