@@ -1,0 +1,594 @@
+package Ventes;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.io.*;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.sql.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+/**
+ * Sostituisce i due Crystal Report:
+ * <ul>
+ *   <li>VENTES TOTAL Caou PAR NATION/CLIENT -Statpav2- (Author Destefanis)</li>
+ *   <li>VENTES TOTAL Ballons PAR NATION/CLIENT (Author Destefanis)</li>
+ * </ul>
+ * Fatturato raggruppato per NAZIONE e poi per CLIENTE, con totale generale,
+ * affidamento assicurativo (CF_FIDO) e relativo codice (CF_FIDOCA).
+ *
+ * <p>Avvio con interfaccia (come "Refresh" del Crystal: date + password):
+ * <pre>  java -cp out:ojdbc8.jar Ventes.VentesNationClient</pre>
+ * Avvio da riga di comando (esporta CSV, utile per schedulare):
+ * <pre>  java -cp out:ojdbc8.jar Ventes.VentesNationClient --report caou \
+ *       --from 01-01-2018 --to 30-11-2018 --out caou.csv</pre>
+ *
+ * <p>Connessione (priorità: argomenti &gt; variabili d'ambiente &gt; ventes.properties):
+ * <pre>
+ *   --url / VENTES_DB_URL        es. jdbc:oracle:thin:@//SERVER:1521/E   (service name "E" come nel DSN "poker")
+ *   --user / VENTES_DB_USER      default "poker"
+ *   --password / VENTES_DB_PASSWORD   se assente viene chiesta (come nel Crystal)
+ * </pre>
+ * Il driver JDBC Oracle (ojdbc) deve essere nel classpath.
+ */
+public final class VentesNationClient {
+
+    // ------------------------------------------------------------------ modello
+
+    enum ReportType {
+        CAOU("Caou", "VENTES TOTAL Caou PAR NATION/CLIENT -Statpav2-"),
+        BALLONS("Ballons", "VENTES TOTAL BALLONS PAR NATION/CLIENT - EURO");
+
+        final String label;
+        final String title;
+
+        ReportType(String label, String title) {
+            this.label = label;
+            this.title = title;
+        }
+
+        static ReportType parse(String s) {
+            String v = s.trim().toLowerCase(Locale.ROOT);
+            if (v.startsWith("caou")) return CAOU;
+            if (v.startsWith("ball")) return BALLONS;
+            throw new IllegalArgumentException("Report sconosciuto: " + s + " (usa caou | ballons)");
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
+
+    /** Una riga cliente come restituita dalla query (già aggregata per cliente). */
+    static final class ClientLine {
+        String nat, natDesc, cli, nome, fidoCa;
+        BigDecimal pezzi = BigDecimal.ZERO, valore = BigDecimal.ZERO,
+                addeb = BigDecimal.ZERO, accre = BigDecimal.ZERO, fido = BigDecimal.ZERO;
+    }
+
+    /** Riga del report finale: N = nazione (subtotale), C = cliente, T = totale generale. */
+    static final class OutLine {
+        final char kind;
+        final String code, desc;
+        final BigDecimal pezzi, valore, addeb, accre, fido;
+        final String fidoCa;
+
+        OutLine(char kind, String code, String desc, BigDecimal pezzi, BigDecimal valore,
+                BigDecimal addeb, BigDecimal accre, BigDecimal fido, String fidoCa) {
+            this.kind = kind;
+            this.code = code;
+            this.desc = desc;
+            this.pezzi = pezzi;
+            this.valore = valore;
+            this.addeb = addeb;
+            this.accre = accre;
+            this.fido = fido;
+            this.fidoCa = fidoCa;
+        }
+    }
+
+    static final class Result {
+        final ReportType type;
+        final LocalDate from, to;
+        final List<OutLine> lines;
+
+        Result(ReportType type, LocalDate from, LocalDate to, List<OutLine> lines) {
+            this.type = type;
+            this.from = from;
+            this.to = to;
+            this.lines = lines;
+        }
+
+        /** Intestazioni di colonna (dipendono dal report). */
+        List<String> headers() {
+            List<String> h = new ArrayList<>(Arrays.asList("Codice", "Descrizione"));
+            if (type == ReportType.BALLONS) h.add("Pezzi");
+            h.add(type == ReportType.BALLONS ? "Valore EUR" : "Montant");
+            if (type == ReportType.BALLONS) {
+                h.add("Note debito");
+                h.add("Note credito");
+            }
+            h.add("Ass. Credit");
+            h.add("Code Ass. Cre.");
+            return h;
+        }
+
+        /** Righe come testo; {@code grouping}=true usa il separatore delle migliaia (stampa/GUI). */
+        List<String[]> rows(boolean grouping) {
+            List<String[]> out = new ArrayList<>();
+            for (OutLine l : lines) {
+                List<String> r = new ArrayList<>();
+                r.add(l.code);
+                r.add(l.desc);
+                if (type == ReportType.BALLONS) r.add(fmt(l.pezzi, grouping));
+                r.add(fmt(l.valore, grouping));
+                if (type == ReportType.BALLONS) {
+                    r.add(fmt(l.addeb, grouping));
+                    r.add(fmt(l.accre, grouping));
+                }
+                r.add(l.kind == 'C' ? fmt(l.fido, grouping) : "");
+                r.add(l.kind == 'C' && l.fidoCa != null ? l.fidoCa : "");
+                out.add(r.toArray(new String[0]));
+            }
+            return out;
+        }
+    }
+
+    // ------------------------------------------------------------------ query
+
+    private static final String BALLONS_INVOICE_TYPES = "'F002','G002','F003'";            // AQQ
+    private static final String BALLONS_DEBIT_TYPES = "'D002','D005','D006'";              // ADD
+    private static final String BALLONS_CREDIT_TYPES = "'A002','GREE','GRRE','GA01','GA02','GA03'"; // ACC
+
+    /**
+     * STAT_GIO2 (Ballons). Replica le formule del Crystal:
+     * <ul>
+     *   <li>selezione: TB_DFAT tra FromDate e ToDate, RB_TIPOR in (DF,PK,SI), TB_TIPO nella lista ammessa,
+     *       RB_PARTE non inizia per WSPETRA;</li>
+     *   <li>{@code @SELEXTIPO}: AQQ (fatture) / ADD (note di debito) / ACC (note di credito);</li>
+     *   <li>{@code @TVALORE} = RB_VALORE / TB_CAMBIO (EUR), negativo per ACC;</li>
+     *   <li>{@code @TPEZZI} = RB_QTA, moltiplicato per PARTI_JOLLYN1 se PARTI_G1='SES', negativo per ACC.</li>
+     * </ul>
+     */
+    static String ballonsSql() {
+        String qty = "s.RB_QTA * CASE WHEN p.PARTI_G1 = 'SES' THEN p.PARTI_JOLLYN1 ELSE 1 END";
+        String val = "(s.RB_VALORE / s.TB_CAMBIO)";
+        String plus = "s.TB_TIPO IN (" + BALLONS_INVOICE_TYPES + "," + BALLONS_DEBIT_TYPES + ")";
+        String minus = "s.TB_TIPO IN (" + BALLONS_CREDIT_TYPES + ")";
+        return "SELECT NVL(a.AN_CODNAZ,'--') AS NAT, MAX(n.T009_DESC) AS NAT_DESC, "
+                + "NVL(s.RB_CLFO,' ') AS CLI, MAX(a.AN_RAGSOC1) AS NOME, "
+                + "MAX(c.CF_FIDO) AS FIDO, MAX(c.CF_FIDOCA) AS FIDOCA, "
+                + "SUM(CASE WHEN " + plus + " THEN " + qty + " WHEN " + minus + " THEN -(" + qty + ") END) AS PEZZI, "
+                + "SUM(CASE WHEN " + plus + " THEN " + val + " WHEN " + minus + " THEN -" + val + " END) AS VALORE, "
+                + "SUM(CASE WHEN s.TB_TIPO IN (" + BALLONS_DEBIT_TYPES + ") THEN " + val + " END) AS ADDEB, "
+                + "SUM(CASE WHEN " + minus + " THEN " + val + " END) AS ACCRE "
+                + "FROM POKER.STAT_GIO2 s "
+                + "LEFT JOIN POKER.PARTI p ON p.PARTI_COD = s.RB_PARTE "
+                + "LEFT JOIN POKER.ANAG a ON a.AN_COD = s.RB_CLFO "
+                + "LEFT JOIN POKER.CLIFOR c ON c.CF_COD = s.RB_CLFO "
+                + "LEFT JOIN POKER.T_009 n ON n.T009_COD = a.AN_CODNAZ "
+                + "WHERE s.TB_DFAT BETWEEN ? AND ? "
+                + "AND s.RB_TIPOR IN ('DF','PK','SI') "
+                + "AND s.TB_TIPO IN ('A002','D002','D005','D006','F002','F003','G002','GA01','GA02','GA03','GDCE','GREE','GRRE') "
+                + "AND (s.RB_PARTE IS NULL OR s.RB_PARTE NOT LIKE 'WSPETRA%') "
+                + "GROUP BY NVL(a.AN_CODNAZ,'--'), NVL(s.RB_CLFO,' ') "
+                + "ORDER BY 1, 3";
+    }
+
+    /**
+     * STAT_PAV2 (Caou, "-Statpav2-"). La vista contiene già i decrementi per NC
+     * ("Creazione per analisi venduto (con decrementi per NC)"), quindi si somma RB_VALORE così com'è.
+     * <ul>
+     *   <li>selezione: TB_DFAT tra FromDate e ToDate (nel Crystal parametri FromDateInv/ToDateInv),
+     *       RB_PARTE non inizia per WSPETRA / WIMPCORTRA,
+     *       RB_STF diverso da 'I' (filtro aggiunto a mano dal docx "RB STF is not equal to I").</li>
+     * </ul>
+     */
+    static String caouSql(boolean excludeStfI) {
+        return "SELECT NVL(a.AN_CODNAZ,'--') AS NAT, MAX(n.T029_DESC) AS NAT_DESC, "
+                + "NVL(s.RB_CLFO,' ') AS CLI, MAX(a.AN_RAGSOC1) AS NOME, "
+                + "MAX(c.CF_FIDO) AS FIDO, MAX(c.CF_FIDOCA) AS FIDOCA, "
+                + "SUM(s.RB_VALORE) AS VALORE "
+                + "FROM POKER.STAT_PAV2 s "
+                + "LEFT JOIN POKER.ANAG a ON a.AN_COD = s.RB_CLFO "
+                + "LEFT JOIN POKER.CLIFOR c ON c.CF_COD = s.RB_CLFO "
+                + "LEFT JOIN PUBMONDO.T_029 n ON n.T029_COD = a.AN_CODNAZ "
+                + "WHERE s.TB_DFAT BETWEEN ? AND ? "
+                + "AND (s.RB_PARTE IS NULL OR (s.RB_PARTE NOT LIKE 'WSPETRA%' AND s.RB_PARTE NOT LIKE 'WIMPCORTRA%')) "
+                + (excludeStfI ? "AND (s.RB_STF IS NULL OR s.RB_STF <> 'I') " : "")
+                + "GROUP BY NVL(a.AN_CODNAZ,'--'), NVL(s.RB_CLFO,' ') "
+                + "ORDER BY 1, 3";
+    }
+
+    static Result run(Connection con, ReportType type, LocalDate from, LocalDate to, boolean excludeStfI)
+            throws SQLException {
+        String sql = type == ReportType.BALLONS ? ballonsSql() : caouSql(excludeStfI);
+        List<ClientLine> clients = new ArrayList<>();
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setDate(1, java.sql.Date.valueOf(from));
+            ps.setDate(2, java.sql.Date.valueOf(to));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ClientLine l = new ClientLine();
+                    l.nat = trim(rs.getString("NAT"));
+                    l.natDesc = trim(rs.getString("NAT_DESC"));
+                    l.cli = trim(rs.getString("CLI"));
+                    l.nome = trim(rs.getString("NOME"));
+                    l.fidoCa = trim(rs.getString("FIDOCA"));
+                    l.fido = nz(rs.getBigDecimal("FIDO"));
+                    l.valore = nz(rs.getBigDecimal("VALORE"));
+                    if (type == ReportType.BALLONS) {
+                        l.pezzi = nz(rs.getBigDecimal("PEZZI"));
+                        l.addeb = nz(rs.getBigDecimal("ADDEB"));
+                        l.accre = nz(rs.getBigDecimal("ACCRE"));
+                    }
+                    clients.add(l);
+                }
+            }
+        }
+        return new Result(type, from, to, build(clients));
+    }
+
+    /** Raggruppa per nazione (subtotale sopra i clienti, come nel Crystal) e aggiunge il totale generale. */
+    static List<OutLine> build(List<ClientLine> clients) {
+        Map<String, List<ClientLine>> byNat = new LinkedHashMap<>();
+        for (ClientLine c : clients) byNat.computeIfAbsent(c.nat, k -> new ArrayList<>()).add(c);
+
+        List<OutLine> out = new ArrayList<>();
+        BigDecimal gP = BigDecimal.ZERO, gV = BigDecimal.ZERO, gD = BigDecimal.ZERO, gC = BigDecimal.ZERO;
+        for (Map.Entry<String, List<ClientLine>> e : byNat.entrySet()) {
+            BigDecimal p = BigDecimal.ZERO, v = BigDecimal.ZERO, d = BigDecimal.ZERO, c = BigDecimal.ZERO;
+            for (ClientLine l : e.getValue()) {
+                p = p.add(l.pezzi);
+                v = v.add(l.valore);
+                d = d.add(l.addeb);
+                c = c.add(l.accre);
+            }
+            String desc = e.getValue().get(0).natDesc;
+            out.add(new OutLine('N', e.getKey(), desc == null ? "" : desc, p, v, d, c, null, null));
+            for (ClientLine l : e.getValue()) {
+                out.add(new OutLine('C', l.cli, l.nome == null ? "" : l.nome,
+                        l.pezzi, l.valore, l.addeb, l.accre, l.fido, l.fidoCa));
+            }
+            gP = gP.add(p);
+            gV = gV.add(v);
+            gD = gD.add(d);
+            gC = gC.add(c);
+        }
+        out.add(new OutLine('T', "", "TOTALE GENERALE", gP, gV, gD, gC, null, null));
+        return out;
+    }
+
+    // ------------------------------------------------------------------ utilità
+
+    private static final DecimalFormat GROUPED = new DecimalFormat("#,##0.00", new DecimalFormatSymbols(Locale.ITALY));
+    private static final DecimalFormat PLAIN = new DecimalFormat("0.00", new DecimalFormatSymbols(Locale.ITALY));
+    private static final DateTimeFormatter DMY = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+    static String fmt(BigDecimal v, boolean grouping) {
+        if (v == null) return "";
+        return (grouping ? GROUPED : PLAIN).format(v);
+    }
+
+    private static BigDecimal nz(BigDecimal v) {
+        return v == null ? BigDecimal.ZERO : v;
+    }
+
+    private static String trim(String s) {
+        return s == null ? null : s.trim();
+    }
+
+    static LocalDate parseDate(String s) {
+        String v = s.trim();
+        for (DateTimeFormatter f : new DateTimeFormatter[]{DMY, DateTimeFormatter.ISO_LOCAL_DATE,
+                DateTimeFormatter.ofPattern("dd/MM/yyyy")}) {
+            try {
+                return LocalDate.parse(v, f);
+            } catch (DateTimeParseException ignore) {
+                // prova il formato successivo
+            }
+        }
+        throw new IllegalArgumentException("Data non valida: '" + s + "' (usa gg-mm-aaaa)");
+    }
+
+    static String csvEscape(String s) {
+        if (s == null) return "";
+        if (s.contains(";") || s.contains("\"") || s.contains("\n")) return "\"" + s.replace("\"", "\"\"") + "\"";
+        return s;
+    }
+
+    static void writeCsv(Result r, Writer w) throws IOException {
+        w.write("﻿"); // BOM: Excel riconosce l'UTF-8
+        w.write("MONDO LUX;" + r.type.title + ";Du " + DMY.format(r.from) + " au " + DMY.format(r.to) + "\r\n");
+        w.write(String.join(";", r.headers()) + "\r\n");
+        for (String[] row : r.rows(false)) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < row.length; i++) {
+                if (i > 0) sb.append(';');
+                sb.append(csvEscape(row[i]));
+            }
+            w.write(sb.append("\r\n").toString());
+        }
+    }
+
+    static void printText(Result r, PrintStream out) {
+        out.println("MONDO LUX - " + r.type.title + "   Du " + DMY.format(r.from) + " au " + DMY.format(r.to));
+        List<String> h = r.headers();
+        List<String[]> rows = r.rows(true);
+        int[] w = new int[h.size()];
+        for (int i = 0; i < w.length; i++) w[i] = h.get(i).length();
+        for (String[] row : rows) for (int i = 0; i < row.length; i++) w[i] = Math.max(w[i], row[i].length());
+        out.println(pad(h.toArray(new String[0]), w));
+        for (int i = 0; i < r.lines.size(); i++) {
+            if (r.lines.get(i).kind != 'C') out.println();
+            out.println(pad(rows.get(i), w));
+        }
+    }
+
+    private static String pad(String[] cells, int[] w) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < cells.length; i++) {
+            String c = cells[i];
+            boolean left = i < 2 || i == cells.length - 1;
+            int n = w[i] - c.length();
+            if (left) sb.append(c).append(" ".repeat(n));
+            else sb.append(" ".repeat(n)).append(c);
+            sb.append("  ");
+        }
+        return sb.toString().stripTrailing();
+    }
+
+    // ------------------------------------------------------------------ connessione
+
+    static final class DbConfig {
+        String url, user = "poker", password;
+    }
+
+    static DbConfig loadConfig(Map<String, String> args) {
+        DbConfig c = new DbConfig();
+        Properties p = new Properties();
+        File f = new File(args.getOrDefault("config", "ventes.properties"));
+        if (f.isFile()) {
+            try (InputStream in = new FileInputStream(f)) {
+                p.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                System.err.println("Impossibile leggere " + f + ": " + e.getMessage());
+            }
+        }
+        c.url = firstNonBlank(args.get("url"), System.getenv("VENTES_DB_URL"), p.getProperty("db.url"));
+        c.user = firstNonBlank(args.get("user"), System.getenv("VENTES_DB_USER"), p.getProperty("db.user"), "poker");
+        c.password = firstNonBlank(args.get("password"), System.getenv("VENTES_DB_PASSWORD"), p.getProperty("db.password"));
+        return c;
+    }
+
+    private static String firstNonBlank(String... v) {
+        for (String s : v) if (s != null && !s.trim().isEmpty()) return s.trim();
+        return null;
+    }
+
+    static Connection connect(DbConfig c) throws SQLException {
+        if (c.url == null) {
+            throw new SQLException("URL JDBC non configurato. Usa --url, VENTES_DB_URL oppure db.url in "
+                    + "ventes.properties (es. jdbc:oracle:thin:@//SERVER:1521/E).");
+        }
+        return DriverManager.getConnection(c.url, c.user, c.password == null ? "" : c.password);
+    }
+
+    // ------------------------------------------------------------------ GUI
+
+    private static void showGui(DbConfig cfg) {
+        JFrame f = new JFrame("Ventes par nation / client - Mondo Lux");
+        f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        JComboBox<ReportType> cbReport = new JComboBox<>(ReportType.values());
+        JTextField tfFrom = new JTextField(LocalDate.now().withDayOfYear(1).format(DMY), 10);
+        JTextField tfTo = new JTextField(LocalDate.now().format(DMY), 10);
+        JPasswordField pf = new JPasswordField(cfg.password == null ? "" : cfg.password, 10);
+        JCheckBox cbStf = new JCheckBox("Escludi RB_STF = 'I' (Caou)", true);
+        JButton btRun = new JButton("Refresh");
+        JButton btCsv = new JButton("Esporta CSV...");
+        btCsv.setEnabled(false);
+        JLabel status = new JLabel(" ");
+
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
+        top.add(new JLabel("Report:"));
+        top.add(cbReport);
+        top.add(new JLabel("FromDate:"));
+        top.add(tfFrom);
+        top.add(new JLabel("ToDate:"));
+        top.add(tfTo);
+        top.add(new JLabel("Password:"));
+        top.add(pf);
+        top.add(cbStf);
+        top.add(btRun);
+        top.add(btCsv);
+
+        DefaultTableModel model = new DefaultTableModel();
+        final AtomicReference<List<OutLine>> shown = new AtomicReference<>(new ArrayList<>());
+        JTable table = new JTable(model) {
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        };
+        table.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
+                Component comp = super.getTableCellRendererComponent(t, v, sel, foc, r, c);
+                char kind = r < shown.get().size() ? shown.get().get(r).kind : 'C';
+                comp.setFont(t.getFont().deriveFont(kind == 'C' ? Font.PLAIN : Font.BOLD));
+                int cols = t.getColumnCount();
+                setHorizontalAlignment(c < 2 || c == cols - 1 ? SwingConstants.LEFT : SwingConstants.RIGHT);
+                if (!sel) comp.setBackground(kind == 'N' ? new Color(0xE8EEF7) : kind == 'T' ? new Color(0xD5DFEF) : Color.WHITE);
+                return comp;
+            }
+        };
+        table.setDefaultRenderer(Object.class, renderer);
+
+        final Result[] last = new Result[1];
+
+        btRun.addActionListener(ev -> {
+            final ReportType type = (ReportType) cbReport.getSelectedItem();
+            final LocalDate from, to;
+            try {
+                from = parseDate(tfFrom.getText());
+                to = parseDate(tfTo.getText());
+                if (to.isBefore(from)) throw new IllegalArgumentException("ToDate precedente a FromDate");
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(f, ex.getMessage(), "Parametri", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            DbConfig c = new DbConfig();
+            c.url = cfg.url;
+            c.user = cfg.user;
+            c.password = new String(pf.getPassword());
+            if (c.url == null) {
+                c.url = JOptionPane.showInputDialog(f, "URL JDBC (es. jdbc:oracle:thin:@//SERVER:1521/E):");
+                if (c.url == null) return;
+                cfg.url = c.url;
+            }
+            final boolean stf = cbStf.isSelected();
+            btRun.setEnabled(false);
+            btCsv.setEnabled(false);
+            status.setText("Estrazione in corso...");
+            new SwingWorker<Result, Void>() {
+                @Override
+                protected Result doInBackground() throws Exception {
+                    try (Connection con = connect(c)) {
+                        return VentesNationClient.run(con, type, from, to, stf);
+                    }
+                }
+
+                @Override
+                protected void done() {
+                    btRun.setEnabled(true);
+                    try {
+                        Result r = get();
+                        last[0] = r;
+                        shown.set(r.lines);
+                        model.setDataVector(r.rows(true).toArray(new Object[0][]), r.headers().toArray());
+                        btCsv.setEnabled(true);
+                        BigDecimal tot = r.lines.get(r.lines.size() - 1).valore;
+                        status.setText((r.lines.size() - 1) + " righe - totale generale: " + fmt(tot, true));
+                    } catch (Exception ex) {
+                        Throwable t = ex.getCause() != null ? ex.getCause() : ex;
+                        status.setText("Errore");
+                        JOptionPane.showMessageDialog(f, t.getMessage(), "Errore estrazione", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }.execute();
+        });
+
+        btCsv.addActionListener(ev -> {
+            if (last[0] == null) return;
+            JFileChooser fc = new JFileChooser();
+            fc.setSelectedFile(new File("ventes_" + last[0].type.label.toLowerCase(Locale.ROOT) + ".csv"));
+            if (fc.showSaveDialog(f) != JFileChooser.APPROVE_OPTION) return;
+            try (Writer w = new OutputStreamWriter(new FileOutputStream(fc.getSelectedFile()), StandardCharsets.UTF_8)) {
+                writeCsv(last[0], w);
+                status.setText("Salvato: " + fc.getSelectedFile());
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(f, ex.getMessage(), "Errore salvataggio", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        f.add(top, BorderLayout.NORTH);
+        f.add(new JScrollPane(table), BorderLayout.CENTER);
+        f.add(status, BorderLayout.SOUTH);
+        f.setSize(1100, 650);
+        f.setLocationRelativeTo(null);
+        f.setVisible(true);
+    }
+
+    // ------------------------------------------------------------------ main
+
+    private static Map<String, String> parseArgs(String[] a) {
+        Map<String, String> m = new HashMap<>();
+        for (int i = 0; i < a.length; i++) {
+            if (!a[i].startsWith("--")) throw new IllegalArgumentException("Argomento inatteso: " + a[i]);
+            String k = a[i].substring(2);
+            if (k.equals("help") || k.equals("no-stf-filter")) {
+                m.put(k, "true");
+            } else {
+                if (i + 1 >= a.length) throw new IllegalArgumentException("Manca il valore di --" + k);
+                m.put(k, a[++i]);
+            }
+        }
+        return m;
+    }
+
+    private static void usage() {
+        System.out.println("Uso:\n"
+                + "  (senza argomenti)  apre l'interfaccia grafica\n"
+                + "  --report caou|ballons --from gg-mm-aaaa --to gg-mm-aaaa [--out file.csv]\n"
+                + "  [--no-stf-filter]  (Caou: non applica RB_STF <> 'I')\n"
+                + "  [--url jdbc:oracle:thin:@//SERVER:1521/E] [--user poker] [--password ...] [--config file]\n"
+                + "Senza --out il risultato viene stampato a video.");
+    }
+
+    public static void main(String[] args) {
+        Map<String, String> a;
+        try {
+            a = parseArgs(args);
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+            usage();
+            System.exit(2);
+            return;
+        }
+        if (a.containsKey("help")) {
+            usage();
+            return;
+        }
+        DbConfig cfg = loadConfig(a);
+
+        if (!a.containsKey("report")) {
+            SwingUtilities.invokeLater(() -> showGui(cfg));
+            return;
+        }
+
+        try {
+            ReportType type = ReportType.parse(a.get("report"));
+            if (!a.containsKey("from") || !a.containsKey("to"))
+                throw new IllegalArgumentException("Servono --from e --to");
+            LocalDate from = parseDate(a.get("from")), to = parseDate(a.get("to"));
+            if (to.isBefore(from)) throw new IllegalArgumentException("--to precedente a --from");
+            if (cfg.password == null) {
+                Console console = System.console();
+                if (console == null) throw new IllegalArgumentException("Password mancante (--password o VENTES_DB_PASSWORD)");
+                cfg.password = new String(console.readPassword("Password per %s: ", cfg.user));
+            }
+            Result r;
+            try (Connection con = connect(cfg)) {
+                r = run(con, type, from, to, !a.containsKey("no-stf-filter"));
+            }
+            if (a.containsKey("out")) {
+                try (Writer w = new OutputStreamWriter(new FileOutputStream(a.get("out")), StandardCharsets.UTF_8)) {
+                    writeCsv(r, w);
+                }
+                System.out.println("Scritto " + a.get("out") + " (" + (r.lines.size() - 1) + " righe)");
+            } else {
+                printText(r, System.out);
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+            usage();
+            System.exit(2);
+        } catch (SQLException | IOException e) {
+            System.err.println("Errore: " + e.getMessage());
+            System.exit(1);
+        }
+    }
+}

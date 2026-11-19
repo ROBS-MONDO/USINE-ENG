@@ -1,0 +1,5 @@
+# Copia in ventes.properties (nella cartella da cui lanci il programma)
+# URL JDBC Oracle: service name "E" come nel DSN ODBC "poker"
+db.url=jdbc:oracle:thin:@//SERVER:1521/E
+db.user=poker
+# db.password=   (meglio non salvarla: viene chiesta all'avvio)
