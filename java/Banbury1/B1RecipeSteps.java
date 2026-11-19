@@ -209,6 +209,7 @@ public final class B1RecipeSteps extends JFrame {
         left.add(new JScrollPane(list), BorderLayout.CENTER);
         JPanel lb = new JPanel(new GridLayout(0, 1, 5, 5));
         lb.setOpaque(false);
+        lb.add(button("SETUP", this::openSetup));
         lb.add(button("Actualiser la liste", this::refreshList));
         lb.add(button("Ouvrir", this::openSelected));
         lb.add(guarded("Enregistrer", () -> {
@@ -218,7 +219,6 @@ public final class B1RecipeSteps extends JFrame {
         JButton send = button("DOWNLOAD", ed::sendToPlc);
         send.setBackground(new Color(255, 230, 120));
         lb.add(send);
-        lb.add(button("SETUP", this::openSetup));
         left.add(lb, BorderLayout.SOUTH);
 
         // droite: identification + onglets
