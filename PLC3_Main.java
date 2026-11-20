@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.11";
+    private static final String UI_VERSION = "V46.12";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -991,7 +991,9 @@ public class PLC3_Main extends JFrame {
             addButton("ME1M", 150 + MOTOR_SHIFT_X, 514 + MOTOR_SHIFT_Y, 52, 22, new Color(233, 233, 233), Color.BLACK, 14);
 
             addText("COURANT", 128 + MOTOR_SHIFT_X, 444 + MOTOR_SHIFT_Y, 15, true);
-            lblCourant = addField("0", 120 + MOTOR_SHIFT_X, 465 + MOTOR_SHIFT_Y, 80, 40, 22, false, false);
+            lblCourant = addField("0", 120 + MOTOR_SHIFT_X, 465 + MOTOR_SHIFT_Y, 68, 40, 22, false, false);
+            addSunkenLabel("A", 120 + MOTOR_SHIFT_X + 72, 465 + MOTOR_SHIFT_Y, 30, 40,
+                    new Font("Arial", Font.BOLD, 18), SwingConstants.CENTER);
             lblCourant.setBackground(new Color(39, 255, 31));
             
             addText("TEMPERATURE", 780, 260, 16, true);
