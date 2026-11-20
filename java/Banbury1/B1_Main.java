@@ -586,7 +586,7 @@ public class B1_Main extends JFrame {
             drawLogo(g, 12, 37, 124, 50);
             sunken(g, 140, 38, 130, 24, LABEL_BG);
             text(g, LocalDateTime.now().format(DT), 140, 38, 130, 24, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
-            label(g, "Banb1 Synoptique", 140, 63, 130, 24);
+            label(g, "Synoptique Banb1", 140, 63, 130, 24);
 
             // stato PLC + ricetta in macchina + confronto con archivio
             Boolean conn = src.connected();
