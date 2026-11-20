@@ -678,27 +678,27 @@ public class B1_Main extends JFrame {
         }
 
         private void drawLotInfo(Graphics2D g) {
-            label(g, "SUFFIXE :", 594, 212, 76, 22);
-            field(g, 672, 212, 26, 22, "suffix", num("suffix", 0), true, fBold);
-            label(g, "LOT:", 594, 238, 50, 22);
-            field(g, 648, 238, 34, 22, "lot_year", src.str("lot_year"), true, fBold);
-            text(g, "/", 683, 238, 10, 22, fBold, Color.BLACK, 0);
-            field(g, 695, 238, 70, 22, "lot_num", src.str("lot_num"), true, fBig);
-            label(g, "SEQ:", 594, 264, 50, 22);
-            // come in B2: "7 SUR 26" (campi invertiti rispetto a prima), pulsante piu' stretto
-            field(g, 646, 262, 38, 22, "seq_b", num("seq_b", 0), true, fBig);
-            text(g, "SUR", 686, 262, 30, 22, fBold, Color.BLACK, 0);
-            field(g, 718, 262, 38, 22, "seq_a", num("seq_a", 0), true, fBig);
-            g.setPaint(new GradientPaint(762, 263, new Color(0x6A7486), 762, 283, new Color(0x3A4252)));
-            g.fillRect(762, 263, 52, 20);
-            text(g, "RST SEQ", 762, 263, 52, 20, new Font("Arial", Font.PLAIN, 10), Color.WHITE, 0);
-            hits.add(new Hit(762, 263, 52, 20, "RESET SEQ"));
-            label(g, "TYPE:", 594, 290, 52, 20);
-            combo(g, 648, 290, 50, 20, "type", src.str("type"));
-            label(g, "PASS:", 704, 290, 44, 20);
-            combo(g, 750, 290, 46, 20, "pass", src.str("pass"));
-            label(g, "COULEUR:", 594, 316, 74, 20);
-            combo(g, 670, 316, 56, 20, "color", src.str("color"));
+            // stessa sequenza e stesse parole del blocco di B2: LOT, SEQ x SUR y, COUCHE / PASS, COULEUR, SUFFIXE
+            label(g, "LOT :", 594, 212, 72, 22);
+            field(g, 668, 212, 34, 22, "lot_year", src.str("lot_year"), true, fBold);
+            text(g, "/", 703, 212, 10, 22, fBold, Color.BLACK, 0);
+            field(g, 715, 212, 70, 22, "lot_num", src.str("lot_num"), true, fBig);
+            label(g, "SEQ :", 594, 238, 72, 22);
+            field(g, 668, 238, 38, 22, "seq_b", num("seq_b", 0), true, fBig);
+            text(g, "SUR", 708, 238, 30, 22, fBold, Color.BLACK, 0);
+            field(g, 740, 238, 38, 22, "seq_a", num("seq_a", 0), true, fBig);
+            g.setPaint(new GradientPaint(780, 239, new Color(0x6A7486), 780, 259, new Color(0x3A4252)));
+            g.fillRect(780, 239, 42, 20);
+            text(g, "RST SEQ", 780, 239, 42, 20, new Font("Arial", Font.PLAIN, 9), Color.WHITE, 0);
+            hits.add(new Hit(780, 239, 42, 20, "RESET SEQ"));
+            label(g, "COUCHE :", 594, 264, 72, 22);
+            combo(g, 668, 264, 56, 22, "type", src.str("type"));
+            label(g, "PASS :", 728, 264, 44, 22);
+            combo(g, 774, 264, 46, 22, "pass", src.str("pass"));
+            label(g, "COULEUR :", 594, 290, 72, 22);
+            combo(g, 668, 290, 76, 22, "color", src.str("color"));
+            label(g, "SUFFIXE :", 594, 316, 72, 22);
+            field(g, 668, 316, 38, 22, "suffix", num("suffix", 0), true, fBold);
             label(g, "NUM MELANGE", 594, 342, 112, 24);
             combo(g, 712, 342, 48, 22, "num_melange", src.str("num_melange"));
         }
