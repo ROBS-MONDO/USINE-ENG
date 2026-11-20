@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.07";
+    private static final String UI_VERSION = "V46.08";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -4543,19 +4543,42 @@ public class PLC3_Main extends JFrame {
             // Stelo del cilindro centrale: dalla testata del cilindro alla faccia del pistone
             drawChromeRod(g, centerX - 4, faceBottom, 8, cylTop - faceBottom, chromeColors, fr);
 
-            // Corpo del pistone: traversa + massa conica con faccia di spinta
-            Path2D body = new Path2D.Double();
-            body.moveTo(561, beamY + beamH);
-            body.lineTo(661, beamY + beamH);
-            body.lineTo(647, beamY + beamH + 26);
-            body.lineTo(575, beamY + beamH + 26);
-            body.closePath();
-            g.setPaint(new LinearGradientPaint(561, 0, 661, 0, new float[]{0f, 0.5f, 1f},
-                    new Color[]{new Color(105, 105, 110), new Color(170, 172, 178), new Color(95, 95, 100)}));
-            g.fill(body);
+            // Corpo del pistone: due pareti inclinate (struttura) + stelo centrale + faccia di spinta.
+            // L'interno della conca e' vuoto (si vede lo sfondo).
+            final int topY = beamY + beamH;
+            final int botY = beamY + beamH + 26;
+            final int wallT = 8; // spessore orizzontale delle pareti
+
+            Path2D leftWall = new Path2D.Double();
+            leftWall.moveTo(561, topY);
+            leftWall.lineTo(561 + wallT, topY);
+            leftWall.lineTo(575 + wallT, botY);
+            leftWall.lineTo(575, botY);
+            leftWall.closePath();
+
+            Path2D rightWall = new Path2D.Double();
+            rightWall.moveTo(661 - wallT, topY);
+            rightWall.lineTo(661, topY);
+            rightWall.lineTo(647, botY);
+            rightWall.lineTo(647 - wallT, botY);
+            rightWall.closePath();
+
+            Color[] wallColors = {new Color(95, 95, 100), new Color(170, 172, 178), new Color(100, 100, 105)};
+            float[] wallFr = {0f, 0.5f, 1f};
+            g.setPaint(new LinearGradientPaint(561, 0, 561 + wallT + 14, 0, wallFr, wallColors));
+            g.fill(leftWall);
+            g.setPaint(new LinearGradientPaint(647 - wallT, 0, 661, 0, wallFr, wallColors));
+            g.fill(rightWall);
+
+            // Stelo centrale che scende dalla traversa fino alla faccia di spinta
+            g.setPaint(new LinearGradientPaint(centerX - 6, 0, centerX + 6, 0, wallFr, chromeColors));
+            g.fillRect(centerX - 6, topY, 12, botY - topY);
+
             g.setColor(new Color(50, 50, 55));
             g.setStroke(new BasicStroke(1.2f));
-            g.draw(body);
+            g.draw(leftWall);
+            g.draw(rightWall);
+            g.drawRect(centerX - 6, topY, 12, botY - topY);
             g.setColor(new Color(60, 60, 66));
             g.fillRect(575, beamY + beamH + 26, 72, 4);
 
