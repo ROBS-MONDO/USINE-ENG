@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.01";
+    private static final String UI_VERSION = "V46.02";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -4117,7 +4117,6 @@ public class PLC3_Main extends JFrame {
             g2.scale(sx, sy);
 
             paintBackground(g2);
-            paintFrame(g2);
             paintMixer(g2);
             paintHopper(g2);
             paintMotor(g2);
@@ -4136,16 +4135,6 @@ public class PLC3_Main extends JFrame {
                     g2.fillRect(x, y, 1, 1);
                 }
             }
-        }
-
-        private void paintFrame(Graphics2D g2) {
-            g2.setColor(new Color(36, 62, 207));
-            g2.setFont(new Font("Serif", Font.BOLD, 28));
-            FontMetrics fm = g2.getFontMetrics();
-            String s = "MIXER";
-            int sw = fm.stringWidth(s);
-            g2.drawString(s, 475 - sw / 2, 42);
-            g2.drawLine(475 - sw / 2, 45, 475 + sw / 2, 45);
         }
 
         private void paintLiquidValves(Graphics2D g2) {
