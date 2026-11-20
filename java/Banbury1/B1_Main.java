@@ -671,10 +671,6 @@ public class B1_Main extends JFrame {
             box(g, 573, 124, 102, 70, new Color(0xD0D0D0), new Color(0x909090));
             lampRow(g, 578, 130, 606, 66, "silos_open", LampKind.GREEN, "Ouvert");
             lampRow(g, 578, 162, 606, 66, "silos_closed", LampKind.RED, "Ferm\u00e9");
-            title(g, "PORTE DE CHARGEMENT", 678, 98, 250, 24);
-            box(g, 678, 124, 152, 70, new Color(0xD0D0D0), new Color(0x909090));
-            lampRow(g, 683, 130, 711, 116, "door_load_open", LampKind.GREEN, "Ouverte");
-            lampRow(g, 683, 162, 711, 116, "door_load_closed", LampKind.RED, "Ferm\u00e9e");
         }
 
         // caratteri del blocco lotto come in B2: etichette in grassetto piccolo e centrate, valori in grassetto piu' grande e centrati
@@ -737,11 +733,6 @@ public class B1_Main extends JFrame {
             valveIcon(g, 768, 424, Boolean.TRUE.equals(src.bool("weight_open")));
             lampRow(g, 572, 448, 600, 162, "weight_closed", LampKind.RED, "Ferm\u00e9");
             valveIcon(g, 768, 454, Boolean.TRUE.equals(src.bool("weight_closed")));
-            title(g, "PORTE DE DECHARGEMENT", 567, 486, 250, 26);
-            lampRow(g, 572, 520, 600, 162, "door_dis_open", LampKind.GREEN, "Ouverte");
-            valveIcon(g, 768, 526, Boolean.TRUE.equals(src.bool("door_dis_open")));
-            lampRow(g, 572, 550, 600, 162, "door_dis_closed", LampKind.RED, "Ferm\u00e9e");
-            valveIcon(g, 768, 556, Boolean.TRUE.equals(src.bool("door_dis_closed")));
         }
 
         private void valveIcon(Graphics2D g, int x, int y, boolean on) {
