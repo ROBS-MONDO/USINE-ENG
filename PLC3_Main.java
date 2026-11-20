@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.13";
+    private static final String UI_VERSION = "V46.14";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -986,7 +986,7 @@ public class PLC3_Main extends JFrame {
                 }
             };
             greenMeter.setOpaque(false);
-            registerBaseBounds(greenMeter, 246 + MOTOR_SHIFT_X, 396 + MOTOR_SHIFT_Y, 63, 35);
+            registerBaseBounds(greenMeter, 253 + MOTOR_SHIFT_X, 433 + MOTOR_SHIFT_Y, 60, 35);
 
             addText("COURANT", 128 + MOTOR_SHIFT_X, 444 + MOTOR_SHIFT_Y, 15, true);
             lblCourant = addField("0", 120 + MOTOR_SHIFT_X, 465 + MOTOR_SHIFT_Y, 68, 40, 22, false, false);
@@ -4760,7 +4760,7 @@ public class PLC3_Main extends JFrame {
             g2.drawRect(226 + dx, 458 + dy, 22, 38);
 
             Polygon body = new Polygon(
-                    new int[]{248 + dx, 343 + dx, 343 + dx, 282 + dx, 248 + dx},
+                    new int[]{248 + dx, 320 + dx, 320 + dx, 276 + dx, 248 + dx},
                     new int[]{428 + dy, 428 + dy, 518 + dy, 518 + dy, 494 + dy},
                     5
             );
@@ -4772,7 +4772,7 @@ public class PLC3_Main extends JFrame {
             // Cilindri dell'albero: ruotano alla stessa velocita' delle pale (rotorMasterAngle).
             // Asse orizzontale: le righe sulla superficie scorrono in verticale (proiezione sin/cos).
             for (int i = 0; i < 4; i++) {
-                drawRotatingCylinder(g2, 350 + dx + i * 20, 466 + dy, 18, 30, -rotorMasterAngle + i * 22.5);
+                drawRotatingCylinder(g2, 327 + dx + i * 20, 466 + dy, 18, 30, -rotorMasterAngle + i * 22.5);
             }
         }
 
