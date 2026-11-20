@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.18";
+    private static final String UI_VERSION = "V46.20";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -923,7 +923,7 @@ public class PLC3_Main extends JFrame {
             registerBaseBounds(new MondoLogo(), 10, 18, 104, 49);
             lblOra = addSunkenLabel("00/00/0000 00:00:00", 118, 18, 130, 24,
                     new Font("Arial", Font.BOLD, 12), SwingConstants.CENTER);
-            lblData = addSunkenLabel("Synoptique Banb2", 118, 43, 130, 24,
+            lblData = addSunkenLabel("Synoptique Banb2 H", 118, 43, 130, 24,
                     new Font("Arial", Font.PLAIN, 12), SwingConstants.CENTER);
             lblVersion = addVersionLabel(UI_VERSION, 858, 18, 120, 30);
 
