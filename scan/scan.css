@@ -23,14 +23,19 @@ header { display: flex; gap: 8px; align-items: center; padding: 10px 0; }
 #result-name { font-size: 1.8rem; font-weight: 700; word-break: break-word; }
 #result-detail { font-size: 1.1rem; opacity: .95; }
 #btn-next { margin-top: 20px; background: #fff; color: #111; font-size: 1.2rem; padding: 16px 40px; }
-#items { list-style: none; padding: 0; margin: 12px 0 0; }
-#items li { padding: 12px; border: 1px solid #3d1f2f; border-radius: 10px; margin-bottom: 8px; display: flex; gap: 10px; align-items: center; }
-#items .who { flex: 1; min-width: 0; }
-#items .who b { display: block; overflow-wrap: anywhere; }
-#items .who small { color: #cdb8c4; overflow-wrap: anywhere; }
+#items, #issue-out { list-style: none; padding: 0; margin: 12px 0 0; }
+#items li, #issue-out li { padding: 12px; border: 1px solid #3d1f2f; border-radius: 10px; margin-bottom: 8px; display: flex; gap: 10px; align-items: center; }
+#items .who, #issue-out .who { flex: 1; min-width: 0; }
+#items .who b, #issue-out .who b { display: block; overflow-wrap: anywhere; }
+#items .who small, #issue-out .who small { color: #cdb8c4; overflow-wrap: anywhere; }
 #items .tag { font-size: .8rem; padding: 3px 8px; border-radius: 99px; background: #14803c; color: #fff; white-space: nowrap; }
 #items .tag.in { background: #c2410c; }
 #items .tag.x { background: #b91c1c; }
 #items button { padding: 8px 12px; font-size: .85rem; }
 select { font: inherit; border-radius: 10px; border: 1px solid #5b3a4d; background: #2b0d1d; color: #e9c987; padding: 8px 10px; }
 .langbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+#issue-form { display: flex; flex-direction: column; gap: 10px; }
+#issue-form input[type=text], #issue-form input[type=email], #issue-form input[type=number], #issue-form textarea { padding: 12px; font-size: 1rem; border-radius: 10px; border: 1px solid #3d1f2f; background: #1c0b14; color: #fff; font-family: inherit; }
+#issue-form .chk { display: flex; gap: 8px; align-items: center; }
+#issue-out a { padding: 8px 12px; font-size: .85rem; text-decoration: none; }
+#issue-form .chk input { width: auto; margin: 0; }

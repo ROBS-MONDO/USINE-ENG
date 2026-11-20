@@ -93,6 +93,36 @@ try {
         reply(['ok' => true]);
     }
 
+    if ($action === 'issue' && $isPost) {
+        $name = trim((string)($_POST['name'] ?? ''));
+        $email = trim((string)($_POST['email'] ?? ''));
+        $qty = (int)($_POST['qty'] ?? 1);
+        $names = array_slice(array_map(function ($x) { return mb_substr(trim($x), 0, 120, 'UTF-8'); }, preg_split('/\r?\n/', (string)($_POST['names'] ?? ''))), 0, 10);
+        if ($name === '' || mb_strlen($name, 'UTF-8') > 120 || !filter_var($email, FILTER_VALIDATE_EMAIL) || $qty < 1 || $qty > 10) { reply(['error' => 'bad_input'], 400); }
+        $sid = 'manual_' . bin2hex(random_bytes(6));
+        $ids = tk_create_for_session($sid, null, $name, $email, $qty, $names);
+        $sent = false;
+        if (($_POST['send'] ?? '1') === '1') {
+            try { tk_send_for_session($sid, true); $sent = true; } catch (Throwable $e) { log_line('issue send: ' . $e->getMessage()); }
+        }
+        $st = $pdo->prepare('SELECT code, holder_name FROM tickets WHERE stripe_session_id=? ORDER BY seq');
+        $st->execute([$sid]);
+        reply(['ok' => true, 'sent' => $sent, 'tickets' => $st->fetchAll()]);
+    }
+
+    if ($action === 'ticket') {
+        $code = strtoupper(trim((string)($_GET['code'] ?? '')));
+        $st = $pdo->prepare("SELECT holder_name, code FROM tickets WHERE code=? AND status='valid'");
+        $st->execute([$code]);
+        $r = $st->fetch();
+        if (!$r) { reply(['error' => 'not_found'], 404); }
+        require_once __DIR__ . '/../ticket/lib/ticket_image.php';
+        header('Content-Type: image/png');
+        header('Content-Disposition: attachment; filename="' . $r['code'] . '.png"');
+        echo ticket_png($r['holder_name'], $r['code'], cfg()['event']);
+        exit;
+    }
+
     if ($action === 'export') {
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="biglietti-' . date('Ymd-His') . '.csv"');

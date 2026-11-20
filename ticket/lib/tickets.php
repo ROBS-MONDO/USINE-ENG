@@ -15,7 +15,7 @@ function tk_clean_name($v, $fallback = 'Участник') {
 }
 
 // Crea (una sola volta) $qty biglietti per un pagamento. Restituisce gli ID dei biglietti del pagamento.
-function tk_create_for_session($sessionId, $paymentIntent, $name, $email, $qty) {
+function tk_create_for_session($sessionId, $paymentIntent, $name, $email, $qty, array $names = []) {
     $pdo = db();
     $prefix = cfg()['event']['prefix'] ?? 'ZC26';
     $ids = [];
@@ -23,7 +23,7 @@ function tk_create_for_session($sessionId, $paymentIntent, $name, $email, $qty) 
         $pdo->beginTransaction();
         try {
             $st = $pdo->prepare('INSERT IGNORE INTO tickets (stripe_session_id, payment_intent, seq, holder_name, email, created_at) VALUES (?,?,?,?,?,?)');
-            $st->execute([$sessionId, $paymentIntent, $seq, $name, $email, now()]);
+            $st->execute([$sessionId, $paymentIntent, $seq, (($names[$seq - 1] ?? '') !== '' ? $names[$seq - 1] : $name), $email, now()]);
             if ($st->rowCount() === 1) {
                 $id = (int)$pdo->lastInsertId();
                 $code = sprintf('%s-P%04d-%s', $prefix, $id, strtoupper(bin2hex(random_bytes(3))));

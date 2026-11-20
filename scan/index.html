@@ -24,6 +24,7 @@
       <div id="stats">—</div>
       <select id="lang2" aria-label="Language"><option value="it">IT</option><option value="en">EN</option><option value="ru">RU</option></select>
       <button type="button" id="btn-list" class="ghost" data-i18n="search">Cerca</button>
+      <button type="button" id="btn-issue" class="ghost" data-i18n="issue">Emetti</button>
       <button type="button" id="btn-logout" class="ghost" data-i18n="logout">Esci</button>
     </header>
     <div id="viewport">
@@ -48,6 +49,23 @@
     </header>
     <input type="search" id="q" data-i18n-ph="searchph" placeholder="Nome, email o codice (min. 2 lettere)" autocomplete="off">
     <ul id="items"></ul>
+  </section>
+<section id="issue" hidden>
+    <header>
+      <button type="button" id="btn-back2" class="ghost" data-i18n="back">← Scanner</button>
+      <select id="lang4" aria-label="Language"><option value="it">IT</option><option value="en">EN</option><option value="ru">RU</option></select>
+    </header>
+    <h1 data-i18n="issueTitle">Emetti biglietti</h1>
+    <form id="issue-form">
+      <input type="text" id="i-name" data-i18n-ph="iName" placeholder="Nome dell'acquirente" required maxlength="120">
+      <input type="email" id="i-email" data-i18n-ph="iEmail" placeholder="Email" required>
+      <input type="number" id="i-qty" min="1" max="10" value="1" required aria-label="qty">
+      <textarea id="i-names" rows="3" data-i18n-ph="iNames" placeholder="Nomi sui biglietti (uno per riga, facoltativo)"></textarea>
+      <label class="chk"><input type="checkbox" id="i-send" checked> <span data-i18n="iSend">Invia subito l'email</span></label>
+      <button type="submit" data-i18n="iGo">Crea biglietti</button>
+      <p id="issue-msg" class="msg"></p>
+      <ul id="issue-out"></ul>
+    </form>
   </section>
 </main>
 <script src="jsQR.js"></script>

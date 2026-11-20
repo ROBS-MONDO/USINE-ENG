@@ -1,24 +1,24 @@
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var login = $("login"), scanner = $("scanner"), search = $("search");
+  var login = $("login"), scanner = $("scanner"), search = $("search"), issue = $("issue");
   var video = $("video"), canvas = $("canvas"), ctx = canvas.getContext("2d", { willReadFrequently: true });
   var stream = null, scanning = false, busy = false, detector = null, lastCode = "", lastAt = 0;
 
   // ---- lingue: italiano, inglese, russo ----
   var STR = {
-    it: { title: "Controllo ingressi", password: "Password staff", enter: "Entra", search: "Cerca", logout: "Esci", hint: "Inquadra il QR del biglietto", next: "Prossimo", back: "← Scanner", export: "Scarica elenco CSV", searchph: "Nome, email o codice (min. 2 lettere)",
+    it: { issue: "Emetti", issueTitle: "Emetti biglietti", iName: "Nome dell'acquirente", iEmail: "Email", iNames: "Nomi sui biglietti (uno per riga, facoltativo)", iSend: "Invia subito l'email", iGo: "Crea biglietti", iCreated: "Creati {0} biglietti.", iSentOk: "Email inviata", iSentNo: "Email NON inviata: usa «Scarica» o «Reinvia» da Cerca", iDl: "Scarica", e_bad_input: "Dati non validi", title: "Controllo ingressi", password: "Password staff", enter: "Entra", search: "Cerca", logout: "Esci", hint: "Inquadra il QR del biglietto", next: "Prossimo", back: "← Scanner", export: "Scarica elenco CSV", searchph: "Nome, email o codice (min. 2 lettere)",
       entered: "Entrati", valid: "✔ VALIDO", used: "GIÀ USATO", cancelled: "ANNULLATO", invalid: "NON VALIDO", error: "ERRORE", nonet: "NESSUNA RETE", ticketOf: "biglietto {0} di {1}",
       usedAt: "Ingresso già registrato: {0}", cancelledD: "Biglietto rimborsato/annullato", invalidD: "Codice non riconosciuto", retry: "Riprova", checkNet: "Controlla la connessione e riprova",
       nocam: "Fotocamera non disponibile: consenti l'accesso alla fotocamera oppure usa «Cerca».", offline: "Connessione assente",
       tagValid: "valido", tagCancelled: "annullato", tagIn: "entrato", entry: "Ingresso", resend: "Reinvia", confirmResend: "Reinviare i biglietti a {0}?", sent: "Email inviata",
       e_bad_password: "Password errata", e_too_many: "Troppi tentativi, riprova tra qualche minuto", e_login_required: "Accesso richiesto", e_not_found: "Biglietto non trovato", e_server_error: "Errore del server", e_bad_action: "Azione sconosciuta", e_forbidden: "Non consentito" },
-    en: { title: "Entrance check", password: "Staff password", enter: "Sign in", search: "Search", logout: "Sign out", hint: "Point the camera at the ticket QR code", next: "Next", back: "← Scanner", export: "Download CSV list", searchph: "Name, email or code (min. 2 letters)",
+    en: { issue: "Issue", issueTitle: "Issue tickets", iName: "Buyer's name", iEmail: "Email", iNames: "Names on tickets (one per line, optional)", iSend: "Send the email now", iGo: "Create tickets", iCreated: "{0} tickets created.", iSentOk: "Email sent", iSentNo: "Email NOT sent: use “Download” or “Resend” from Search", iDl: "Download", e_bad_input: "Invalid data", title: "Entrance check", password: "Staff password", enter: "Sign in", search: "Search", logout: "Sign out", hint: "Point the camera at the ticket QR code", next: "Next", back: "← Scanner", export: "Download CSV list", searchph: "Name, email or code (min. 2 letters)",
       entered: "Checked in", valid: "✔ VALID", used: "ALREADY USED", cancelled: "CANCELLED", invalid: "NOT VALID", error: "ERROR", nonet: "NO NETWORK", ticketOf: "ticket {0} of {1}",
       usedAt: "Already checked in: {0}", cancelledD: "Ticket refunded/cancelled", invalidD: "Code not recognised", retry: "Try again", checkNet: "Check your connection and try again",
       nocam: "Camera not available: allow camera access or use “Search”.", offline: "No connection",
       tagValid: "valid", tagCancelled: "cancelled", tagIn: "in", entry: "Check in", resend: "Resend", confirmResend: "Resend the tickets to {0}?", sent: "Email sent",
       e_bad_password: "Wrong password", e_too_many: "Too many attempts, try again in a few minutes", e_login_required: "Sign-in required", e_not_found: "Ticket not found", e_server_error: "Server error", e_bad_action: "Unknown action", e_forbidden: "Not allowed" },
-    ru: { title: "Контроль входа", password: "Пароль сотрудника", enter: "Войти", search: "Поиск", logout: "Выйти", hint: "Наведите камеру на QR-код билета", next: "Далее", back: "← Сканер", export: "Скачать список CSV", searchph: "Имя, email или код (от 2 букв)",
+    ru: { issue: "Выдать", issueTitle: "Выдать билеты", iName: "Имя покупателя", iEmail: "Email", iNames: "Имена на билетах (по одному в строке, необязательно)", iSend: "Отправить письмо сразу", iGo: "Создать билеты", iCreated: "Создано билетов: {0}.", iSentOk: "Письмо отправлено", iSentNo: "Письмо НЕ отправлено: «Скачать» или «Отправить снова» в поиске", iDl: "Скачать", e_bad_input: "Неверные данные", title: "Контроль входа", password: "Пароль сотрудника", enter: "Войти", search: "Поиск", logout: "Выйти", hint: "Наведите камеру на QR-код билета", next: "Далее", back: "← Сканер", export: "Скачать список CSV", searchph: "Имя, email или код (от 2 букв)",
       entered: "Вошли", valid: "✔ ДЕЙСТВИТЕЛЕН", used: "УЖЕ ИСПОЛЬЗОВАН", cancelled: "АННУЛИРОВАН", invalid: "НЕДЕЙСТВИТЕЛЕН", error: "ОШИБКА", nonet: "НЕТ СЕТИ", ticketOf: "билет {0} из {1}",
       usedAt: "Вход уже отмечен: {0}", cancelledD: "Билет возвращён/аннулирован", invalidD: "Код не распознан", retry: "Повторите", checkNet: "Проверьте соединение и повторите",
       nocam: "Камера недоступна: разрешите доступ к камере или используйте «Поиск».", offline: "Нет соединения",
@@ -37,7 +37,7 @@
     document.documentElement.lang = lang;
     Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"), function (el) { el.textContent = t(el.getAttribute("data-i18n")); });
     Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-ph]"), function (el) { el.placeholder = t(el.getAttribute("data-i18n-ph")); });
-    $("lang").value = lang; $("lang2").value = lang; $("lang3").value = lang;
+    $("lang").value = lang; $("lang2").value = lang; $("lang3").value = lang; $("lang4").value = lang;
     document.title = t("title");
     refreshStats();
   }
@@ -45,6 +45,7 @@
   $("lang").addEventListener("change", function () { setLang(this.value); });
   $("lang2").addEventListener("change", function () { setLang(this.value); });
   $("lang3").addEventListener("change", function () { setLang(this.value); });
+  $("lang4").addEventListener("change", function () { setLang(this.value); });
 
   function api(action, data, method) {
     var opt = { method: method || (data ? "POST" : "GET"), credentials: "same-origin", headers: { "X-Requested-With": "lf-scan" } };
@@ -60,7 +61,7 @@
   }
 
   function show(which) {
-    login.hidden = which !== "login"; scanner.hidden = which !== "scanner"; search.hidden = which !== "search";
+    login.hidden = which !== "login"; scanner.hidden = which !== "scanner"; search.hidden = which !== "search"; issue.hidden = which !== "issue";
     if (which === "scanner") { startCamera(); refreshStats(); } else { stopCamera(); }
   }
 
@@ -190,6 +191,28 @@
       ul.appendChild(li);
     });
   }
+
+  // ---- emissione manuale ----
+  $("btn-issue").addEventListener("click", function () { show("issue"); });
+  $("btn-back2").addEventListener("click", function () { show("scanner"); });
+  $("issue-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var m = $("issue-msg"), out = $("issue-out"); m.textContent = ""; out.textContent = "";
+    var btn = this.querySelector("button[type=submit]"); btn.disabled = true;
+    api("issue", { name: $("i-name").value, email: $("i-email").value, qty: $("i-qty").value, names: $("i-names").value, send: $("i-send").checked ? "1" : "0" }).then(function (j) {
+      btn.disabled = false;
+      if (!j.ok) { m.textContent = err(j); return; }
+      m.textContent = t("iCreated", j.tickets.length) + " " + (($("i-send").checked) ? (j.sent ? t("iSentOk") : t("iSentNo")) : "");
+      j.tickets.forEach(function (tk) {
+        var li = document.createElement("li");
+        var who = document.createElement("div"); who.className = "who";
+        var b = document.createElement("b"); b.textContent = tk.holder_name; var sm = document.createElement("small"); sm.textContent = tk.code;
+        who.appendChild(b); who.appendChild(sm);
+        var a = document.createElement("a"); a.className = "ghost"; a.href = "api.php?action=ticket&code=" + encodeURIComponent(tk.code); a.textContent = t("iDl");
+        li.appendChild(who); li.appendChild(a); out.appendChild(li);
+      });
+    }).catch(function () { btn.disabled = false; m.textContent = t("offline"); });
+  });
 
   // ---- avvio ----
   applyLang();

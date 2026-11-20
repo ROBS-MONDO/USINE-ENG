@@ -44,3 +44,18 @@ Se rimborsi un pagamento in Stripe, i suoi biglietti vengono annullati da soli (
 
 ## Log
 Gli eventi del webhook sono in `ticket/logs/webhook.log` (la cartella non è accessibile dal browser).
+
+## Emettere biglietti a mano (acquisti già fatti, omaggi, correzioni)
+
+1. Apri `https://luxembourgfestival.com/scan/` ed entra con la password staff.
+2. Premi **Emetti** (in alto).
+3. Inserisci nome e email dell'acquirente e il numero di biglietti (per il formato 1+1: **2**). Facoltativo: i nomi dei due partecipanti, uno per riga.
+4. Lascia spuntato «Invia subito l'email» e premi **Crea biglietti**: arriva un'unica email con i PNG dei biglietti (con QR), identica a quella automatica.
+5. Se l'email non parte, ogni biglietto ha il pulsante **Scarica** (PNG da inoltrare a mano). Da **Cerca** puoi sempre usare **Reinvia**.
+
+I biglietti creati a mano funzionano allo scanner come gli altri e compaiono nell'elenco CSV.
+Per questa funzione servono solo database, SMTP e password staff in `ticket/config.php` (non serve il webhook Stripe).
+
+## Invio automatico dopo l'acquisto
+
+Dopo ogni pagamento Stripe chiama `stripe-webhook.php`, che crea i biglietti e invia l'email. Per attivarlo: compila `config.php` (webhook_secret e i tre `plink_…`), poi in Stripe > Sviluppatori > Webhook aggiungi l'endpoint `https://luxembourgfestival.com/stripe-webhook.php` con gli eventi `checkout.session.completed` e `charge.refunded`.
