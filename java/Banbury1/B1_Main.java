@@ -363,8 +363,6 @@ public class B1_Main extends JFrame {
             drawPiston(g);
             drawRotors(g);
             drawLube(g);
-            drawTemperature(g);
-            drawLotBar(g);
             drawMachine(g);
             drawSilosDoor(g);
             drawLotInfo(g);
@@ -617,75 +615,43 @@ public class B1_Main extends JFrame {
         }
 
         private void drawPiston(Graphics2D g) {
-            box(g, 7, 108, 250, 305, new Color(0xD0D0D0), new Color(0x909090));
-            title(g, "PISTON", 7, 108, 250, 26);
-            lampRow(g, 13, 143, 42, 160, "piston_high", LampKind.GREEN, "Position haute");
-            lampRow(g, 13, 173, 42, 160, "piston_float", LampKind.GREEN, "Flottant");
-            lampRow(g, 13, 203, 42, 160, "piston_low", LampKind.GREEN, "Position basse");
-            lampRow(g, 13, 233, 42, 160, "piston_blocked", LampKind.GREEN, "Bloqu\u00e9");
-            bigArrow(g, 218, 143, true, pistonArrowLit(true));
-            bigArrow(g, 218, 196, false, pistonArrowLit(false));
-            arrowButton(g, 12, 263, 38, 26, false, "Consigne piston -");
-            field(g, 57, 262, 98, 26, "press_set", num("press_set", 1), true, fBig);
-            unit(g, "bar", 157, 262, 38, 26);
-            arrowButton(g, 196, 263, 38, 26, true, "Consigne piston +");
-            field(g, 57, 292, 98, 26, "press_act", num("press_act", 1), false, fBig);
-            unit(g, "bar", 157, 292, 38, 26);
-            field(g, 57, 327, 98, 26, "piston_pct1", num("piston_pct1", 0), false, fBig);
-            unit(g, "%", 157, 327, 38, 26);
-            field(g, 57, 357, 98, 26, "piston_pct2", num("piston_pct2", 0), true, fBig);
-            unit(g, "%", 157, 357, 38, 26);
-            field(g, 57, 387, 98, 26, "piston_pct3", num("piston_pct3", 0), true, fBig);
-            unit(g, "%", 157, 387, 38, 26);
+            // senza le lampade Position haute / Flottant / Basse / Bloque e le frecce grandi (il pistone e' nel disegno del mixer)
+            box(g, 7, 262, 250, 190, new Color(0xD0D0D0), new Color(0x909090));
+            title(g, "PISTON", 7, 262, 250, 26);
+            arrowButton(g, 12, 294, 38, 26, false, "Consigne piston -");
+            field(g, 57, 294, 98, 26, "press_set", num("press_set", 1), true, fBig);
+            unit(g, "bar", 157, 294, 38, 26);
+            arrowButton(g, 196, 294, 38, 26, true, "Consigne piston +");
+            field(g, 57, 324, 98, 26, "press_act", num("press_act", 1), false, fBig);
+            unit(g, "bar", 157, 324, 38, 26);
+            field(g, 57, 359, 98, 26, "piston_pct1", num("piston_pct1", 0), false, fBig);
+            unit(g, "%", 157, 359, 38, 26);
+            field(g, 57, 389, 98, 26, "piston_pct2", num("piston_pct2", 0), true, fBig);
+            unit(g, "%", 157, 389, 38, 26);
+            field(g, 57, 419, 98, 26, "piston_pct3", num("piston_pct3", 0), true, fBig);
+            unit(g, "%", 157, 419, 38, 26);
         }
 
         private void drawRotors(Graphics2D g) {
-            box(g, 7, 424, 250, 150, new Color(0xD0D0D0), new Color(0x909090));
-            title(g, "ROTORS", 7, 424, 250, 26);
-            arrowButton(g, 12, 457, 38, 26, false, "Consigne tours -");
-            field(g, 57, 457, 98, 26, "rpm_set", num("rpm_set", 0), true, fBig);
-            unit(g, "rpm", 157, 457, 38, 26);
-            arrowButton(g, 196, 457, 38, 26, true, "Consigne tours +");
-            field(g, 57, 487, 98, 26, "rpm_act", num("rpm_act", 0), false, fBig);
-            unit(g, "rpm", 157, 487, 38, 26);
-            field(g, 57, 517, 98, 26, "current", num("current", 0), false, fBig);
-            unit(g, "A", 157, 517, 38, 26);
-            lampRow(g, 13, 548, 42, 160, "rotors_running", LampKind.GREEN, "En marche");
+            // pannello sotto il mixer (spostato dalla colonna di sinistra)
+            final int x0 = 341, y0 = 508, w = 214;
+            box(g, x0, y0, w, 150, new Color(0xD0D0D0), new Color(0x909090));
+            title(g, "ROTORS", x0, y0, w, 26);
+            arrowButton(g, x0 + 4, y0 + 33, 34, 26, false, "Consigne tours -");
+            field(g, x0 + 40, y0 + 33, 90, 26, "rpm_set", num("rpm_set", 0), true, fBig);
+            unit(g, "rpm", x0 + 132, y0 + 33, 38, 26);
+            arrowButton(g, x0 + 174, y0 + 33, 34, 26, true, "Consigne tours +");
+            field(g, x0 + 40, y0 + 63, 90, 26, "rpm_act", num("rpm_act", 0), false, fBig);
+            unit(g, "rpm", x0 + 132, y0 + 63, 38, 26);
+            field(g, x0 + 40, y0 + 93, 90, 26, "current", num("current", 0), false, fBig);
+            unit(g, "A", x0 + 132, y0 + 93, 38, 26);
+            lampRow(g, x0 + 6, y0 + 124, x0 + 36, 172, "rotors_running", LampKind.GREEN, "En marche");
         }
 
         private void drawLube(Graphics2D g) {
             box(g, 7, 583, 200, 66, new Color(0xD0D0D0), new Color(0x909090));
             title(g, "LUBRICATION", 7, 583, 200, 26);
             lampRow(g, 13, 616, 42, 155, "lube_running", LampKind.GREEN, "En marche");
-        }
-
-        private void drawTemperature(Graphics2D g) {
-            title(g, "TEMPERATURE", 262, 398, 140, 26);
-            field(g, 265, 430, 98, 28, "temp", num("temp", 0), false, fBig);
-            unit(g, "\u00b0C", 365, 430, 36, 28);
-        }
-
-        private void drawLotBar(Graphics2D g) {
-            g.setPaint(new GradientPaint(262, 108, new Color(0x909090), 322, 108, new Color(0x707070)));
-            g.fillRect(262, 108, 60, 282);
-            g.setColor(new Color(0x404040));
-            g.drawRect(262, 108, 60, 282);
-            g.setFont(fSmall);
-            for (int i = 0; i <= 10; i++) {
-                int y = 118 + (int) Math.round(i * 26.3);
-                g.setColor(Color.BLACK);
-                g.drawLine(322, y, 328, y);
-                String t = (i == 10 ? "+" : "+") + (100 - i * 10);
-                g.drawString(t, 331, y + 4);
-            }
-            Double tot = src.num("mix_total"), done = src.num("mix_done");
-            int y = 196;
-            if (tot != null && done != null && tot > 0) {
-                y = 381 - (int) Math.round(263 * Math.min(1.0, done / tot));
-            }
-            box(g, 270, y - 9, 44, 18, Color.WHITE, new Color(0x808080));
-            text(g, "LOT:", 270, y - 9, 44, 18, fBold, Color.BLACK, 0);
-            text(g, "LOT:", 270, 92, 44, 14, fSmall, Color.BLACK, 0);
         }
 
         // ---------------- macchina ----------------
@@ -793,11 +759,12 @@ public class B1_Main extends JFrame {
         }
 
         private void drawPositions(Graphics2D g) {
-            box(g, 362, 553, 202, 118, new Color(0xD0D0D0), new Color(0x909090));
-            lampRow(g, 366, 558, 396, 165, "pos_load", LampKind.GREEN, "Position chargement");
-            lampRow(g, 366, 587, 396, 165, "decel_load", LampKind.GREEN, "d\u00e9c\u00e9l\u00e9ration charg.");
-            lampRow(g, 366, 616, 396, 165, "decel_dis", LampKind.GREEN, "D\u00e9c\u00e9l\u00e9ration d\u00e9ch.");
-            lampRow(g, 366, 645, 396, 165, "pos_dis", LampKind.GREEN, "Position d\u00e9ch.");
+            // spostato nella colonna di sinistra (al posto dei rotori), sopra LUBRICATION
+            box(g, 7, 462, 202, 118, new Color(0xD0D0D0), new Color(0x909090));
+            lampRow(g, 11, 467, 41, 165, "pos_load", LampKind.GREEN, "Position chargement");
+            lampRow(g, 11, 496, 41, 165, "decel_load", LampKind.GREEN, "d\u00e9c\u00e9l\u00e9ration charg.");
+            lampRow(g, 11, 525, 41, 165, "decel_dis", LampKind.GREEN, "D\u00e9c\u00e9l\u00e9ration d\u00e9ch.");
+            lampRow(g, 11, 554, 41, 165, "pos_dis", LampKind.GREEN, "Position d\u00e9ch.");
         }
 
         private void drawProduction(Graphics2D g) {
