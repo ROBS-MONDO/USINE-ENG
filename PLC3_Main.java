@@ -450,8 +450,6 @@ public class PLC3_Main extends JFrame {
                 NodeId.parse("ns=2;s=Banbury 2.PLC3.R106_R110_M_L");
         private static final NodeId NODE_RECETTE_SUFFIXE =
                 NodeId.parse("ns=2;s=Banbury 2.PLC3.R134");
-        private static final NodeId NODE_RECETTE_SERIE_MELANGE =
-                NodeId.parse("ns=2;s=Banbury 2.PLC3.R136");
         private static final NodeId NODE_RECETTE_NOMBRE_MELANGES =
                 NodeId.parse("ns=2;s=Banbury 2.PLC3.R100");
         private static final NodeId NODE_RECETTE_PASSAGE =
@@ -493,7 +491,6 @@ public class PLC3_Main extends JFrame {
         private JLabel lblRecType;
         private JLabel lblRecPassage;
         private JLabel lblRecCouleur;
-        private JLabel lblRecNumMelange;
         private JLabel lblRecSuffixe;
         private JLabel lblVitesseActuel;
         private JLabel lblVitesseConsigne;
@@ -1149,12 +1146,12 @@ public class PLC3_Main extends JFrame {
 
         /**
          * Riquadro informazioni ricetta (dati provenienti da PLC3_Recette):
-         * LOT anno/numero, SEQ nombre/en cours, TYPE, PASS, COULEUR, NUM MELANGE, SUFFIXE.
+         * LOT anno/numero, SEQ nombre/en cours, COUCHE, PASS, COULEUR, SUFFIXE.
          */
         private void buildRecipeInfoBox() {
-            final int boxX = 725, boxY = 424, boxW = 270, boxH = 180;
+            final int boxX = 725, boxY = 424, boxW = 270, boxH = 152;
             final int labX = 729, labW = 76, valX = 809, rowH = 24;
-            final int r1 = 432, r2 = 460, r3 = 488, r4 = 516, r5 = 544, r6 = 572;
+            final int r1 = 432, r2 = 460, r3 = 488, r4 = 516, r5 = 544;
             final Color greenBg = new Color(190, 255, 190);
 
             addRecipeInfoLabel("LOT :", labX, r1, labW, rowH);
@@ -1166,7 +1163,7 @@ public class PLC3_Main extends JFrame {
             lblRecSeqNombre = addRecipeInfoValue(valX, r2, 56, rowH, greenBg);
             lblMelangeEnCours = addRecipeInfoValue(869, r2, 56, rowH, greenBg);
 
-            addRecipeInfoLabel("TYPE :", labX, r3, labW, rowH);
+            addRecipeInfoLabel("COUCHE :", labX, r3, labW, rowH);
             lblRecType = addRecipeInfoValue(valX, r3, 66, rowH, Color.WHITE);
             addRecipeInfoLabel("PASS :", 879, r3, 40, rowH);
             lblRecPassage = addRecipeInfoValue(921, r3, 66, rowH, Color.WHITE);
@@ -1174,11 +1171,8 @@ public class PLC3_Main extends JFrame {
             addRecipeInfoLabel("COULEUR :", labX, r4, labW, rowH);
             lblRecCouleur = addRecipeInfoValue(valX, r4, 178, rowH, Color.WHITE);
 
-            addRecipeInfoLabel("NUM MELANGE", labX, r5, labW, rowH);
-            lblRecNumMelange = addRecipeInfoValue(valX, r5, 178, rowH, Color.WHITE);
-
-            addRecipeInfoLabel("SUFFIXE :", labX, r6, labW, rowH);
-            lblRecSuffixe = addRecipeInfoValue(valX, r6, 60, rowH, greenBg);
+            addRecipeInfoLabel("SUFFIXE :", labX, r5, labW, rowH);
+            lblRecSuffixe = addRecipeInfoValue(valX, r5, 60, rowH, greenBg);
 
             // Sfondo del riquadro: aggiunto per ultimo cosi' resta dietro ai campi.
             JPanel box = new JPanel();
@@ -1537,7 +1531,6 @@ public class PLC3_Main extends JFrame {
                         NODE_RECETTE_ANNEE,
                         NODE_RECETTE_LOT,
                         NODE_RECETTE_SUFFIXE,
-                        NODE_RECETTE_SERIE_MELANGE,
                         NODE_RECETTE_NOMBRE_MELANGES,
                         NODE_RECETTE_PASSAGE,
                         NODE_RECETTE_TYPE,
@@ -1580,11 +1573,10 @@ public class PLC3_Main extends JFrame {
                 String recAnnee = recipeTextOrDash(extractValue(values.get(18)));
                 String recLot = recipeTextOrDash(extractValue(values.get(19)));
                 String recSuffixe = recipeTextOrDash(extractValue(values.get(20)));
-                String recNumMelange = recipeTextOrDash(extractValue(values.get(21)));
-                String recSeqNombre = recipeTextOrDash(extractValue(values.get(22)));
-                String recPassage = decodeRecipePassage(extractValue(values.get(23)));
-                String recType = decodeRecipeType(extractValue(values.get(24)));
-                String recCouleur = decodeRecipeCouleur(extractValue(values.get(25)));
+                String recSeqNombre = recipeTextOrDash(extractValue(values.get(21)));
+                String recPassage = decodeRecipePassage(extractValue(values.get(22)));
+                String recType = decodeRecipeType(extractValue(values.get(23)));
+                String recCouleur = decodeRecipeCouleur(extractValue(values.get(24)));
 
                 DoorSnapshot doorSnapshot = readDoorStatesIfDue();
                 DBBamburyReader.RecipePLCInfo recipeInfo = readLatestRecipePLCFromDb();
@@ -1626,7 +1618,6 @@ public class PLC3_Main extends JFrame {
                     updateField(lblRecType, recType);
                     updateField(lblRecPassage, recPassage);
                     updateField(lblRecCouleur, recCouleur);
-                    updateField(lblRecNumMelange, recNumMelange);
                     updateField(lblRecSuffixe, recSuffixe);
                     updateField(lblChargementSilos, chargementSilos);
                     updateField(lblChargementSilos2, chargementSilos2);
