@@ -48,7 +48,7 @@ import java.util.Locale;
  */
 public class B1_Main extends JFrame {
 
-    static final String VERSION = "B1 V2.01";
+    static final String VERSION = "B1 V2.05";
     static final String DEFAULT_IP = "192.168.10.100";
     static final Path DEFAULT_TAGS = Paths.get("C:\\_tools\\Banbury1\\b1_tags.properties");
 
@@ -677,28 +677,48 @@ public class B1_Main extends JFrame {
             lampRow(g, 683, 162, 711, 116, "door_load_closed", LampKind.RED, "Ferm\u00e9e");
         }
 
+        // caratteri del blocco lotto come in B2: etichette in grassetto piccolo e centrate, valori in grassetto piu' grande e centrati
+        private final Font fLotLabel = new Font("Arial", Font.BOLD, 11);
+        private final Font fLotValue = new Font("Arial", Font.BOLD, 16);
+
+        private void lotLabel(Graphics2D g, String t, int x, int y, int w, int h) {
+            sunken(g, x, y, w, h, LABEL_BG);
+            text(g, t, x, y, w, h, fLotLabel, Color.BLACK, 0);
+        }
+
+        /** Campo valore del blocco lotto (centrato). white = campo bianco (selezioni), altrimenti verde. */
+        private void lotField(Graphics2D g, int x, int y, int w, int h, String key, String v, boolean white) {
+            sunken(g, x, y, w, h, white ? Color.WHITE : FIELD_GREEN);
+            java.awt.Shape oldClip = g.getClip();
+            g.clipRect(x + 1, y + 1, w - 2, h - 2);
+            text(g, v == null || v.isEmpty() ? "--" : v, x, y, w, h, fLotValue,
+                    v == null || v.isEmpty() ? new Color(0x707070) : Color.BLACK, 0);
+            g.setClip(oldClip);
+            keyTag(g, key, x, y);
+        }
+
         private void drawLotInfo(Graphics2D g) {
             // stessa sequenza e stesse parole del blocco di B2: LOT, SEQ x SUR y, COUCHE / PASS, COULEUR, SUFFIXE
-            label(g, "LOT :", 594, 212, 72, 22);
-            field(g, 668, 212, 34, 22, "lot_year", src.str("lot_year"), true, fBold);
-            text(g, "/", 703, 212, 10, 22, fBold, Color.BLACK, 0);
-            field(g, 715, 212, 70, 22, "lot_num", src.str("lot_num"), true, fBig);
-            label(g, "SEQ :", 594, 238, 72, 22);
-            field(g, 668, 238, 38, 22, "seq_b", num("seq_b", 0), true, fBig);
-            text(g, "SUR", 708, 238, 30, 22, fBold, Color.BLACK, 0);
-            field(g, 740, 238, 38, 22, "seq_a", num("seq_a", 0), true, fBig);
+            lotLabel(g, "LOT :", 594, 212, 72, 22);
+            lotField(g, 668, 212, 34, 22, "lot_year", src.str("lot_year"), false);
+            text(g, "/", 703, 212, 10, 22, fLotValue, Color.BLACK, 0);
+            lotField(g, 715, 212, 70, 22, "lot_num", src.str("lot_num"), false);
+            lotLabel(g, "SEQ :", 594, 238, 72, 22);
+            lotField(g, 668, 238, 38, 22, "seq_b", num("seq_b", 0), false);
+            text(g, "SUR", 708, 238, 30, 22, fLotValue, Color.BLACK, 0);
+            lotField(g, 740, 238, 38, 22, "seq_a", num("seq_a", 0), false);
             g.setPaint(new GradientPaint(780, 239, new Color(0x6A7486), 780, 259, new Color(0x3A4252)));
             g.fillRect(780, 239, 42, 20);
-            text(g, "RST SEQ", 780, 239, 42, 20, new Font("Arial", Font.PLAIN, 9), Color.WHITE, 0);
+            text(g, "RST SEQ", 780, 239, 42, 20, new Font("Arial", Font.BOLD, 9), Color.WHITE, 0);
             hits.add(new Hit(780, 239, 42, 20, "RESET SEQ"));
-            label(g, "COUCHE :", 594, 264, 72, 22);
-            combo(g, 668, 264, 56, 22, "type", src.str("type"));
-            label(g, "PASS :", 728, 264, 44, 22);
-            combo(g, 774, 264, 46, 22, "pass", src.str("pass"));
-            label(g, "COULEUR :", 594, 290, 72, 22);
-            combo(g, 668, 290, 76, 22, "color", src.str("color"));
-            label(g, "SUFFIXE :", 594, 316, 72, 22);
-            field(g, 668, 316, 38, 22, "suffix", num("suffix", 0), true, fBold);
+            lotLabel(g, "COUCHE :", 594, 264, 72, 22);
+            lotField(g, 668, 264, 56, 22, "type", src.str("type"), true);
+            lotLabel(g, "PASS :", 728, 264, 44, 22);
+            lotField(g, 774, 264, 46, 22, "pass", src.str("pass"), true);
+            lotLabel(g, "COULEUR :", 594, 290, 72, 22);
+            lotField(g, 668, 290, 76, 22, "color", src.str("color"), true);
+            lotLabel(g, "SUFFIXE :", 594, 316, 72, 22);
+            lotField(g, 668, 316, 38, 22, "suffix", num("suffix", 0), false);
         }
 
         private void combo(Graphics2D g, int x, int y, int w, int h, String key, String v) {
