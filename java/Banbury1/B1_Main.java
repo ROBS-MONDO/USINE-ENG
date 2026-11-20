@@ -231,10 +231,9 @@ public class B1_Main extends JFrame {
         private final Font fLabel = new Font("Arial", Font.PLAIN, 12);
 
         private boolean overlay;
-        private double rotorAngle;
+        private final B1MixerArt art = new B1MixerArt();
         private long lastRotorNanos;
         private long lastAlarmPoll;
-        private double pistonDy;
         private String message = "";
         private long messageUntil;
         private final List<Hit> hits = new ArrayList<>();
@@ -276,14 +275,17 @@ public class B1_Main extends JFrame {
                 if (bridge != null) {
                     bridge.offer(src.dbImage(bridge.layout().db));
                 }
-                // rotazione dei rotori alla velocita' reale (giri/min), calcolata sul tempo trascorso
+                // animazione del mixer (PLC3_Main): pistone, porte, rotori ai giri reali del PLC
                 long tNow = System.nanoTime();
                 double dt = lastRotorNanos == 0 ? 0 : Math.min(0.25, (tNow - lastRotorNanos) / 1e9);
                 lastRotorNanos = tNow;
-                Double rpm = src.num("rpm_act");
-                if (rpm != null && rpm > 0) {
-                    rotorAngle += rpm * 2 * Math.PI / 60.0 * dt;
-                }
+                pistonArrowLit(true); // aggiorna l'ultimo fine corsa
+                Double stepsNow = src.num("steps");
+                art.tick(dt, src.num("rpm_act"), Boolean.TRUE.equals(src.bool("piston_high")),
+                        Boolean.TRUE.equals(src.bool("piston_low")), Boolean.TRUE.equals(src.bool("piston_float")),
+                        Boolean.TRUE.equals(src.bool("piston_move")), Boolean.TRUE.equals(src.bool("door_load_open")),
+                        Boolean.TRUE.equals(src.bool("door_dis_open")), stepsNow != null && stepsNow > 0,
+                        Boolean.TRUE.equals(src.bool("mode_auto")));
                 repaint();
             }).start();
             getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), "label");
@@ -688,126 +690,13 @@ public class B1_Main extends JFrame {
 
         // ---------------- macchina ----------------
         private void drawMachine(Graphics2D g) {
-            // tramoggia
-            Path2D hopper = new Path2D.Double();
-            hopper.moveTo(365, 126);
-            hopper.lineTo(447, 126);
-            hopper.lineTo(421, 210);
-            hopper.lineTo(410, 216);
-            hopper.lineTo(410, 236);
-            hopper.lineTo(397, 236);
-            hopper.lineTo(397, 216);
-            hopper.lineTo(386, 210);
-            hopper.closePath();
-            g.setPaint(new GradientPaint(365, 0, new Color(0x808080), 447, 0, new Color(0xE0E0E0)));
-            g.fill(hopper);
-            g.setColor(new Color(0x505050));
-            g.draw(hopper);
-            g.setPaint(new GradientPaint(365, 0, new Color(0xA0A0A0), 447, 0, new Color(0xF0F0F0)));
-            g.fill(new Ellipse2D.Double(365, 118, 82, 16));
-            g.setColor(new Color(0x505050));
-            g.draw(new Ellipse2D.Double(365, 118, 82, 16));
-            g.setColor(new Color(0x909090));
-            g.setStroke(new BasicStroke(10, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
-            Path2D pipe = new Path2D.Double();
-            pipe.moveTo(403, 236);
-            pipe.lineTo(403, 256);
-            pipe.quadTo(403, 268, 440, 270);
-            g.draw(pipe);
+            // mixer animato preso da PLC3_Main, scalato nell'area centrale del sinottico
+            java.awt.geom.AffineTransform old = g.getTransform();
+            g.translate(522 - 721 * 0.67, 90 - 26 * 0.80);
+            g.scale(0.67, 0.80);
+            art.paint(g);
+            g.setTransform(old);
             g.setStroke(new BasicStroke(1));
-
-            // armadio comandi a destra
-            box(g, 498, 240, 62, 130, new Color(0xD6D6D6), new Color(0x707070));
-            box(g, 512, 262, 40, 72, new Color(0xB8B8B8), new Color(0x707070));
-
-            // colonna
-            g.setPaint(new GradientPaint(450, 0, new Color(0xB0B0B0), 460, 0, new Color(0xF0F0F0)));
-            g.fillRect(450, 112, 10, 230);
-            g.fillRect(508, 112, 10, 230);
-            g.setColor(new Color(0x505050));
-            g.drawRect(450, 112, 10, 230);
-            g.drawRect(508, 112, 10, 230);
-            box(g, 440, 104, 88, 12, new Color(0xA8A8A8), new Color(0x505050));
-            box(g, 462, 236, 44, 32, new Color(0x505860), new Color(0x303030));
-
-            // pistone (posizione in base ai fine corsa)
-            double target;
-            if (Boolean.TRUE.equals(src.bool("piston_high"))) {
-                target = 0;
-            } else if (Boolean.TRUE.equals(src.bool("piston_low"))) {
-                target = 46;
-            } else if (Boolean.TRUE.equals(src.bool("piston_float"))) {
-                target = 24;
-            } else {
-                target = 24;
-            }
-            pistonDy += (target - pistonDy) * 0.12;
-            int dy = (int) Math.round(pistonDy);
-            g.setPaint(new GradientPaint(478, 0, new Color(0x909090), 490, 0, new Color(0xE8E8E8)));
-            g.fillRect(478, 268, 12, 56 + dy);
-            box(g, 456, 324 + dy, 56, 16, new Color(0x606870), new Color(0x303030));
-
-            // camera di miscelazione
-            g.setPaint(new GradientPaint(415, 338, new Color(0xF0F0F0), 565, 450, new Color(0xB0B0B0)));
-            g.fill(new RoundRectangle2D.Double(415, 338, 150, 112, 40, 40));
-            g.setColor(new Color(0x606060));
-            g.draw(new RoundRectangle2D.Double(415, 338, 150, 112, 40, 40));
-            g.setColor(new Color(0xE8E8E8));
-            g.fill(new Ellipse2D.Double(423, 346, 134, 96));
-            g.setColor(new Color(0x808080));
-            g.draw(new Ellipse2D.Double(423, 346, 134, 96));
-            drawRotor(g, 453, 396, rotorAngle);
-            drawRotor(g, 507, 396, -rotorAngle + Math.PI / 2);
-
-            // frecce verdi di rotazione
-            g.setColor(new Color(0x30C030));
-            g.setStroke(new BasicStroke(4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            g.draw(new Arc2D.Double(430, 363, 48, 48, 210, 120, Arc2D.OPEN));
-            g.draw(new Arc2D.Double(482, 363, 48, 48, 210, 120, Arc2D.OPEN));
-            g.setStroke(new BasicStroke(1));
-            Polygon a1 = new Polygon(new int[]{468, 480, 474}, new int[]{372, 380, 388}, 3);
-            Polygon a2 = new Polygon(new int[]{492, 480, 486}, new int[]{372, 380, 388}, 3);
-            g.fillPolygon(a1);
-            g.fillPolygon(a2);
-
-            // base
-            g.setPaint(new GradientPaint(392, 497, new Color(0x8A8A8A), 392, 533, new Color(0x505050)));
-            g.fillRect(392, 497, 170, 36);
-            g.setColor(new Color(0x303030));
-            g.drawRect(392, 497, 170, 36);
-            box(g, 410, 488, 134, 10, new Color(0xD0D0D0), new Color(0x606060));
-
-            // leva rossa e porta scarico
-            boolean disOpen = Boolean.TRUE.equals(src.bool("door_dis_open"));
-            g.setColor(new Color(0xE00000));
-            g.fillRect(428, 440, 14, 45);
-            g.fillOval(430, 432, 14, 14);
-            Polygon tri = disOpen
-                    ? new Polygon(new int[]{440, 470, 440}, new int[]{478, 500, 500}, 3)
-                    : new Polygon(new int[]{440, 462, 440}, new int[]{470, 486, 486}, 3);
-            g.fillPolygon(tri);
-            box(g, 512, 442, 36, 14, new Color(0x9A9A20), new Color(0x505010));
-            box(g, 488, 454, 12, 12, new Color(0x909090), new Color(0x404040));
-        }
-
-        private void drawRotor(Graphics2D g, int cx, int cy, double angle) {
-            for (int k = 0; k < 2; k++) {
-                java.awt.geom.AffineTransform old = g.getTransform();
-                g.rotate(angle + k * Math.PI / 2, cx, cy);
-                g.setPaint(new GradientPaint(cx - 24, cy, new Color(0xA8A8A8), cx + 24, cy, new Color(0x606060)));
-                g.fill(new Ellipse2D.Double(cx - 24, cy - 11, 48, 22));
-                g.setColor(new Color(0x303030));
-                g.draw(new Ellipse2D.Double(cx - 24, cy - 11, 48, 22));
-                if (k == 0) { // segno su un'estremita' della pala: senza, la rotazione non si vede (la forma e' simmetrica)
-                    g.setColor(new Color(0xF0F0F0));
-                    g.fillOval(cx + 13, cy - 4, 9, 9);
-                    g.setColor(new Color(0x202020));
-                    g.drawOval(cx + 13, cy - 4, 9, 9);
-                }
-                g.setTransform(old);
-            }
-            g.setColor(new Color(0x404040));
-            g.fillOval(cx - 4, cy - 4, 8, 8);
         }
 
         // ---------------- colonna destra e centro ----------------
