@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.03";
+    private static final String UI_VERSION = "V46.04";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -3947,7 +3947,7 @@ public class PLC3_Main extends JFrame {
          * riga 2 = giri attuali.
          */
         private void buildRotorsPanel() {
-            final int px = 515, py = 506, pw = 190, ph = 98;
+            final int px = 515, py = 546, pw = 190, ph = 84;
             final Color panelBg = new Color(0xD0, 0xD0, 0xD0);
             final Font valueFont = new Font("Arial", Font.BOLD, 18);
 
@@ -3957,9 +3957,9 @@ public class PLC3_Main extends JFrame {
             title.setForeground(Color.BLACK);
             title.setFont(new Font("Arial", Font.BOLD, 14));
             title.setBorder(BorderFactory.createLineBorder(new Color(0xA0, 0xA0, 0xA0)));
-            registerBaseBounds(title, px, py, pw, 24);
+            registerBaseBounds(title, px, py, pw, 22);
 
-            final int row1 = py + 31, row2 = py + 63, rowH = 26;
+            final int row1 = py + 28, row2 = py + 56, rowH = 24;
 
             registerBaseBounds(new RotorArrowButton(false, () -> changeVitesseConsigne(-1)), px + 4, row1, 30, rowH);
             lblVitesseConsigne = addSunkenLabel("0", px + 38, row1, 70, rowH, valueFont, SwingConstants.RIGHT);
