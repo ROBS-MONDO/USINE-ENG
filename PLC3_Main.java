@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.00";
+    private static final String UI_VERSION = "V46.01";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -924,7 +924,7 @@ public class PLC3_Main extends JFrame {
             lblOra = addSunkenLabel("00/00/0000 00:00:00", 118, 18, 130, 24,
                     new Font("Arial", Font.BOLD, 12), SwingConstants.CENTER);
             lblData = addSunkenLabel("Synoptique Banb2", 118, 43, 130, 24,
-                    new Font("Arial", Font.PLAIN, 12), SwingConstants.LEFT);
+                    new Font("Arial", Font.PLAIN, 12), SwingConstants.CENTER);
             lblVersion = addVersionLabel(UI_VERSION, 858, 18, 120, 30);
 
 
