@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.15";
+    private static final String UI_VERSION = "V46.16";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -350,7 +350,7 @@ public class PLC3_Main extends JFrame {
         private static final Color LIQUID_BUTTON_FLASH = Color.YELLOW;
         private static final Color LIQUID_BUTTON_BORDER = new Color(85, 85, 85);
 
-        private static final int MOTOR_SHIFT_X = 105;
+        private static final int MOTOR_SHIFT_X = 161;
         private static final int MOTOR_SHIFT_Y = -28;
 
         private static final float PIPE_FILL_STROKE = 14f;
