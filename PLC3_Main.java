@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.06";
+    private static final String UI_VERSION = "V46.07";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -3947,7 +3947,7 @@ public class PLC3_Main extends JFrame {
          * riga 2 = giri attuali.
          */
         private void buildRotorsPanel() {
-            final int px = 515, py = 546, pw = 190, ph = 84;
+            final int px = 515, py = 536, pw = 190, ph = 84;
             final Color panelBg = new Color(0xD0, 0xD0, 0xD0);
             final Font valueFont = new Font("Arial", Font.BOLD, 18);
 
