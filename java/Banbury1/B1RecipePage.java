@@ -96,6 +96,20 @@ public final class B1RecipePage {
         }
     }
 
+    /** Comme la fenetre Steps / B2: chaque modification est enregistree tout de suite dans l'archive (si la recette est valide). */
+    private void autoSave() {
+        B1Recipe r = ed.current;
+        if (r == null) {
+            return;
+        }
+        if (!B1RecipeCodec.validate(r, ed.layout).isEmpty()) {
+            say("Modification m\u00e9moris\u00e9e mais pas encore enregistr\u00e9e : la recette n'est pas encore valide.");
+            return;
+        }
+        ed.save();
+        say("Modification enregistr\u00e9e dans l'archive (recette " + r.recipeNo + ").");
+    }
+
     private void say(String m) {
         message = m;
         messageUntil = System.currentTimeMillis() + 4000;
@@ -271,6 +285,7 @@ public final class B1RecipePage {
                 logEdit("-", "Nom", r.name, s.trim());
                 r.name = s.trim().replace('\u00b0', 'o');
                 ed.edited();
+                autoSave();
             }
             return true;
         }
@@ -281,6 +296,7 @@ public final class B1RecipePage {
                 try {
                     r.recipeNo = Integer.parseInt(s.trim());
                     ed.edited();
+                    autoSave();
                 } catch (NumberFormatException e) {
                     say("N\u00b0 non valide : " + s);
                 }
@@ -308,6 +324,7 @@ public final class B1RecipePage {
             if (allow()) {
                 logEdit("STEP " + (phase + 1), "Effacer phase", "-", "-");
                 ed.clearPhase(phase);
+                autoSave();
             }
             return true;
         }
@@ -315,6 +332,7 @@ public final class B1RecipePage {
             if (allow()) {
                 logEdit("STEP " + (phase + 1), "Copier vers suivante", "-", "-");
                 ed.copyPhaseDown(phase);
+                autoSave();
             }
             return true;
         }
@@ -338,7 +356,7 @@ public final class B1RecipePage {
                     logEdit("STEP " + (row + 1), "Ecrit depuis la ligne 0", "-", "-");
                     r.phases.set(row, buf.copy());
                     ed.edited();
-                    say("Phase " + (row + 1) + " \u00e9crite depuis la ligne de modification (n'oubliez pas Enregistrer)");
+                    autoSave();
                 }
             } else if (r != null && row < r.phases.size()) {
                 phase = row;
@@ -440,6 +458,7 @@ public final class B1RecipePage {
     private void touch() {
         if (!onBuf) {
             ed.edited();
+            autoSave();
         }
     }
 
