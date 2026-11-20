@@ -699,8 +699,6 @@ public class B1_Main extends JFrame {
             combo(g, 668, 290, 76, 22, "color", src.str("color"));
             label(g, "SUFFIXE :", 594, 316, 72, 22);
             field(g, 668, 316, 38, 22, "suffix", num("suffix", 0), true, fBold);
-            label(g, "NUM MELANGE", 594, 342, 112, 24);
-            combo(g, 712, 342, 48, 22, "num_melange", src.str("num_melange"));
         }
 
         private void combo(Graphics2D g, int x, int y, int w, int h, String key, String v) {
