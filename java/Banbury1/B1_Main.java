@@ -685,12 +685,14 @@ public class B1_Main extends JFrame {
             text(g, "/", 683, 238, 10, 22, fBold, Color.BLACK, 0);
             field(g, 695, 238, 70, 22, "lot_num", src.str("lot_num"), true, fBig);
             label(g, "SEQ:", 594, 264, 50, 22);
-            field(g, 646, 262, 38, 22, "seq_a", num("seq_a", 0), true, fBig);
-            field(g, 690, 262, 38, 22, "seq_b", num("seq_b", 0), true, fBig);
-            g.setPaint(new GradientPaint(732, 263, new Color(0x6A7486), 732, 283, new Color(0x3A4252)));
-            g.fillRect(732, 263, 82, 20);
-            text(g, "RESET SEQ", 732, 263, 82, 20, new Font("Arial", Font.PLAIN, 11), Color.WHITE, 0);
-            hits.add(new Hit(732, 263, 82, 20, "RESET SEQ"));
+            // come in B2: "7 SUR 26" (campi invertiti rispetto a prima), pulsante piu' stretto
+            field(g, 646, 262, 38, 22, "seq_b", num("seq_b", 0), true, fBig);
+            text(g, "SUR", 686, 262, 30, 22, fBold, Color.BLACK, 0);
+            field(g, 718, 262, 38, 22, "seq_a", num("seq_a", 0), true, fBig);
+            g.setPaint(new GradientPaint(762, 263, new Color(0x6A7486), 762, 283, new Color(0x3A4252)));
+            g.fillRect(762, 263, 52, 20);
+            text(g, "RST SEQ", 762, 263, 52, 20, new Font("Arial", Font.PLAIN, 10), Color.WHITE, 0);
+            hits.add(new Hit(762, 263, 52, 20, "RESET SEQ"));
             label(g, "TYPE:", 594, 290, 52, 20);
             combo(g, 648, 290, 50, 20, "type", src.str("type"));
             label(g, "PASS:", 704, 290, 44, 20);
