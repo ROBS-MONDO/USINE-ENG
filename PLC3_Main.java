@@ -1149,28 +1149,28 @@ public class PLC3_Main extends JFrame {
          * LOT anno/numero, SEQ nombre/en cours, COUCHE, PASS, COULEUR, SUFFIXE.
          */
         private void buildRecipeInfoBox() {
-            final int boxX = 725, boxY = 424, boxW = 270, boxH = 152;
-            final int labX = 729, labW = 76, valX = 809, rowH = 24;
+            final int boxX = 745, boxY = 424, boxW = 250, boxH = 152;
+            final int labX = 749, labW = 60, valX = 813, rowH = 24;
             final int r1 = 432, r2 = 460, r3 = 488, r4 = 516, r5 = 544;
             final Color greenBg = new Color(190, 255, 190);
 
             addRecipeInfoLabel("LOT :", labX, r1, labW, rowH);
-            lblRecAnnee = addRecipeInfoValue(valX, r1, 44, rowH, greenBg);
-            addRecipeInfoText("/", 855, r1, 8, rowH);
+            lblRecAnnee = addRecipeInfoValue(valX, r1, 40, rowH, greenBg);
+            addRecipeInfoText("/", 853, r1, 8, rowH);
             lblRecLot = addRecipeInfoValue(865, r1, 122, rowH, greenBg);
 
             addRecipeInfoLabel("SEQ :", labX, r2, labW, rowH);
             lblMelangeEnCours = addRecipeInfoValue(valX, r2, 56, rowH, greenBg);
-            addRecipeInfoText("SUR", 867, r2, 36, rowH);
+            addRecipeInfoText("SUR", 869, r2, 36, rowH);
             lblRecSeqNombre = addRecipeInfoValue(905, r2, 56, rowH, greenBg);
 
             addRecipeInfoLabel("COUCHE :", labX, r3, labW, rowH);
-            lblRecType = addRecipeInfoValue(valX, r3, 66, rowH, Color.WHITE);
+            lblRecType = addRecipeInfoValue(valX, r3, 62, rowH, Color.WHITE);
             addRecipeInfoLabel("PASS :", 879, r3, 40, rowH);
             lblRecPassage = addRecipeInfoValue(921, r3, 66, rowH, Color.WHITE);
 
             addRecipeInfoLabel("COULEUR :", labX, r4, labW, rowH);
-            lblRecCouleur = addRecipeInfoValue(valX, r4, 178, rowH, Color.WHITE);
+            lblRecCouleur = addRecipeInfoValue(valX, r4, 174, rowH, Color.WHITE);
 
             addRecipeInfoLabel("SUFFIXE :", labX, r5, labW, rowH);
             lblRecSuffixe = addRecipeInfoValue(valX, r5, 60, rowH, greenBg);
