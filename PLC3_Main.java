@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.04";
+    private static final String UI_VERSION = "V46.05";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -4758,12 +4758,48 @@ public class PLC3_Main extends JFrame {
             g2.drawRect(279 + dx, 476 + dy, 18, 34);
             g2.drawRect(277 + dx, 512 + dy, 20, 9);
 
+            // Cilindri dell'albero: ruotano alla stessa velocita' delle pale (rotorMasterAngle).
+            // Asse orizzontale: le righe sulla superficie scorrono in verticale (proiezione sin/cos).
             for (int i = 0; i < 4; i++) {
-                g2.setColor(new Color(111, 143, 143));
-                g2.fillRect(350 + dx + i * 20, 466 + dy, 18, 30);
-                g2.setColor(new Color(63, 93, 93));
-                g2.drawRect(350 + dx + i * 20, 466 + dy, 18, 30);
+                drawRotatingCylinder(g2, 350 + dx + i * 20, 466 + dy, 18, 30, rotorMasterAngle + i * 22.5);
             }
+        }
+
+        private void drawRotatingCylinder(Graphics2D g2, int x, int y, int w, int h, double angleDeg) {
+            Graphics2D g = (Graphics2D) g2.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // corpo con ombreggiatura cilindrica (chiaro al centro, scuro ai bordi)
+            g.setPaint(new LinearGradientPaint(
+                    x, y, x, y + h,
+                    new float[]{0f, 0.35f, 0.65f, 1f},
+                    new Color[]{new Color(70, 100, 100), new Color(150, 182, 182),
+                            new Color(150, 182, 182), new Color(70, 100, 100)}
+            ));
+            g.fillRect(x, y, w, h);
+
+            // righe sulla superficie che ruotano attorno all'asse orizzontale
+            Shape oldClip = g.getClip();
+            g.clipRect(x + 1, y + 1, w - 1, h - 1);
+            double radius = h / 2.0;
+            double cy = y + radius;
+            int stripes = 4;
+            for (int k = 0; k < stripes; k++) {
+                double a = Math.toRadians(angleDeg + k * (360.0 / stripes));
+                double front = Math.cos(a);          // >0 = lato visibile
+                if (front <= 0) {
+                    continue;
+                }
+                double yy = cy + radius * Math.sin(a);
+                double thick = 1.0 + 3.0 * front;    // piu' larga al centro, sottile ai bordi
+                g.setColor(new Color(40, 65, 65, (int) (90 + 120 * front)));
+                g.fill(new java.awt.geom.Rectangle2D.Double(x + 1, yy - thick / 2.0, w - 1, thick));
+            }
+            g.setClip(oldClip);
+
+            g.setColor(new Color(63, 93, 93));
+            g.drawRect(x, y, w, h);
+            g.dispose();
         }
 
         private double mapRotorSpeedFromVitesse(String rawValue) {
