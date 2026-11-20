@@ -64,13 +64,13 @@ function tk_send_for_session($sessionId, $onlyUnsent = true) {
     $m->addReplyTo($smtp['from'], $smtp['from_name']);
     $m->addAddress($to);
     if (!empty($smtp['bcc'])) { $m->addBCC($smtp['bcc']); }
-    $m->Subject = $n > 1 ? 'Ваши билеты на «Звёздный час» — ' . $ev['date'] : 'Ваш билет на «Звёздный час» — ' . $ev['date'];
+    $m->Subject = 'БИЛЕТ';
 
+    $date = htmlspecialchars($ev['date']);
     $html = '<div style="font-family:Arial,Helvetica,sans-serif;color:#2b0d1d;max-width:560px;margin:0 auto">'
-          . '<p style="font-size:16px">Здравствуйте!</p>'
-          . '<p style="font-size:16px">Спасибо за оплату! ' . ($n > 1 ? 'Ваши билеты' : 'Ваш билет') . ' на международный трансформационный фестиваль «Звёздный час» (' . htmlspecialchars($ev['date']) . ', Люксембург) — ниже и во вложении.</p>'
-          . '<p style="font-size:16px">Покажите QR-код на входе (с экрана телефона или распечатанный). Каждый билет действителен один раз.</p>';
-    $text = "Здравствуйте!\n\nСпасибо за оплату! " . ($n > 1 ? 'Ваши билеты' : 'Ваш билет') . " на «Звёздный час» (" . $ev['date'] . ", Люксембург) — во вложении.\nПокажите QR-код на входе. Каждый билет действителен один раз.\n";
+          . '<p style="font-size:16px">Добрый день !</p>'
+          . '<p style="font-size:16px">Ваши билеты на фестиваль звездный час</p>';
+    $text = "Добрый день !\nВаши билеты на фестиваль звездный час\n\nС уважением, команда фестиваля\nЖдём вас " . $ev['date'] . "\n";
 
     $i = 0;
     foreach ($rows as $r) {
@@ -81,8 +81,7 @@ function tk_send_for_session($sessionId, $onlyUnsent = true) {
         $html .= '<p style="margin:24px 0 6px;font-size:14px;color:#6b5a66">' . ($n > 1 ? 'Билет ' . $i . ' из ' . $n . ' — ' : '') . htmlspecialchars($r['code']) . '</p>'
                . '<img src="cid:' . $cid . '" alt="Билет ' . htmlspecialchars($r['code']) . '" style="width:100%;max-width:360px;height:auto;border-radius:12px">';
     }
-    $html .= '<p style="margin-top:28px;font-size:15px">Вопросы? Просто ответьте на это письмо или напишите на <a href="mailto:info@luxembourgfestival.com">info@luxembourgfestival.com</a>.</p>'
-           . '<p style="font-size:15px">До встречи 12 декабря!<br>Команда «Звёздный час»</p></div>';
+    $html .= '<p style="margin-top:28px;font-size:16px">С уважением, команда фестиваля<br>Ждём вас ' . $date . '</p></div>';
     $m->isHTML(true);
     $m->Body = $html;
     $m->AltBody = $text;
