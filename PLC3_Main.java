@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.12";
+    private static final String UI_VERSION = "V46.13";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -988,12 +988,11 @@ public class PLC3_Main extends JFrame {
             greenMeter.setOpaque(false);
             registerBaseBounds(greenMeter, 246 + MOTOR_SHIFT_X, 396 + MOTOR_SHIFT_Y, 63, 35);
 
-            addButton("ME1M", 150 + MOTOR_SHIFT_X, 514 + MOTOR_SHIFT_Y, 52, 22, new Color(233, 233, 233), Color.BLACK, 14);
-
             addText("COURANT", 128 + MOTOR_SHIFT_X, 444 + MOTOR_SHIFT_Y, 15, true);
             lblCourant = addField("0", 120 + MOTOR_SHIFT_X, 465 + MOTOR_SHIFT_Y, 68, 40, 22, false, false);
-            addSunkenLabel("A", 120 + MOTOR_SHIFT_X + 72, 465 + MOTOR_SHIFT_Y, 30, 40,
+            JLabel lblAmpere = addSunkenLabel("A", 120 + MOTOR_SHIFT_X + 72, 465 + MOTOR_SHIFT_Y, 30, 40,
                     new Font("Arial", Font.BOLD, 18), SwingConstants.CENTER);
+            lblAmpere.setBackground(new Color(39, 255, 31)); // stesso verde del motore
             lblCourant.setBackground(new Color(39, 255, 31));
             
             addText("TEMPERATURE", 780, 260, 16, true);
@@ -4761,27 +4760,14 @@ public class PLC3_Main extends JFrame {
             g2.drawRect(226 + dx, 458 + dy, 22, 38);
 
             Polygon body = new Polygon(
-                    new int[]{248 + dx, 343 + dx, 343 + dx, 265 + dx, 248 + dx, 248 + dx},
-                    new int[]{428 + dy, 428 + dy, 518 + dy, 518 + dy, 487 + dy, 459 + dy},
-                    6
+                    new int[]{248 + dx, 343 + dx, 343 + dx, 282 + dx, 248 + dx},
+                    new int[]{428 + dy, 428 + dy, 518 + dy, 518 + dy, 494 + dy},
+                    5
             );
             g2.setColor(new Color(131, 169, 169));
             g2.fillPolygon(body);
             g2.setColor(new Color(75, 103, 103));
             g2.drawPolygon(body);
-
-            g2.setColor(new Color(239, 239, 239));
-            g2.fillRect(274 + dx, 452 + dy, 43, 22);
-            g2.setColor(new Color(68, 68, 68));
-            g2.drawRect(274 + dx, 452 + dy, 43, 22);
-            g2.setFont(new Font("Arial", Font.BOLD, 14));
-            g2.drawString("M4", 288 + dx, 468 + dy);
-
-            g2.setColor(new Color(48, 255, 46));
-            g2.fillRect(279 + dx, 476 + dy, 18, 34);
-            g2.setColor(new Color(27, 106, 27));
-            g2.drawRect(279 + dx, 476 + dy, 18, 34);
-            g2.drawRect(277 + dx, 512 + dy, 20, 9);
 
             // Cilindri dell'albero: ruotano alla stessa velocita' delle pale (rotorMasterAngle).
             // Asse orizzontale: le righe sulla superficie scorrono in verticale (proiezione sin/cos).
