@@ -545,19 +545,48 @@ public class B1_Main extends JFrame {
             g.drawPolygon(p);
         }
 
+        private Shape logoBlade(float x, float y, float w, float h) {
+            float midX = x + w / 2f;
+            float rightX = x + w;
+            float bottomY = y + h;
+            float midY = y + h / 2f;
+            Path2D p = new Path2D.Float();
+            p.moveTo(midX, y);
+            p.curveTo(x + w * 0.68f, y + h * 0.12f, rightX, y + h * 0.35f, rightX, midY);
+            p.curveTo(rightX, y + h * 0.65f, x + w * 0.68f, y + h * 0.88f, midX, bottomY);
+            p.curveTo(x + w * 0.32f, y + h * 0.88f, x, y + h * 0.65f, x, midY);
+            p.curveTo(x, y + h * 0.35f, x + w * 0.32f, y + h * 0.12f, midX, y);
+            p.closePath();
+            return p;
+        }
+
+        private void drawLogo(Graphics2D g, int x, int y, int w, int h) {
+            box(g, x, y, w, h, new Color(0xF2F2F2), new Color(0x909090));
+            for (int i = 0; i < 5; i++) {
+                float bx = x + 7 + i * 8f;
+                Shape blade = logoBlade(bx, y + 6, 6.5f, h - 12);
+                g.setPaint(new GradientPaint(bx, y + 6, new Color(0, 110, 225), bx + 6.5f, y + h - 6, new Color(0, 180, 255)));
+                g.fill(blade);
+                g.setColor(new Color(80, 200, 255, 120));
+                g.draw(blade);
+            }
+            g.setFont(new Font("Arial", Font.BOLD, 18));
+            FontMetrics fm = g.getFontMetrics();
+            int ty = y + (h + fm.getAscent()) / 2 - 3;
+            int tx = x + 51;
+            g.setColor(new Color(0, 160, 255));
+            g.drawString("MONDO", tx + 2, ty - 1);
+            g.setColor(Color.BLACK);
+            g.drawString("MONDO", tx, ty);
+        }
+
         // ---------------- sezioni ----------------
         private void drawTopBar(Graphics2D g) {
-            // logo
-            box(g, 12, 37, 50, 50, new Color(0xF2F2F2), new Color(0x909090));
-            text(g, "MONDO", 12, 37, 50, 50, new Font("Arial", Font.BOLD, 12), new Color(0x1B4F8A), 0);
-            label(g, "MCC-240 T", 80, 38, 102, 24);
-            label(g, "Synoptique", 80, 63, 102, 24);
-            // Imprimer Page
-            g.setPaint(new GradientPaint(197, 38, new Color(0x5A6678), 197, 88, new Color(0x2B3340)));
-            g.fillRoundRect(197, 38, 66, 50, 6, 6);
-            text(g, "Imprimer", 197, 44, 66, 18, fNormal, Color.WHITE, 0);
-            text(g, "Page", 197, 62, 66, 18, fNormal, Color.WHITE, 0);
-            hits.add(new Hit(197, 38, 66, 50, "Imprimer Page"));
+            // logo MONDO (pale blu + scritta con ombra azzurra, come in Main0), data/ora e nome schermata
+            drawLogo(g, 12, 37, 124, 50);
+            sunken(g, 140, 38, 130, 24, LABEL_BG);
+            text(g, LocalDateTime.now().format(DT), 140, 38, 130, 24, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
+            label(g, "Banb1 Synoptique", 140, 63, 130, 24);
 
             // stato PLC + ricetta in macchina + confronto con archivio
             Boolean conn = src.connected();
@@ -888,8 +917,6 @@ public class B1_Main extends JFrame {
             g.fillRect(776, 752, 18, 32);
             g.setColor(new Color(0xC02020));
             g.fillRect(778, 768, 14, 14);
-            sunken(g, 820, 745, 200, 28, new Color(0xC8C8C8));
-            text(g, LocalDateTime.now().format(DT), 820, 745, 200, 28, fBold, new Color(0xF8F8F8), 0);
             sunken(g, 820, 776, 200, 28, new Color(0xC8C8C8));
             long now = System.currentTimeMillis();
             if (!message.isEmpty() && now < messageUntil) {
