@@ -6,9 +6,15 @@ const TK_SCALE = 2; // 1 punto del progetto = 2 pixel
 
 function tk_px($v) { return (int)round($v * TK_SCALE); }
 
+// Converte i caratteri non ASCII in entita' numeriche (&#1047;): GD le legge sempre correttamente,
+// anche quando la sua libreria interpreta male l'UTF-8 (altrimenti il cirillico esce come "Ð").
+function tk_ent($text) {
+    return preg_replace_callback('/[^\x20-\x7E]/u', function ($m) { return '&#' . mb_ord($m[0], 'UTF-8') . ';'; }, str_replace('&', '&#38;', (string)$text));
+}
+
 // Larghezza in pixel di un testo con un certo corpo
 function tk_text_width($size, $font, $text) {
-    $b = imagettfbbox($size, 0, $font, $text);
+    $b = imagettfbbox($size, 0, $font, tk_ent($text));
     return $b[2] - $b[0];
 }
 
@@ -26,7 +32,7 @@ function tk_fit_size($text, $font, $widthPt, $maxPt) {
 function tk_center_text($im, $sizePt, $font, $color, $text, $cx, $baseline) {
     $size = $sizePt * TK_SCALE * 0.75; // GD usa i punti a 72 dpi: 1 pt del progetto = 2 px
     $w = tk_text_width($size, $font, $text);
-    imagettftext($im, $size, 0, (int)round($cx * TK_SCALE - $w / 2), tk_px($baseline), $color, $font, $text);
+    imagettftext($im, $size, 0, (int)round($cx * TK_SCALE - $w / 2), tk_px($baseline), $color, $font, tk_ent($text));
 }
 
 function tk_rounded_rect($im, $x1, $y1, $x2, $y2, $r, $color) {
