@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.10";
+    private static final String UI_VERSION = "V46.11";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -4571,7 +4571,7 @@ public class PLC3_Main extends JFrame {
             g.fill(rightWall);
 
             // Stelo centrale che scende dalla traversa fino alla faccia di spinta
-            g.setPaint(new LinearGradientPaint(centerX - 4, 0, centerX + 4, 0, wallFr, chromeColors));
+            g.setPaint(new GradientPaint(0, topY, new Color(175, 177, 183), 0, botY, new Color(105, 105, 110)));
             g.fillRect(centerX - 4, topY, 8, botY - topY);
 
             g.setColor(new Color(50, 50, 55));
