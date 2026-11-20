@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.02";
+    private static final String UI_VERSION = "V46.03";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -1004,11 +1004,7 @@ public class PLC3_Main extends JFrame {
 
             buildRecipeInfoBox();
 
-            addText("VITESSE", 585, 500, 15, true);
-            addText("ACTUEL", 535, 521, 15, true);
-            lblVitesseActuel = addField("0", 515, 554, 90, 48, 28, false, false);
-            addText("CONSIGNE", 625, 521, 15, true);
-            lblVitesseConsigne = addField("0", 615, 554, 90, 48, 28, false, true);
+            buildRotorsPanel();
 
             // RECIPE sopra lo scheduler
             lblRecipe = addValueButtonLikeField(
@@ -1112,13 +1108,6 @@ public class PLC3_Main extends JFrame {
                     new Color(214, 214, 214),
                     Color.BLACK,
                     14
-            );
-
-            configureUShortWritableField(
-                    lblVitesseConsigne,
-                    "Modifier VITESSE CONSIGNE",
-                    NODE_VITESSE_CONSIGNE,
-                    "VITESSE CONSIGNE"
             );
 
             configureDecimalWritableField(
@@ -3951,6 +3940,146 @@ public class PLC3_Main extends JFrame {
             label.setForeground(Color.BLACK);
             label.setFont(new Font("Arial", bold ? Font.BOLD : Font.PLAIN, size));
             registerBaseBounds(label, x, y, 180, 24);
+        }
+
+        /**
+         * Pannello ROTORS (stile B1_Main): riga 1 = consegna giri con tasti giu/su (+/-1),
+         * riga 2 = giri attuali.
+         */
+        private void buildRotorsPanel() {
+            final int px = 515, py = 506, pw = 190, ph = 98;
+            final Color panelBg = new Color(0xD0, 0xD0, 0xD0);
+            final Font valueFont = new Font("Arial", Font.BOLD, 18);
+
+            JLabel title = new JLabel("ROTORS", SwingConstants.CENTER);
+            title.setOpaque(true);
+            title.setBackground(Color.WHITE);
+            title.setForeground(Color.BLACK);
+            title.setFont(new Font("Arial", Font.BOLD, 14));
+            title.setBorder(BorderFactory.createLineBorder(new Color(0xA0, 0xA0, 0xA0)));
+            registerBaseBounds(title, px, py, pw, 24);
+
+            final int row1 = py + 31, row2 = py + 63, rowH = 26;
+
+            registerBaseBounds(new RotorArrowButton(false, () -> changeVitesseConsigne(-1)), px + 4, row1, 30, rowH);
+            lblVitesseConsigne = addSunkenLabel("0", px + 38, row1, 70, rowH, valueFont, SwingConstants.RIGHT);
+            lblVitesseConsigne.setBackground(new Color(0xC8, 0xFF, 0xC8));
+            addRotorUnit("rpm", px + 110, row1, 38, rowH);
+            registerBaseBounds(new RotorArrowButton(true, () -> changeVitesseConsigne(+1)), px + 152, row1, 30, rowH);
+
+            lblVitesseActuel = addSunkenLabel("0", px + 38, row2, 70, rowH, valueFont, SwingConstants.RIGHT);
+            addRotorUnit("rpm", px + 110, row2, 38, rowH);
+
+            // Sfondo del pannello: aggiunto per ultimo cosi' resta dietro ai componenti.
+            JPanel box = new JPanel();
+            box.setBackground(panelBg);
+            box.setBorder(BorderFactory.createLineBorder(new Color(0x90, 0x90, 0x90), 1));
+            registerBaseBounds(box, px, py, pw, ph);
+        }
+
+        private void addRotorUnit(String text, int x, int y, int w, int h) {
+            JLabel unit = addSunkenLabel(text, x, y, w, h, new Font("Arial", Font.BOLD, 13), SwingConstants.CENTER);
+            unit.setBorder(BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED,
+                    Color.WHITE, Color.WHITE, new Color(0x80, 0x80, 0x80), new Color(0x80, 0x80, 0x80)));
+        }
+
+        /** Pulsante freccia su/giu (stile B1_Main). */
+        private static final class RotorArrowButton extends JComponent {
+            private final boolean up;
+
+            RotorArrowButton(boolean up, Runnable action) {
+                this.up = up;
+                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        action.run();
+                    }
+                });
+            }
+
+            @Override
+            protected void paintComponent(Graphics g0) {
+                Graphics2D g = (Graphics2D) g0.create();
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                int w = getWidth(), h = getHeight();
+                g.setPaint(new GradientPaint(0, 0, Color.WHITE, 0, h, new Color(0xD8, 0xD8, 0xD8)));
+                g.fillRect(0, 0, w, h);
+                g.setColor(new Color(0x80, 0x80, 0x80));
+                g.drawRect(0, 0, w - 1, h - 1);
+                double k = Math.min(w / 38.0, h / 26.0);
+                int cx = w / 2, cy = h / 2;
+                int a = (int) Math.round(6 * k), b = (int) Math.round(4 * k);
+                Polygon p = new Polygon();
+                if (up) {
+                    p.addPoint(cx - a, cy + b); p.addPoint(cx + a, cy + b); p.addPoint(cx, cy - a);
+                } else {
+                    p.addPoint(cx - a, cy - b); p.addPoint(cx + a, cy - b); p.addPoint(cx, cy + a);
+                }
+                g.setColor(new Color(0x30, 0x30, 0x30));
+                g.fillPolygon(p);
+                g.dispose();
+            }
+        }
+
+        /** Modifica la consegna giri di +/-delta (scrittura diretta sul PLC, senza finestra). */
+        private void changeVitesseConsigne(int delta) {
+            if (shutdown) {
+                return;
+            }
+            final int current;
+            try {
+                current = Integer.parseInt(lblVitesseConsigne.getText().trim());
+            } catch (Exception ex) {
+                return; // valore non ancora letto dal PLC
+            }
+            final int newValue = current + delta;
+            if (newValue < 0 || newValue > 65535) {
+                return;
+            }
+
+            new Thread(() -> {
+                try {
+                    StatusCode status = OpcManager.writeValue(
+                            APP_NAME,
+                            APP_URI,
+                            NODE_VITESSE_CONSIGNE,
+                            DataValue.valueOnly(new Variant(ushort(newValue)))
+                    );
+                    final boolean ok = status != null && status.isGood();
+                    PLC3_Main.logWrite(NODE_VITESSE_CONSIGNE, String.valueOf(newValue), String.valueOf(newValue),
+                            ok ? "SUCCESS" : "REJECTED", ok ? "VITESSE CONSIGNE (tasti)" : "VITESSE CONSIGNE | " + status);
+                    if (shutdown) {
+                        return;
+                    }
+                    SwingUtilities.invokeLater(() -> {
+                        if (shutdown || !isDisplayable()) {
+                            return;
+                        }
+                        if (ok) {
+                            updateField(lblVitesseConsigne, String.valueOf(newValue));
+                        } else {
+                            JOptionPane.showMessageDialog(parentFrame,
+                                    "Écriture VITESSE CONSIGNE refusée : " + status,
+                                    "Erreur", JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+                } catch (Exception ex) {
+                    PLC3_Main.logWrite(NODE_VITESSE_CONSIGNE, String.valueOf(newValue), "", "ERROR",
+                            "VITESSE CONSIGNE | " + ex.getMessage());
+                    if (shutdown) {
+                        return;
+                    }
+                    SwingUtilities.invokeLater(() -> {
+                        if (shutdown || !isDisplayable()) {
+                            return;
+                        }
+                        JOptionPane.showMessageDialog(parentFrame,
+                                "Erreur écriture VITESSE CONSIGNE : " + ex.getMessage(),
+                                "Erreur", JOptionPane.ERROR_MESSAGE);
+                    });
+                }
+            }, "opc-write-vitesse-thread").start();
         }
 
         /** Logo MONDO (pale blu + scritta con ombra azzurra), come in B1_Main. Disegnato su base 124x50 e scalato. */
