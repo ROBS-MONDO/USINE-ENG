@@ -130,12 +130,12 @@ public final class B1Tags {
         {"rdy_mintime",  "Pronto: tempo min. tra cicli",     "DB110.W54.B9"},
         {"rdy_cycles",   "Pronto: n. cicli passi effettuati","DB110.W54.B10"},
         // --- cycle malaxeur ---
-        {"cyc_auto",   "Ciclo: auto (bit da trovare: W54.B14 non e' quello giusto)", "none"},
+        {"cyc_auto",   "Ciclo: auto (IPOTESI: = modo automatico, W44.B3)", "DB110.W44.B3"},
         {"phase_no",   "Fase in corso (WinCC: DBW218, RunningPhaseActual)", "DB110.W218"},
-        {"mode_auto",  "Modo automatico (spie AUTO/MANUAL e trend) = produzione auto (W44.B1, sempre 1 nei log in produzione)", "DB110.W44.B1"},
+        {"mode_auto",  "Modo automatico (spie AUTO/MANUAL e trend) (IPOTESI: W44.B3)", "DB110.W44.B3"},
         {"cyc_cont",   "Ciclo: continuo",   "DB110.W54.B12"},
         {"cyc_susp",   "Ciclo: sospeso",    "DB110.W54.B15"},
-        {"cyc_cycle",  "Ciclo: ciclo",      "DB110.W44.B9"},
+        {"cyc_cycle",  "Ciclo: ciclo (IPOTESI: W44.B4)",      "DB110.W44.B4"},
         // --- pagina Process: fase attuale. Valori impostati (dalla ricetta) DB110.142..171, valori attuali DB110.172..201 ---
         {"ph_set_ops",    "Fase attuale, impostato: operazioni (bit)", "DB110.UW142"},
         {"ph_set_tmo",    "Fase attuale, impostato: timeout s",        "DB110.W144"},
@@ -165,11 +165,11 @@ public final class B1Tags {
         {"pos_dis",      "Posizione scarico",      "DB110.W140.B14"},
         // --- produzione ---
         {"prod_ready",   "Pronto per produzione",   "DB110.W44.B0"},
-        {"prod_auto_on", "Ciclo auto ON",           "DB110.W44.B11"},
+        {"prod_auto_on", "Ciclo auto ON (IPOTESI: W44.B5)",           "DB110.W44.B5"},
         {"new_load",     "Caricamento nuova (ipotesi da PDL)", "DB201.X41.0"},
-        {"prod_auto",    "Funzionamento produzione auto", "DB110.W44.B1"},
+        {"prod_auto",    "Funzionamento produzione auto (IPOTESI: W44.B3)", "DB110.W44.B3"},
         {"cycle_stopped","Ciclo arrestato",         "DB110.W44.B2"},
-        {"recipe_ok",    "Ricetta valida",          "DB110.W44.B12"},
+        {"recipe_ok",    "Ricetta valida (IPOTESI: W44.B1)",          "DB110.W44.B1"},
     };
 
     private B1Tags() {
