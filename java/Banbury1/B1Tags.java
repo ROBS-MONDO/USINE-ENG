@@ -81,7 +81,7 @@ public final class B1Tags {
         {"press_top",   "Pressione (barra alta)",                    "DB110.W70*0.1"},
         {"temp",        "Temperatura camera (barra alta e riquadro)", "DB110.W100"},
         {"speed_top",   "Velocita' rotori (barra alta)",             "DB110.W60"},
-        {"mix_time",    "Tempo di mescola, secondi (mm:ss)",         "DB110.UW198"},
+        {"mix_time",    "Tempo di mescola (fase attuale), secondi (mm:ss)", "DB110.UW194"},
         {"cycle_time",  "Tempo ciclo, secondi (mm:ss)",              "DB110.UW202"},
         {"mix_total",   "Miscele totali (WinCC: DBW210)",         "DB110.W210"},
         {"mix_done",    "Miscele fatte (WinCC: DBW212)",          "DB110.W212"},
