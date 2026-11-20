@@ -48,7 +48,7 @@ import java.util.Locale;
  */
 public class B1_Main extends JFrame {
 
-    static final String VERSION = "B1 V2.05";
+    static final String VERSION = "B1 V2.10";
     static final String DEFAULT_IP = "192.168.10.100";
     static final Path DEFAULT_TAGS = Paths.get("C:\\_tools\\Banbury1\\b1_tags.properties");
 
