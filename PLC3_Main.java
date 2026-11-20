@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.05";
+    private static final String UI_VERSION = "V46.06";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -4761,7 +4761,7 @@ public class PLC3_Main extends JFrame {
             // Cilindri dell'albero: ruotano alla stessa velocita' delle pale (rotorMasterAngle).
             // Asse orizzontale: le righe sulla superficie scorrono in verticale (proiezione sin/cos).
             for (int i = 0; i < 4; i++) {
-                drawRotatingCylinder(g2, 350 + dx + i * 20, 466 + dy, 18, 30, rotorMasterAngle + i * 22.5);
+                drawRotatingCylinder(g2, 350 + dx + i * 20, 466 + dy, 18, 30, -rotorMasterAngle + i * 22.5);
             }
         }
 
