@@ -4523,13 +4523,24 @@ public class PLC3_Main extends JFrame {
             g2.drawPolygon(cone);
             g2.fillRect(742, 201, 24, 16);
 
-            AffineTransform old = g2.getTransform();
-            g2.rotate(Math.toRadians(-18), 721, 190);
-            g2.setColor(new Color(143, 143, 143));
-            g2.fillRect(698, 176, 46, 14);
-            g2.setColor(new Color(68, 68, 68));
-            g2.drawRect(698, 176, 46, 14);
-            g2.setTransform(old);
+            // Tubo curvo di scarico: dalla valvola della tramoggia verso la parete destra del mixer
+            Path2D.Double pipe = new Path2D.Double();
+            pipe.moveTo(754, 217);
+            pipe.lineTo(754, 250);
+            pipe.curveTo(754, 265, 745, 270, 730, 270);
+            pipe.lineTo(675, 270);
+
+            Stroke oldStroke = g2.getStroke();
+            g2.setStroke(new BasicStroke(16f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+            g2.setColor(new Color(79, 79, 79));
+            g2.draw(pipe);
+            g2.setStroke(new BasicStroke(12f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+            g2.setColor(new Color(150, 150, 150));
+            g2.draw(pipe);
+            g2.setStroke(new BasicStroke(4f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+            g2.setColor(new Color(195, 195, 195));
+            g2.draw(pipe);
+            g2.setStroke(oldStroke);
         }
 
         private void paintMotor(Graphics2D g2) {
