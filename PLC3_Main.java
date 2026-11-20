@@ -920,9 +920,10 @@ public class PLC3_Main extends JFrame {
 
         private void buildUi() {
             // Data/ora e nome schermata nello stile di B1_Main
-            lblOra = addSunkenLabel("00/00/0000 00:00:00", 22, 18, 130, 24,
+            registerBaseBounds(new MondoLogo(), 10, 18, 104, 49);
+            lblOra = addSunkenLabel("00/00/0000 00:00:00", 118, 18, 130, 24,
                     new Font("Arial", Font.BOLD, 12), SwingConstants.CENTER);
-            lblData = addSunkenLabel("Synoptique Banb2", 22, 43, 130, 24,
+            lblData = addSunkenLabel("Synoptique Banb2", 118, 43, 130, 24,
                     new Font("Arial", Font.PLAIN, 12), SwingConstants.LEFT);
             lblVersion = addVersionLabel(UI_VERSION, 858, 18, 120, 30);
 
@@ -3950,6 +3951,55 @@ public class PLC3_Main extends JFrame {
             label.setForeground(Color.BLACK);
             label.setFont(new Font("Arial", bold ? Font.BOLD : Font.PLAIN, size));
             registerBaseBounds(label, x, y, 180, 24);
+        }
+
+        /** Logo MONDO (pale blu + scritta con ombra azzurra), come in B1_Main. Disegnato su base 124x50 e scalato. */
+        private static final class MondoLogo extends JComponent {
+            private static Shape blade(float x, float y, float w, float h) {
+                float midX = x + w / 2f;
+                float rightX = x + w;
+                float bottomY = y + h;
+                float midY = y + h / 2f;
+                Path2D p = new Path2D.Float();
+                p.moveTo(midX, y);
+                p.curveTo(x + w * 0.68f, y + h * 0.12f, rightX, y + h * 0.35f, rightX, midY);
+                p.curveTo(rightX, y + h * 0.65f, x + w * 0.68f, y + h * 0.88f, midX, bottomY);
+                p.curveTo(x + w * 0.32f, y + h * 0.88f, x, y + h * 0.65f, x, midY);
+                p.curveTo(x, y + h * 0.35f, x + w * 0.32f, y + h * 0.12f, midX, y);
+                p.closePath();
+                return p;
+            }
+
+            @Override
+            protected void paintComponent(Graphics g0) {
+                Graphics2D g = (Graphics2D) g0.create();
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                final int w = 124, h = 50;
+                g.scale(getWidth() / (double) w, getHeight() / (double) h);
+
+                g.setColor(new Color(0xF2F2F2));
+                g.fillRect(0, 0, w, h);
+                g.setColor(new Color(0x909090));
+                g.drawRect(0, 0, w - 1, h - 1);
+                for (int i = 0; i < 5; i++) {
+                    float bx = 7 + i * 8f;
+                    Shape b = blade(bx, 6, 6.5f, h - 12);
+                    g.setPaint(new GradientPaint(bx, 6, new Color(0, 110, 225), bx + 6.5f, h - 6, new Color(0, 180, 255)));
+                    g.fill(b);
+                    g.setColor(new Color(80, 200, 255, 120));
+                    g.draw(b);
+                }
+                g.setFont(new Font("Arial", Font.BOLD, 18));
+                FontMetrics fm = g.getFontMetrics();
+                int ty = (h + fm.getAscent()) / 2 - 3;
+                int tx = 51;
+                g.setColor(new Color(0, 160, 255));
+                g.drawString("MONDO", tx + 2, ty - 1);
+                g.setColor(Color.BLACK);
+                g.drawString("MONDO", tx, ty);
+                g.dispose();
+            }
         }
 
         /** Etichetta "incassata" in stile B1_Main (bordo grigio sopra/sinistra, bianco sotto/destra). */
