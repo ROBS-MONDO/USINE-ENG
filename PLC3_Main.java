@@ -926,10 +926,6 @@ public class PLC3_Main extends JFrame {
                     new Font("Arial", Font.PLAIN, 12), SwingConstants.LEFT);
             lblVersion = addVersionLabel(UI_VERSION, 858, 18, 120, 30);
 
-            JLabel mixer = new JLabel("MIXER", SwingConstants.CENTER);
-            mixer.setForeground(new Color(36, 62, 207));
-            mixer.setFont(new Font("Serif", Font.BOLD, 28));
-            registerBaseBounds(mixer, 400, 12, 150, 40);
 
             int liquidColumnX = 22;
             int liquidButtonW = 118;
