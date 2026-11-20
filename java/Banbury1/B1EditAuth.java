@@ -57,11 +57,17 @@ final class B1EditAuth {
             return true;
         }
         try {
-            Class<?> c;
-            try {
-                c = Class.forName("SVC.ActiveDirectorySetup");
-            } catch (ClassNotFoundException e) {
-                c = Class.forName("OT4US.ActiveDirectorySetup");
+            Class<?> c = null;
+            for (String n : new String[]{"SVC.ActiveDirectorySetup", "ActiveDirectorySetup", "OT4US.ActiveDirectorySetup"}) {
+                try {
+                    c = Class.forName(n);
+                    break;
+                } catch (ClassNotFoundException | LinkageError e) {
+                    // nom suivant (package SVC, package par defaut, OT4US)
+                }
+            }
+            if (c == null) {
+                throw new ClassNotFoundException("ActiveDirectorySetup (cherch\u00e9e : SVC, package par d\u00e9faut, OT4US)");
             }
             Method req = null;
             for (Method m : c.getMethods()) {

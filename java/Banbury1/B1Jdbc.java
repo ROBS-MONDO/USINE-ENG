@@ -63,13 +63,26 @@ final class B1Jdbc {
         return DriverManager.getConnection(url, cfg.getProperty("jdbc.user", "").trim(), pwd);
     }
 
-    /** Connessione dalla classe centralizzata SVC.DBBamburyReader (stesso progetto Eclipse). */
+    /** Nomi possibili della classe centralizzata (package SVC, package di default o OT4US). */
+    static final String[] SVC_CLASSES = {"SVC.DBBamburyReader", "DBBamburyReader", "OT4US.DBBamburyReader"};
+
+    /** Connessione dalla classe centralizzata DBBamburyReader (stesso progetto Eclipse), cercata nei package SVC, default e OT4US. */
     static Connection openSvc() throws SQLException {
+        Class<?> c = null;
+        for (String n : SVC_CLASSES) {
+            try {
+                c = Class.forName(n);
+                break;
+            } catch (ClassNotFoundException | LinkageError e) {
+                // prova il nome successivo
+            }
+        }
+        if (c == null) {
+            throw new SQLException("provider=svc : classe DBBamburyReader introuvable dans le classpath (cherch\u00e9e : "
+                    + String.join(", ", SVC_CLASSES) + ")");
+        }
         try {
-            Class<?> c = Class.forName("SVC.DBBamburyReader");
             return (Connection) c.getMethod("openConnection").invoke(null);
-        } catch (ClassNotFoundException e) {
-            throw new SQLException("provider=svc : classe SVC.DBBamburyReader introuvable dans le classpath", e);
         } catch (java.lang.reflect.InvocationTargetException e) {
             Throwable t = e.getCause() != null ? e.getCause() : e;
             throw new SQLException("provider=svc: " + t.getMessage(), t);
