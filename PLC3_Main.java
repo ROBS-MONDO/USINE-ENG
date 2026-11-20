@@ -919,8 +919,11 @@ public class PLC3_Main extends JFrame {
         }
 
         private void buildUi() {
-            lblOra = addField("00:00:00", 22, 18, 95, 39, 18, false, false);
-            lblData = addField("18/03/26", 125, 18, 95, 39, 18, false, false);
+            // Data/ora e nome schermata nello stile di B1_Main
+            lblOra = addSunkenLabel("00/00/0000 00:00:00", 22, 18, 130, 24,
+                    new Font("Arial", Font.BOLD, 12), SwingConstants.CENTER);
+            lblData = addSunkenLabel("Synoptique Banb2", 22, 43, 130, 24,
+                    new Font("Arial", Font.PLAIN, 12), SwingConstants.LEFT);
             lblVersion = addVersionLabel(UI_VERSION, 858, 18, 120, 30);
 
             JLabel mixer = new JLabel("MIXER", SwingConstants.CENTER);
@@ -1479,11 +1482,9 @@ public class PLC3_Main extends JFrame {
         private void updateDateTimeFields() {
             LocalDateTime now = LocalDateTime.now();
 
-            String ora = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-            String data = now.format(DateTimeFormatter.ofPattern("dd/MM/yy"));
+            String oraData = now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
 
-            if (lblOra != null) lblOra.setText(ora);
-            if (lblData != null) lblData.setText(data);
+            if (lblOra != null) lblOra.setText(oraData);
         }
 
         private void startOpcRefresh() {
@@ -3953,6 +3954,22 @@ public class PLC3_Main extends JFrame {
             label.setForeground(Color.BLACK);
             label.setFont(new Font("Arial", bold ? Font.BOLD : Font.PLAIN, size));
             registerBaseBounds(label, x, y, 180, 24);
+        }
+
+        /** Etichetta "incassata" in stile B1_Main (bordo grigio sopra/sinistra, bianco sotto/destra). */
+        private JLabel addSunkenLabel(String text, int x, int y, int w, int h, Font font, int align) {
+            JLabel label = new JLabel(text, align);
+            label.setOpaque(true);
+            label.setBackground(new Color(0xD8, 0xD4, 0xCC));
+            label.setForeground(Color.BLACK);
+            label.setFont(font);
+            Color gray = new Color(0x80, 0x80, 0x80);
+            label.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED,
+                            Color.WHITE, Color.WHITE, gray, gray),
+                    BorderFactory.createEmptyBorder(0, 5, 0, 5)));
+            registerBaseBounds(label, x, y, w, h);
+            return label;
         }
 
         private JLabel addVersionLabel(String text, int x, int y, int w, int h) {
