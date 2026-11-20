@@ -1160,8 +1160,9 @@ public class PLC3_Main extends JFrame {
             lblRecLot = addRecipeInfoValue(865, r1, 122, rowH, greenBg);
 
             addRecipeInfoLabel("SEQ :", labX, r2, labW, rowH);
-            lblRecSeqNombre = addRecipeInfoValue(valX, r2, 56, rowH, greenBg);
-            lblMelangeEnCours = addRecipeInfoValue(869, r2, 56, rowH, greenBg);
+            lblMelangeEnCours = addRecipeInfoValue(valX, r2, 56, rowH, greenBg);
+            addRecipeInfoText("SUR", 867, r2, 36, rowH);
+            lblRecSeqNombre = addRecipeInfoValue(905, r2, 56, rowH, greenBg);
 
             addRecipeInfoLabel("COUCHE :", labX, r3, labW, rowH);
             lblRecType = addRecipeInfoValue(valX, r3, 66, rowH, Color.WHITE);
