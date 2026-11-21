@@ -50,6 +50,47 @@ if ($turnstileSecret !== '') {
 // lingua della pagina da cui arriva il modulo (default: russo)
 $lang = preg_match('/^(ru|en|fr|de)$/', (string)($_POST['lang'] ?? '')) ? $_POST['lang'] : 'ru';
 
+// Modulo "Второй день": basta uno tra email e telefono; il messaggio e l'oggetto sono fissi (nella lingua della pagina)
+if (($_POST['form'] ?? '') === 'second_day') {
+    // basta uno dei due contatti: email oppure telefono (prefisso + numero); possono esserci entrambi
+    $email  = clean($_POST['email'] ?? '', 200);
+    $prefix = str_replace(' ', '', clean($_POST['phone_prefix'] ?? '', 8));
+    $phone  = clean($_POST['phone'] ?? '', 30);
+    $hasEmail = $email !== '';
+    $hasPhone = ($prefix !== '' || $phone !== '');
+    if (!$hasEmail && !$hasPhone) fail(422);
+    if ($hasEmail && !filter_var($email, FILTER_VALIDATE_EMAIL)) fail(422);
+    $phoneFull = '';
+    if ($hasPhone) {
+        $digits = preg_replace('/\D/', '', $phone);
+        if (!preg_match('/^\+?\d{1,4}$/', $prefix) || !preg_match('/^[\d\s().-]+$/', $phone) || strlen($digits) < 5 || strlen($digits) > 15) fail(422);
+        $phoneFull = ($prefix[0] === '+' ? $prefix : '+' . $prefix) . ' ' . $phone;
+    }
+    $contact = implode(', ', array_filter([$hasEmail ? $email : '', $phoneFull]));
+    $texts = [
+        'ru' => ['subject' => 'Заявка на участие', 'contact' => 'Мой контакт:',
+                 'hello' => "Здравствуйте! Хочу узнать об участии во втором дне фестиваля «Звёздный час» в Люксембурге — «Сила объединения». Пришлите, пожалуйста, дату, место, стоимость и условия регистрации."],
+        'fr' => ['subject' => 'Demande de participation', 'contact' => 'Mon contact :',
+                 'hello' => "Bonjour ! Je souhaite me renseigner sur la participation au deuxième jour du festival « Star Hour » au Luxembourg — « La force de l'union ». Pourriez-vous m'envoyer la date, le lieu, le prix et les conditions d'inscription ?"],
+        'en' => ['subject' => 'Participation request', 'contact' => 'My contact:',
+                 'hello' => "Hello! I would like to find out about taking part in the second day of the “Star Hour” festival in Luxembourg — “The Power of Unity”. Please send me the date, venue, price and registration terms."],
+        'de' => ['subject' => 'Teilnahmeanfrage', 'contact' => 'Mein Kontakt:',
+                 'hello' => "Guten Tag! Ich möchte mich über die Teilnahme am zweiten Tag des Festivals „Star Hour“ in Luxemburg — „Die Kraft der Verbindung“ informieren. Bitte senden Sie mir Datum, Ort, Preis und Anmeldebedingungen."],
+    ];
+    $t = $texts[$lang];
+    $body  = $t['hello'] . "\n\n";
+    $body .= $t['contact'] . " $contact\n";
+    $body .= "\nIP: " . ($_SERVER['REMOTE_ADDR'] ?? '') . "\nДата: " . date('Y-m-d H:i:s') . "\n";
+    $subject = '=?UTF-8?B?' . base64_encode($t['subject']) . '?=';
+    $headers = "From: Luxembourg Festival <$from>\r\n"
+             . ($hasEmail ? "Reply-To: $email\r\n" : '')
+             . "MIME-Version: 1.0\r\n"
+             . "Content-Type: text/plain; charset=UTF-8\r\n";
+    $sent = @mail($to, $subject, $body, $headers);
+    echo json_encode(['ok' => (bool)$sent]);
+    exit;
+}
+
 $name    = clean($_POST['name'] ?? '');
 $city    = clean($_POST['city'] ?? '');
 $phone   = clean($_POST['phone'] ?? '', 60);

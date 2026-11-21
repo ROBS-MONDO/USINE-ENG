@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 import i18n_lib as L
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PAGES = ['index.html', 'privacy.html', 'bilet-uchastnika.html']
+PAGES = ['index.html', 'sila-obedineniya.html', 'privacy.html', 'bilet-uchastnika.html']
 LANGS = {'en': {'locale': 'en_GB', 'name': 'English'}, 'fr': {'locale': 'fr_FR', 'name': 'Français'}, 'de': {'locale': 'de_DE', 'name': 'Deutsch'}}
 SITE = 'https://www.luxembourgfestival.com'
 
