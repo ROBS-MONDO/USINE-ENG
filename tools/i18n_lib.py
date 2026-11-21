@@ -1,6 +1,6 @@
 """Strumenti per generare le versioni in altre lingue partendo dalle pagine russe.
 
-Le pagine russe (index.html, sila-obedineniya.html, privacy.html) restano la fonte.
+Le pagine russe (index.html, privacy.html) restano la fonte.
 Le traduzioni stanno in i18n/<lingua>.py (dizionari T e S). Lo script tools/build_i18n.py genera <lingua>/*.html.
 """
 import re
