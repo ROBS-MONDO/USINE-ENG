@@ -934,6 +934,19 @@
 <footer class="site-footer"><a href="https://www.luxembourgfestival.com">LuxembourgFestival.com</a><p class="copy">© 2026 Luxembourg Festival. Alle Rechte vorbehalten.</p><a class="mail" href="mailto:info@luxembourgfestival.com">info@luxembourgfestival.com</a><div class="foot-privacy"><a class="privacy-btn" href="privacy.html">Datenschutzerklärung</a></div></footer>
 
 <script>
+  // Pulsante "Купить билет" sotto la prima pagina: porta alla sezione pagamenti e la riallinea mentre le immagini finiscono di caricarsi
+  (function () {
+    var a = document.querySelector(".buy-below a"), sec = document.getElementById("oplata");
+    if (!a || !sec) return;
+    function go() { window.scrollTo({ top: sec.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop) + 24, behavior: "instant" }); }
+    a.addEventListener("click", function (e) {
+      e.preventDefault(); go();
+      [150, 500, 1200].forEach(function (ms) { setTimeout(go, ms); });
+      if (history.replaceState) history.replaceState(null, "", "#oplata");
+    });
+  })();
+</script>
+<script>
   // Video della prima pagina: parte da solo, senza pulsante play (anche su mobile)
   (function () {
     var v = document.querySelector(".hero video"); if (!v) return;
