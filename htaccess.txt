@@ -12,6 +12,9 @@
   RewriteCond %{THE_REQUEST} \s/+((?:(?:en|fr|de)/)?)index\.html[\s?]
   RewriteRule ^((?:(?:en|fr|de)/)?)index\.html$ /$1 [R=301,L]
 
+  # Pagina del secondo giorno rimossa: reindirizza alla home della stessa lingua
+  RewriteRule ^((?:(?:en|fr|de)/)?)sila-obedineniya\.html$ /$1 [R=301,L]
+
   # Blocca file nascosti (tranne .well-known) e file di backup/sorgenti
   RewriteRule ^\.(?!well-known/) - [F,L]
   RewriteRule \.(bak|old|orig|swp|sql|log|ini|sh|md|oldphp)$ - [F,L,NC]

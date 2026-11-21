@@ -1,6 +1,6 @@
 # Traduzioni del sito
 
-Le pagine russe (`index.html`, `sila-obedineniya.html`, `privacy.html`) sono la fonte.
+Le pagine russe (`index.html`, `privacy.html`) sono la fonte.
 Le altre lingue si generano con `python3 tools/build_i18n.py` (crea le cartelle `en/`, `fr/`, `de/`).
 
 - `i18n/<lingua>.json`: traduzioni. "text" = testi e attributi (russo → traduzione); "script" = messaggi di JavaScript e dati strutturati.
