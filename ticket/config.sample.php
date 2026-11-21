@@ -16,7 +16,7 @@ return [
         'payment_links' => [
             'plink_INDIVIDUALE' => ['tickets' => 1, 'price_cents' => 3000],   // biglietto individuale 30 euro
             'plink_UNO_PIU_UNO' => ['tickets' => 2, 'price_cents' => 4000],   // formato 1+1, due partecipanti, 40 euro
-            'plink_ADULTO_RAGAZZO' => ['tickets' => 2, 'price_cents' => 3000], // adulto + ragazzo, due persone, 30 euro
+            'plink_1UeKSrREbchgRSN8h4q46Sqk' => ['tickets' => 2, 'price_cents' => 3000], // adulto + ragazzo (link ...Re09), due persone, 30 euro
         ],
         'api_key' => '',           // facoltativa: chiave "restricted" con sola lettura su Checkout Sessions (rk_live_...), per contare i biglietti con precisione
     ],
