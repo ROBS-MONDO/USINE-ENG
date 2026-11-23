@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V45.01";
+    private static final String UI_VERSION = "V46.20";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -350,7 +350,7 @@ public class PLC3_Main extends JFrame {
         private static final Color LIQUID_BUTTON_FLASH = Color.YELLOW;
         private static final Color LIQUID_BUTTON_BORDER = new Color(85, 85, 85);
 
-        private static final int MOTOR_SHIFT_X = 105;
+        private static final int MOTOR_SHIFT_X = 161;
         private static final int MOTOR_SHIFT_Y = -28;
 
         private static final float PIPE_FILL_STROKE = 14f;
@@ -443,6 +443,22 @@ public class PLC3_Main extends JFrame {
         private static final NodeId NODE_MELANGE_EN_COURS =
                 NodeId.parse("ns=2;s=Banbury 2.PLC3.R101");
 
+        // Informazioni ricetta (stessi tag di PLC3_Recette)
+        private static final NodeId NODE_RECETTE_ANNEE =
+                NodeId.parse("ns=2;s=Banbury 2.PLC3.R104_R104_M_L");
+        private static final NodeId NODE_RECETTE_LOT =
+                NodeId.parse("ns=2;s=Banbury 2.PLC3.R106_R110_M_L");
+        private static final NodeId NODE_RECETTE_SUFFIXE =
+                NodeId.parse("ns=2;s=Banbury 2.PLC3.R134");
+        private static final NodeId NODE_RECETTE_NOMBRE_MELANGES =
+                NodeId.parse("ns=2;s=Banbury 2.PLC3.R100");
+        private static final NodeId NODE_RECETTE_PASSAGE =
+                NodeId.parse("ns=2;s=Banbury 2.PLC3.R102");
+        private static final NodeId NODE_RECETTE_TYPE =
+                NodeId.parse("ns=2;s=Banbury 2.PLC3.R103");
+        private static final NodeId NODE_RECETTE_COULEUR =
+                NodeId.parse("ns=2;s=Banbury 2.PLC3.R00130");
+
         private static final NodeId NODE_DOSAGGIO_DOA =
                 NodeId.parse("ns=2;s=Banbury 2.PLC3.M6010");
         private static final NodeId NODE_DOSAGGIO_SILANO =
@@ -474,6 +490,13 @@ public class PLC3_Main extends JFrame {
         private JLabel lblTempActuel;
         private JLabel lblTempConsigne;
         private JLabel lblMelangeEnCours;
+        private JLabel lblRecAnnee;
+        private JLabel lblRecLot;
+        private JLabel lblRecSeqNombre;
+        private JLabel lblRecType;
+        private JLabel lblRecPassage;
+        private JLabel lblRecCouleur;
+        private JLabel lblRecSuffixe;
         private JLabel lblVitesseActuel;
         private JLabel lblVitesseConsigne;
         private JLabel lblConsigne;
@@ -901,14 +924,17 @@ public class PLC3_Main extends JFrame {
         }
 
         private void buildUi() {
-            lblOra = addField("00:00:00", 22, 18, 95, 39, 18, false, false);
-            lblData = addField("18/03/26", 125, 18, 95, 39, 18, false, false);
-            lblVersion = addVersionLabel(UI_VERSION, 858, 18, 120, 30);
+            // Data/ora e nome schermata nello stile di B1_Main
+            registerBaseBounds(new MondoLogo(), 10, 18, 104, 49);
+            lblOra = addSunkenLabel("00/00/0000 00:00:00", 118, 18, 130, 24,
+                    new Font("Arial", Font.BOLD, 12), SwingConstants.CENTER);
+            lblData = addSunkenLabel("Synoptique Banb2 H", 118, 43, 130, 24,
+                    new Font("Arial", Font.PLAIN, 12), SwingConstants.CENTER);
+            // Versione classe: subito a destra del blocco data/ora, allineata alla prima riga
+            lblVersion = addVersionLabel(UI_VERSION, 254, 18, 80, 24);
+            lblVersion.setHorizontalAlignment(SwingConstants.LEFT);
+            lblVersion.setFont(new Font("Arial", Font.BOLD, 14));
 
-            JLabel mixer = new JLabel("MIXER", SwingConstants.CENTER);
-            mixer.setForeground(new Color(36, 62, 207));
-            mixer.setFont(new Font("Serif", Font.BOLD, 28));
-            registerBaseBounds(mixer, 400, 12, 150, 40);
 
             int liquidColumnX = 22;
             int liquidButtonW = 118;
@@ -968,12 +994,13 @@ public class PLC3_Main extends JFrame {
                 }
             };
             greenMeter.setOpaque(false);
-            registerBaseBounds(greenMeter, 246 + MOTOR_SHIFT_X, 396 + MOTOR_SHIFT_Y, 63, 35);
-
-            addButton("ME1M", 150 + MOTOR_SHIFT_X, 514 + MOTOR_SHIFT_Y, 52, 22, new Color(233, 233, 233), Color.BLACK, 14);
+            registerBaseBounds(greenMeter, 253 + MOTOR_SHIFT_X, 433 + MOTOR_SHIFT_Y, 36, 35);
 
             addText("COURANT", 128 + MOTOR_SHIFT_X, 444 + MOTOR_SHIFT_Y, 15, true);
-            lblCourant = addField("0", 120 + MOTOR_SHIFT_X, 465 + MOTOR_SHIFT_Y, 80, 40, 22, false, false);
+            lblCourant = addField("0", 120 + MOTOR_SHIFT_X, 465 + MOTOR_SHIFT_Y, 68, 40, 22, false, false);
+            JLabel lblAmpere = addSunkenLabel("A", 120 + MOTOR_SHIFT_X + 72, 465 + MOTOR_SHIFT_Y, 30, 40,
+                    new Font("Arial", Font.BOLD, 18), SwingConstants.CENTER);
+            lblAmpere.setBackground(new Color(39, 255, 31)); // stesso verde del motore
             lblCourant.setBackground(new Color(39, 255, 31));
             
             addText("TEMPERATURE", 780, 260, 16, true);
@@ -984,14 +1011,9 @@ public class PLC3_Main extends JFrame {
             lblTempActuel = addField("0", 745, 349, 95, 52, 28, false, false);
             lblTempConsigne = addField("0", 850, 349, 95, 52, 28, false, false);
 
-            addText("MELANGES FAITS", 792, 424, 15, true);
-            lblMelangeEnCours = addField("0", 800, 452, 95, 44, 24, false, false);
+            buildRecipeInfoBox();
 
-            addText("VITESSE", 585, 500, 15, true);
-            addText("ACTUEL", 535, 521, 15, true);
-            lblVitesseActuel = addField("0", 515, 554, 90, 48, 28, false, false);
-            addText("CONSIGNE", 625, 521, 15, true);
-            lblVitesseConsigne = addField("0", 615, 554, 90, 48, 28, false, true);
+            buildRotorsPanel();
 
             // RECIPE sopra lo scheduler
             lblRecipe = addValueButtonLikeField(
@@ -1097,13 +1119,6 @@ public class PLC3_Main extends JFrame {
                     14
             );
 
-            configureUShortWritableField(
-                    lblVitesseConsigne,
-                    "Modifier VITESSE CONSIGNE",
-                    NODE_VITESSE_CONSIGNE,
-                    "VITESSE CONSIGNE"
-            );
-
             configureDecimalWritableField(
                     lblConsigne,
                     "Modifier CONSIGNE SILANO",
@@ -1125,6 +1140,110 @@ public class PLC3_Main extends JFrame {
 
             addBottomButtonsCentered();
             updateLiquidButtonsInterlock();
+        }
+
+        /**
+         * Riquadro informazioni ricetta (dati provenienti da PLC3_Recette):
+         * LOT anno/numero, SEQ nombre/en cours, COUCHE, PASS, COULEUR, SUFFIXE.
+         */
+        private void buildRecipeInfoBox() {
+            final int boxX = 745, boxY = 424, boxW = 250, boxH = 152;
+            final int labX = 749, labW = 60, valX = 813, rowH = 24;
+            final int r1 = 432, r2 = 460, r3 = 488, r4 = 516, r5 = 544;
+            final Color greenBg = new Color(190, 255, 190);
+
+            addRecipeInfoLabel("LOT :", labX, r1, labW, rowH);
+            lblRecAnnee = addRecipeInfoValue(valX, r1, 40, rowH, greenBg);
+            addRecipeInfoText("/", 853, r1, 8, rowH);
+            lblRecLot = addRecipeInfoValue(865, r1, 122, rowH, greenBg);
+
+            addRecipeInfoLabel("SEQ :", labX, r2, labW, rowH);
+            lblMelangeEnCours = addRecipeInfoValue(valX, r2, 56, rowH, greenBg);
+            addRecipeInfoText("SUR", 869, r2, 36, rowH);
+            lblRecSeqNombre = addRecipeInfoValue(905, r2, 56, rowH, greenBg);
+
+            addRecipeInfoLabel("COUCHE :", labX, r3, labW, rowH);
+            lblRecType = addRecipeInfoValue(valX, r3, 62, rowH, Color.WHITE);
+            addRecipeInfoLabel("PASS :", 879, r3, 40, rowH);
+            lblRecPassage = addRecipeInfoValue(921, r3, 66, rowH, Color.WHITE);
+
+            addRecipeInfoLabel("COULEUR :", labX, r4, labW, rowH);
+            lblRecCouleur = addRecipeInfoValue(valX, r4, 174, rowH, Color.WHITE);
+
+            addRecipeInfoLabel("SUFFIXE :", labX, r5, labW, rowH);
+            lblRecSuffixe = addRecipeInfoValue(valX, r5, 60, rowH, greenBg);
+
+            // Sfondo del riquadro: aggiunto per ultimo cosi' resta dietro ai campi.
+            JPanel box = new JPanel();
+            box.setBackground(new Color(214, 214, 214));
+            box.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 150), 1));
+            registerBaseBounds(box, boxX, boxY, boxW, boxH);
+        }
+
+        private void addRecipeInfoLabel(String text, int x, int y, int w, int h) {
+            JLabel label = bevelLabel(text, 10, new Color(214, 214, 214), Color.BLACK);
+            registerBaseBounds(label, x, y, w, h);
+        }
+
+        private void addRecipeInfoText(String text, int x, int y, int w, int h) {
+            JLabel label = new JLabel(text, SwingConstants.CENTER);
+            label.setForeground(Color.BLACK);
+            label.setFont(new Font("Arial", Font.BOLD, 14));
+            registerBaseBounds(label, x, y, w, h);
+        }
+
+        private JLabel addRecipeInfoValue(int x, int y, int w, int h, Color bg) {
+            JLabel label = new JLabel("--", SwingConstants.CENTER);
+            label.setOpaque(true);
+            label.setBackground(bg);
+            label.setForeground(Color.BLACK);
+            label.setFont(new Font("Arial", Font.BOLD, 14));
+            label.setBorder(new BevelRectBorder(new Color(110, 110, 110), 1));
+            registerBaseBounds(label, x, y, w, h);
+            return label;
+        }
+
+        private String recipeTextOrDash(String value) {
+            return value == null || value.trim().isEmpty() ? "--" : value.trim();
+        }
+
+        private int parseRecipeInt(String value) {
+            try {
+                return (int) Math.round(Double.parseDouble(value.trim().replace(",", ".")));
+            } catch (Exception ex) {
+                return 0;
+            }
+        }
+
+        private String decodeRecipePassage(String raw) {
+            switch (parseRecipeInt(raw)) {
+                case 1: return "1ER";
+                case 2: return "2EME";
+                case 3: return "3EME";
+                case 4: return "4EME";
+                default: return "--";
+            }
+        }
+
+        private String decodeRecipeType(String raw) {
+            switch (parseRecipeInt(raw)) {
+                case 1: return "SUP";
+                case 2: return "INF";
+                case 3: return "STS";
+                case 4: return "NET";
+                case 5: return "MEL.MERE";
+                default: return "--";
+            }
+        }
+
+        private String decodeRecipeCouleur(String raw) {
+            switch (parseRecipeInt(raw)) {
+                case 1: return "------";
+                case 2: return "CLAIR";
+                case 3: return "FONCE";
+                case 4: return "MEDIUM";
+                default: return "--";
+            }
         }
 
         private void startDateTimeRefresh() {
@@ -1358,11 +1477,9 @@ public class PLC3_Main extends JFrame {
         private void updateDateTimeFields() {
             LocalDateTime now = LocalDateTime.now();
 
-            String ora = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-            String data = now.format(DateTimeFormatter.ofPattern("dd/MM/yy"));
+            String oraData = now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
 
-            if (lblOra != null) lblOra.setText(ora);
-            if (lblData != null) lblData.setText(data);
+            if (lblOra != null) lblOra.setText(oraData);
         }
 
         private void startOpcRefresh() {
@@ -1408,6 +1525,13 @@ public class PLC3_Main extends JFrame {
                         NODE_DOSAGGIO_DOA,
                         NODE_DOSAGGIO_SILANO,
                         NODE_DOSAGGIO_OLIO,
+                        NODE_RECETTE_ANNEE,
+                        NODE_RECETTE_LOT,
+                        NODE_RECETTE_SUFFIXE,
+                        NODE_RECETTE_NOMBRE_MELANGES,
+                        NODE_RECETTE_PASSAGE,
+                        NODE_RECETTE_TYPE,
+                        NODE_RECETTE_COULEUR,
                         NODE_ETAT_EXECUTION_BY2
                 );
 
@@ -1443,7 +1567,15 @@ public class PLC3_Main extends JFrame {
                 String dosaggioDoa = extractValue(values.get(15));
                 String dosaggioSilano = extractValue(values.get(16));
                 String dosaggioOlio = extractValue(values.get(17));
-                String etatExecutionBy2 = extractValue(values.get(18));
+
+                String recAnnee = recipeTextOrDash(extractValue(values.get(18)));
+                String recLot = recipeTextOrDash(extractValue(values.get(19)));
+                String recSuffixe = recipeTextOrDash(extractValue(values.get(20)));
+                String recSeqNombre = recipeTextOrDash(extractValue(values.get(21)));
+                String recPassage = decodeRecipePassage(extractValue(values.get(22)));
+                String recType = decodeRecipeType(extractValue(values.get(23)));
+                String recCouleur = decodeRecipeCouleur(extractValue(values.get(24)));
+                String etatExecutionBy2 = extractValue(values.get(25));
 
                 DoorSnapshot doorSnapshot = readDoorStatesIfDue();
                 DBBamburyReader.RecipePLCInfo recipeInfo = readLatestRecipePLCFromDb();
@@ -1479,7 +1611,14 @@ public class PLC3_Main extends JFrame {
                     updateCourantField(lblCourant, courantValue);
                     updateField(lblTempoConsigne, tempoConsigne);
                     updateField(lblTempoActuel, tempoActuel);
-                    updateField(lblMelangeEnCours, melangeEnCoursValue);
+                    updateField(lblMelangeEnCours, recipeTextOrDash(melangeEnCoursValue));
+                    updateField(lblRecAnnee, recAnnee);
+                    updateField(lblRecLot, recLot);
+                    updateField(lblRecSeqNombre, recSeqNombre);
+                    updateField(lblRecType, recType);
+                    updateField(lblRecPassage, recPassage);
+                    updateField(lblRecCouleur, recCouleur);
+                    updateField(lblRecSuffixe, recSuffixe);
                     updateField(lblChargementSilos, chargementSilos);
                     updateField(lblChargementSilos2, chargementSilos2);
                     updateField(lblChargementSilos3, chargementSilos3);
@@ -3815,6 +3954,211 @@ public class PLC3_Main extends JFrame {
             registerBaseBounds(label, x, y, 180, 24);
         }
 
+        /**
+         * Pannello ROTORS (stile B1_Main): riga 1 = consegna giri con tasti giu/su (+/-1),
+         * riga 2 = giri attuali.
+         */
+        private void buildRotorsPanel() {
+            final int px = 515, py = 536, pw = 190, ph = 84;
+            final Color panelBg = new Color(0xD0, 0xD0, 0xD0);
+            final Font valueFont = new Font("Arial", Font.BOLD, 18);
+
+            JLabel title = new JLabel("ROTORS", SwingConstants.CENTER);
+            title.setOpaque(true);
+            title.setBackground(Color.WHITE);
+            title.setForeground(Color.BLACK);
+            title.setFont(new Font("Arial", Font.BOLD, 14));
+            title.setBorder(BorderFactory.createLineBorder(new Color(0xA0, 0xA0, 0xA0)));
+            registerBaseBounds(title, px, py, pw, 22);
+
+            final int row1 = py + 28, row2 = py + 56, rowH = 24;
+
+            registerBaseBounds(new RotorArrowButton(false, () -> changeVitesseConsigne(-1)), px + 4, row1, 30, rowH);
+            lblVitesseConsigne = addSunkenLabel("0", px + 38, row1, 70, rowH, valueFont, SwingConstants.RIGHT);
+            lblVitesseConsigne.setBackground(new Color(0xC8, 0xFF, 0xC8));
+            addRotorUnit("rpm", px + 110, row1, 38, rowH);
+            registerBaseBounds(new RotorArrowButton(true, () -> changeVitesseConsigne(+1)), px + 152, row1, 30, rowH);
+
+            lblVitesseActuel = addSunkenLabel("0", px + 38, row2, 70, rowH, valueFont, SwingConstants.RIGHT);
+            addRotorUnit("rpm", px + 110, row2, 38, rowH);
+
+            // Sfondo del pannello: aggiunto per ultimo cosi' resta dietro ai componenti.
+            JPanel box = new JPanel();
+            box.setBackground(panelBg);
+            box.setBorder(BorderFactory.createLineBorder(new Color(0x90, 0x90, 0x90), 1));
+            registerBaseBounds(box, px, py, pw, ph);
+        }
+
+        private void addRotorUnit(String text, int x, int y, int w, int h) {
+            JLabel unit = addSunkenLabel(text, x, y, w, h, new Font("Arial", Font.BOLD, 13), SwingConstants.CENTER);
+            unit.setBorder(BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED,
+                    Color.WHITE, Color.WHITE, new Color(0x80, 0x80, 0x80), new Color(0x80, 0x80, 0x80)));
+        }
+
+        /** Pulsante freccia su/giu (stile B1_Main). */
+        private static final class RotorArrowButton extends JComponent {
+            private final boolean up;
+
+            RotorArrowButton(boolean up, Runnable action) {
+                this.up = up;
+                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        action.run();
+                    }
+                });
+            }
+
+            @Override
+            protected void paintComponent(Graphics g0) {
+                Graphics2D g = (Graphics2D) g0.create();
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                int w = getWidth(), h = getHeight();
+                g.setPaint(new GradientPaint(0, 0, Color.WHITE, 0, h, new Color(0xD8, 0xD8, 0xD8)));
+                g.fillRect(0, 0, w, h);
+                g.setColor(new Color(0x80, 0x80, 0x80));
+                g.drawRect(0, 0, w - 1, h - 1);
+                double k = Math.min(w / 38.0, h / 26.0);
+                int cx = w / 2, cy = h / 2;
+                int a = (int) Math.round(6 * k), b = (int) Math.round(4 * k);
+                Polygon p = new Polygon();
+                if (up) {
+                    p.addPoint(cx - a, cy + b); p.addPoint(cx + a, cy + b); p.addPoint(cx, cy - a);
+                } else {
+                    p.addPoint(cx - a, cy - b); p.addPoint(cx + a, cy - b); p.addPoint(cx, cy + a);
+                }
+                g.setColor(new Color(0x30, 0x30, 0x30));
+                g.fillPolygon(p);
+                g.dispose();
+            }
+        }
+
+        /** Modifica la consegna giri di +/-delta (scrittura diretta sul PLC, senza finestra). */
+        private void changeVitesseConsigne(int delta) {
+            if (shutdown) {
+                return;
+            }
+            final int current;
+            try {
+                current = Integer.parseInt(lblVitesseConsigne.getText().trim());
+            } catch (Exception ex) {
+                return; // valore non ancora letto dal PLC
+            }
+            final int newValue = current + delta;
+            if (newValue < 0 || newValue > 65535) {
+                return;
+            }
+
+            new Thread(() -> {
+                try {
+                    StatusCode status = OpcManager.writeValue(
+                            APP_NAME,
+                            APP_URI,
+                            NODE_VITESSE_CONSIGNE,
+                            DataValue.valueOnly(new Variant(ushort(newValue)))
+                    );
+                    final boolean ok = status != null && status.isGood();
+                    PLC3_Main.logWrite(NODE_VITESSE_CONSIGNE, String.valueOf(newValue), String.valueOf(newValue),
+                            ok ? "SUCCESS" : "REJECTED", ok ? "VITESSE CONSIGNE (tasti)" : "VITESSE CONSIGNE | " + status);
+                    if (shutdown) {
+                        return;
+                    }
+                    SwingUtilities.invokeLater(() -> {
+                        if (shutdown || !isDisplayable()) {
+                            return;
+                        }
+                        if (ok) {
+                            updateField(lblVitesseConsigne, String.valueOf(newValue));
+                        } else {
+                            JOptionPane.showMessageDialog(parentFrame,
+                                    "Écriture VITESSE CONSIGNE refusée : " + status,
+                                    "Erreur", JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+                } catch (Exception ex) {
+                    PLC3_Main.logWrite(NODE_VITESSE_CONSIGNE, String.valueOf(newValue), "", "ERROR",
+                            "VITESSE CONSIGNE | " + ex.getMessage());
+                    if (shutdown) {
+                        return;
+                    }
+                    SwingUtilities.invokeLater(() -> {
+                        if (shutdown || !isDisplayable()) {
+                            return;
+                        }
+                        JOptionPane.showMessageDialog(parentFrame,
+                                "Erreur écriture VITESSE CONSIGNE : " + ex.getMessage(),
+                                "Erreur", JOptionPane.ERROR_MESSAGE);
+                    });
+                }
+            }, "opc-write-vitesse-thread").start();
+        }
+
+        /** Logo MONDO (pale blu + scritta con ombra azzurra), come in B1_Main. Disegnato su base 124x50 e scalato. */
+        private static final class MondoLogo extends JComponent {
+            private static Shape blade(float x, float y, float w, float h) {
+                float midX = x + w / 2f;
+                float rightX = x + w;
+                float bottomY = y + h;
+                float midY = y + h / 2f;
+                Path2D p = new Path2D.Float();
+                p.moveTo(midX, y);
+                p.curveTo(x + w * 0.68f, y + h * 0.12f, rightX, y + h * 0.35f, rightX, midY);
+                p.curveTo(rightX, y + h * 0.65f, x + w * 0.68f, y + h * 0.88f, midX, bottomY);
+                p.curveTo(x + w * 0.32f, y + h * 0.88f, x, y + h * 0.65f, x, midY);
+                p.curveTo(x, y + h * 0.35f, x + w * 0.32f, y + h * 0.12f, midX, y);
+                p.closePath();
+                return p;
+            }
+
+            @Override
+            protected void paintComponent(Graphics g0) {
+                Graphics2D g = (Graphics2D) g0.create();
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                final int w = 124, h = 50;
+                g.scale(getWidth() / (double) w, getHeight() / (double) h);
+
+                g.setColor(new Color(0xF2F2F2));
+                g.fillRect(0, 0, w, h);
+                g.setColor(new Color(0x909090));
+                g.drawRect(0, 0, w - 1, h - 1);
+                for (int i = 0; i < 5; i++) {
+                    float bx = 7 + i * 8f;
+                    Shape b = blade(bx, 6, 6.5f, h - 12);
+                    g.setPaint(new GradientPaint(bx, 6, new Color(0, 110, 225), bx + 6.5f, h - 6, new Color(0, 180, 255)));
+                    g.fill(b);
+                    g.setColor(new Color(80, 200, 255, 120));
+                    g.draw(b);
+                }
+                g.setFont(new Font("Arial", Font.BOLD, 18));
+                FontMetrics fm = g.getFontMetrics();
+                int ty = (h + fm.getAscent()) / 2 - 3;
+                int tx = 51;
+                g.setColor(new Color(0, 160, 255));
+                g.drawString("MONDO", tx + 2, ty - 1);
+                g.setColor(Color.BLACK);
+                g.drawString("MONDO", tx, ty);
+                g.dispose();
+            }
+        }
+
+        /** Etichetta "incassata" in stile B1_Main (bordo grigio sopra/sinistra, bianco sotto/destra). */
+        private JLabel addSunkenLabel(String text, int x, int y, int w, int h, Font font, int align) {
+            JLabel label = new JLabel(text, align);
+            label.setOpaque(true);
+            label.setBackground(new Color(0xD8, 0xD4, 0xCC));
+            label.setForeground(Color.BLACK);
+            label.setFont(font);
+            Color gray = new Color(0x80, 0x80, 0x80);
+            label.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED,
+                            Color.WHITE, Color.WHITE, gray, gray),
+                    BorderFactory.createEmptyBorder(0, 5, 0, 5)));
+            registerBaseBounds(label, x, y, w, h);
+            return label;
+        }
+
         private JLabel addVersionLabel(String text, int x, int y, int w, int h) {
             JLabel label = new JLabel(text, SwingConstants.RIGHT);
             label.setForeground(Color.BLACK);
@@ -3914,7 +4258,6 @@ public class PLC3_Main extends JFrame {
             g2.scale(sx, sy);
 
             paintBackground(g2);
-            paintFrame(g2);
             paintMixer(g2);
             paintHopper(g2);
             paintSilosIndicators(g2);
@@ -3934,16 +4277,6 @@ public class PLC3_Main extends JFrame {
                     g2.fillRect(x, y, 1, 1);
                 }
             }
-        }
-
-        private void paintFrame(Graphics2D g2) {
-            g2.setColor(new Color(36, 62, 207));
-            g2.setFont(new Font("Serif", Font.BOLD, 28));
-            FontMetrics fm = g2.getFontMetrics();
-            String s = "MIXER";
-            int sw = fm.stringWidth(s);
-            g2.drawString(s, 475 - sw / 2, 42);
-            g2.drawLine(475 - sw / 2, 45, 475 + sw / 2, 45);
         }
 
         private void paintLiquidValves(Graphics2D g2) {
@@ -4223,26 +4556,49 @@ public class PLC3_Main extends JFrame {
             // Stelo del cilindro centrale: dalla testata del cilindro alla faccia del pistone
             drawChromeRod(g, centerX - 4, faceBottom, 8, cylTop - faceBottom, chromeColors, fr);
 
-            // Corpo del pistone: traversa + massa conica con faccia di spinta
-            Path2D body = new Path2D.Double();
-            body.moveTo(561, beamY + beamH);
-            body.lineTo(661, beamY + beamH);
-            body.lineTo(647, beamY + beamH + 26);
-            body.lineTo(575, beamY + beamH + 26);
-            body.closePath();
-            g.setPaint(new LinearGradientPaint(561, 0, 661, 0, new float[]{0f, 0.5f, 1f},
-                    new Color[]{new Color(105, 105, 110), new Color(170, 172, 178), new Color(95, 95, 100)}));
-            g.fill(body);
+            // Corpo del pistone: due pareti inclinate (struttura) + stelo centrale + faccia di spinta.
+            // L'interno della conca e' vuoto (si vede lo sfondo).
+            final int topY = beamY + beamH;
+            final int botY = beamY + beamH + 26;
+            final int wallT = 8; // spessore orizzontale delle pareti
+
+            Path2D leftWall = new Path2D.Double();
+            leftWall.moveTo(561, topY);
+            leftWall.lineTo(561 + wallT, topY);
+            leftWall.lineTo(575 + wallT, botY);
+            leftWall.lineTo(575, botY);
+            leftWall.closePath();
+
+            Path2D rightWall = new Path2D.Double();
+            rightWall.moveTo(661 - wallT, topY);
+            rightWall.lineTo(661, topY);
+            rightWall.lineTo(647, botY);
+            rightWall.lineTo(647 - wallT, botY);
+            rightWall.closePath();
+
+            Color[] wallColors = {new Color(95, 95, 100), new Color(170, 172, 178), new Color(100, 100, 105)};
+            float[] wallFr = {0f, 0.5f, 1f};
+            g.setPaint(new LinearGradientPaint(561, 0, 561 + wallT + 14, 0, wallFr, wallColors));
+            g.fill(leftWall);
+            g.setPaint(new LinearGradientPaint(647 - wallT, 0, 661, 0, wallFr, wallColors));
+            g.fill(rightWall);
+
+            // Stelo centrale che scende dalla traversa fino alla faccia di spinta
+            g.setPaint(new GradientPaint(0, topY, new Color(175, 177, 183), 0, botY, new Color(105, 105, 110)));
+            g.fillRect(centerX - 4, topY, 8, botY - topY);
+
             g.setColor(new Color(50, 50, 55));
             g.setStroke(new BasicStroke(1.2f));
-            g.draw(body);
+            g.draw(leftWall);
+            g.draw(rightWall);
+            g.drawRect(centerX - 4, topY, 8, botY - topY);
             g.setColor(new Color(60, 60, 66));
             g.fillRect(575, beamY + beamH + 26, 72, 4);
 
             // Traversa (colore originale) con collari di fissaggio degli steli
-            g.setColor(new Color(143, 133, 48));
+            g.setPaint(new GradientPaint(0, beamY, new Color(175, 177, 183), 0, beamY + beamH, new Color(105, 105, 110)));
             g.fillRect(559, beamY, 104, beamH);
-            g.setColor(new Color(69, 69, 69));
+            g.setColor(new Color(50, 50, 55));
             g.drawRect(559, beamY, 104, beamH);
             g.setColor(new Color(110, 105, 35));
             g.fillRoundRect(leftX - 5, beamY - 2, 10, beamH + 4, 3, 3);
@@ -4376,33 +4732,28 @@ public class PLC3_Main extends JFrame {
             g2.drawPolygon(cone);
             g2.fillRect(742, 201, 24, 16);
 
-            AffineTransform old = g2.getTransform();
-            g2.rotate(Math.toRadians(-18), 721, 190);
-            g2.setColor(new Color(143, 143, 143));
-            g2.fillRect(698, 176, 46, 14);
-            g2.setColor(new Color(68, 68, 68));
-            g2.drawRect(698, 176, 46, 14);
-            g2.setTransform(old);
+            // Tubo curvo di scarico: dalla valvola della tramoggia verso la parete destra del mixer
+            Path2D.Double pipe = new Path2D.Double();
+            pipe.moveTo(754, 217);
+            pipe.lineTo(754, 250);
+            pipe.curveTo(754, 265, 745, 270, 730, 270);
+            pipe.lineTo(675, 270);
+
+            Stroke oldStroke = g2.getStroke();
+            g2.setStroke(new BasicStroke(16f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+            g2.setColor(new Color(79, 79, 79));
+            g2.draw(pipe);
+            g2.setStroke(new BasicStroke(12f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+            g2.setColor(new Color(150, 150, 150));
+            g2.draw(pipe);
+            g2.setStroke(new BasicStroke(4f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+            g2.setColor(new Color(195, 195, 195));
+            g2.draw(pipe);
+            g2.setStroke(oldStroke);
         }
 
         // Stato del silos: TRUE = aperto, FALSE = chiuso, null = sconosciuto (spie entrambe spente)
         private volatile Boolean silosOpenState = null;
-
-        /** Accetta true/false, 1/0, "Ouvert"/"Fermé"/"Ferme". Valore non riconosciuto = nessuna variazione. */
-        private void updateSilosState(String rawValue) {
-            if (rawValue == null) {
-                return;
-            }
-            String v = rawValue.trim().toLowerCase(Locale.ROOT);
-            if (v.isEmpty()) {
-                return;
-            }
-            if (v.equals("true") || v.equals("1") || v.startsWith("ouv")) {
-                silosOpenState = Boolean.TRUE;
-            } else if (v.equals("false") || v.equals("0") || v.startsWith("ferm")) {
-                silosOpenState = Boolean.FALSE;
-            }
-        }
 
         /**
          * Regola dello stato silos dal campo "Etat execution" di Production BY2 (Govoni, R1021):
@@ -4430,61 +4781,64 @@ public class PLC3_Main extends JFrame {
             Graphics2D g = (Graphics2D) g2.create();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            final int x = 796;
-            final int w = 116;
+            final int x = 798;
+            final int w = 150;
             Boolean open = silosOpenState;
 
             // Titolo
             g.setColor(Color.WHITE);
-            g.fillRect(x, 30, w, 20);
+            g.fillRect(x, 30, w, 24);
             g.setColor(new Color(120, 120, 120));
-            g.drawRect(x, 30, w, 20);
+            g.drawRect(x, 30, w, 24);
             g.setColor(Color.BLACK);
-            g.setFont(new Font("Arial", Font.BOLD, 15));
+            g.setFont(new Font("Arial", Font.BOLD, 17));
             FontMetrics fm = g.getFontMetrics();
-            g.drawString("SILOS", x + (w - fm.stringWidth("SILOS")) / 2, 30 + (20 + fm.getAscent() - fm.getDescent()) / 2);
+            g.drawString("SILOS", x + (w - fm.stringWidth("SILOS")) / 2, 30 + (24 + fm.getAscent() - fm.getDescent()) / 2);
 
             // Corpo pannello
             g.setColor(new Color(196, 196, 196));
-            g.fillRect(x, 52, w, 66);
+            g.fillRect(x, 56, w, 78);
             g.setColor(new Color(255, 255, 255, 160));
-            g.drawLine(x, 52, x + w, 52);
-            g.drawLine(x, 52, x, 118);
+            g.drawLine(x, 56, x + w, 56);
+            g.drawLine(x, 56, x, 134);
             g.setColor(new Color(120, 120, 120));
-            g.drawRect(x, 52, w, 66);
+            g.drawRect(x, 56, w, 78);
 
-            drawSilosLamp(g, x + 6, 58, "Ouvert", open != null && open,
+            drawSilosLamp(g, x + 8, 64, w - 16, "Ouvert", open != null && open,
                     new Color(0, 100, 0), new Color(40, 240, 30));
-            drawSilosLamp(g, x + 6, 88, "Ferm\u00e9", open != null && !open,
+            drawSilosLamp(g, x + 8, 98, w - 16, "Ferm\u00e9", open != null && !open,
                     new Color(120, 15, 15), new Color(255, 70, 70));
 
             g.dispose();
         }
 
-        private void drawSilosLamp(Graphics2D g, int x, int y, String text, boolean on, Color offColor, Color onColor) {
+        private void drawSilosLamp(Graphics2D g, int x, int y, int totalW, String text, boolean on,
+                                   Color offColor, Color onColor) {
+            final int h = 28;
             // Spia
             g.setColor(new Color(70, 70, 70));
-            g.fillRect(x, y, 28, 24);
+            g.fillRect(x, y, 34, h);
             g.setColor(on ? onColor : offColor);
-            g.fillRect(x + 3, y + 3, 22, 18);
+            g.fillRect(x + 3, y + 3, 28, h - 6);
             if (on) {
                 g.setColor(new Color(255, 255, 255, 150));
-                g.fillRect(x + 5, y + 5, 6, 14);
+                g.fillRect(x + 6, y + 6, 7, h - 12);
             } else {
                 g.setColor(new Color(0, 0, 0, 70));
-                g.fillRect(x + 3, y + 3, 4, 18);
+                g.fillRect(x + 3, y + 3, 5, h - 6);
             }
 
             // Campo testo
-            int tx = x + 34;
+            int tx = x + 40;
+            int tw = totalW - 40;
             g.setColor(new Color(214, 210, 200));
-            g.fillRect(tx, y, 70, 24);
+            g.fillRect(tx, y, tw, h);
             g.setColor(new Color(120, 120, 120));
-            g.drawRect(tx, y, 70, 24);
+            g.drawRect(tx, y, tw, h);
             g.setColor(Color.BLACK);
-            g.setFont(new Font("Arial", Font.BOLD, 15));
+            g.setFont(new Font("Arial", Font.BOLD, 17));
             FontMetrics fm = g.getFontMetrics();
-            g.drawString(text, tx + 8, y + (24 + fm.getAscent() - fm.getDescent()) / 2);
+            g.drawString(text, tx + 10, y + (h + fm.getAscent() - fm.getDescent()) / 2);
         }
 
         private void paintMotor(Graphics2D g2) {
@@ -4507,34 +4861,57 @@ public class PLC3_Main extends JFrame {
             g2.drawRect(226 + dx, 458 + dy, 22, 38);
 
             Polygon body = new Polygon(
-                    new int[]{248 + dx, 343 + dx, 343 + dx, 265 + dx, 248 + dx, 248 + dx},
-                    new int[]{428 + dy, 428 + dy, 518 + dy, 518 + dy, 487 + dy, 459 + dy},
-                    6
+                    new int[]{248 + dx, 295 + dx, 295 + dx, 272 + dx, 248 + dx},
+                    new int[]{428 + dy, 428 + dy, 518 + dy, 518 + dy, 494 + dy},
+                    5
             );
             g2.setColor(new Color(131, 169, 169));
             g2.fillPolygon(body);
             g2.setColor(new Color(75, 103, 103));
             g2.drawPolygon(body);
 
-            g2.setColor(new Color(239, 239, 239));
-            g2.fillRect(274 + dx, 452 + dy, 43, 22);
-            g2.setColor(new Color(68, 68, 68));
-            g2.drawRect(274 + dx, 452 + dy, 43, 22);
-            g2.setFont(new Font("Arial", Font.BOLD, 14));
-            g2.drawString("M4", 288 + dx, 468 + dy);
-
-            g2.setColor(new Color(48, 255, 46));
-            g2.fillRect(279 + dx, 476 + dy, 18, 34);
-            g2.setColor(new Color(27, 106, 27));
-            g2.drawRect(279 + dx, 476 + dy, 18, 34);
-            g2.drawRect(277 + dx, 512 + dy, 20, 9);
-
+            // Cilindri dell'albero: ruotano alla stessa velocita' delle pale (rotorMasterAngle).
+            // Asse orizzontale: le righe sulla superficie scorrono in verticale (proiezione sin/cos).
             for (int i = 0; i < 4; i++) {
-                g2.setColor(new Color(111, 143, 143));
-                g2.fillRect(350 + dx + i * 20, 466 + dy, 18, 30);
-                g2.setColor(new Color(63, 93, 93));
-                g2.drawRect(350 + dx + i * 20, 466 + dy, 18, 30);
+                drawRotatingCylinder(g2, 302 + dx + i * 20, 452 + dy, 18, 42, -rotorMasterAngle + i * 22.5);
             }
+        }
+
+        private void drawRotatingCylinder(Graphics2D g2, int x, int y, int w, int h, double angleDeg) {
+            Graphics2D g = (Graphics2D) g2.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // corpo con ombreggiatura cilindrica (chiaro al centro, scuro ai bordi)
+            g.setPaint(new LinearGradientPaint(
+                    x, y, x, y + h,
+                    new float[]{0f, 0.35f, 0.65f, 1f},
+                    new Color[]{new Color(70, 100, 100), new Color(150, 182, 182),
+                            new Color(150, 182, 182), new Color(70, 100, 100)}
+            ));
+            g.fillRect(x, y, w, h);
+
+            // righe sulla superficie che ruotano attorno all'asse orizzontale
+            Shape oldClip = g.getClip();
+            g.clipRect(x + 1, y + 1, w - 1, h - 1);
+            double radius = h / 2.0;
+            double cy = y + radius;
+            int stripes = 4;
+            for (int k = 0; k < stripes; k++) {
+                double a = Math.toRadians(angleDeg + k * (360.0 / stripes));
+                double front = Math.cos(a);          // >0 = lato visibile
+                if (front <= 0) {
+                    continue;
+                }
+                double yy = cy + radius * Math.sin(a);
+                double thick = 1.0 + 3.0 * front;    // piu' larga al centro, sottile ai bordi
+                g.setColor(new Color(40, 65, 65, (int) (90 + 120 * front)));
+                g.fill(new java.awt.geom.Rectangle2D.Double(x + 1, yy - thick / 2.0, w - 1, thick));
+            }
+            g.setClip(oldClip);
+
+            g.setColor(new Color(63, 93, 93));
+            g.drawRect(x, y, w, h);
+            g.dispose();
         }
 
         private double mapRotorSpeedFromVitesse(String rawValue) {
