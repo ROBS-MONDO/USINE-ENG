@@ -48,7 +48,7 @@ import java.util.Locale;
  */
 public class B1_Main extends JFrame {
 
-    static final String VERSION = "B1 V5.10";
+    static final String VERSION = "B1 V5.15";
     static final String DEFAULT_IP = "192.168.10.100";
     static final Path DEFAULT_TAGS = Paths.get("C:\\_tools\\Banbury1\\b1_tags.properties");
 
@@ -92,6 +92,9 @@ public class B1_Main extends JFrame {
                     return;
                 default: ip = args[i];
             }
+        }
+        if (snap == null && !demo) {
+            B1DefaultConfig.ensureAll(); // crea i file di configurazione mancanti (valori predefiniti, scrittura PLC spenta)
         }
         if (!new File(tagFile.toString()).exists() && new File("b1_tags.properties").exists()) {
             tagFile = Paths.get("b1_tags.properties");

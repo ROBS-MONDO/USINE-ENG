@@ -171,6 +171,7 @@ public final class B1RecipeSteps extends JFrame {
                 default:
             }
         }
+        B1DefaultConfig.ensureAll(); // runnable jar su un PC nuovo: crea i file di configurazione mancanti
         if (!java.nio.file.Files.exists(layoutFile) && java.nio.file.Files.exists(java.nio.file.Paths.get("b1_recipe_layout.properties"))) {
             layoutFile = java.nio.file.Paths.get("b1_recipe_layout.properties");
         }
