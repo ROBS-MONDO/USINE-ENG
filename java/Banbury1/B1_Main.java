@@ -285,7 +285,7 @@ public class B1_Main extends JFrame {
                         Boolean.TRUE.equals(src.bool("piston_low")), Boolean.TRUE.equals(src.bool("piston_float")),
                         Boolean.TRUE.equals(src.bool("piston_move")), Boolean.TRUE.equals(src.bool("door_load_open")),
                         Boolean.TRUE.equals(src.bool("door_dis_open")), stepsNow != null && stepsNow > 0,
-                        Boolean.TRUE.equals(src.bool("mode_auto")));
+                        Boolean.TRUE.equals(src.bool("mode_auto")), Boolean.TRUE.equals(src.bool("silos_open")));
                 repaint();
             }).start();
             getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), "label");
