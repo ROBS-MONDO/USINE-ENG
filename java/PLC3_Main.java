@@ -467,7 +467,7 @@ public class PLC3_Main extends JFrame {
                 NodeId.parse("ns=2;s=Banbury 2.PLC3.M06012");
 
         // "Etat execution" di Production BY2 (Govoni, bilancia W117): registro R1021.
-        // Codici: 2 = Descharge Vidage, 5 = Descharge Attente Pe -> silos aperto.
+        // Codice 2 = Descharge Vidage -> silos aperto (solo questo stato).
         private static final NodeId NODE_ETAT_EXECUTION_BY2 =
                 NodeId.parse("ns=2;s=Govoni.SILOS.R1021");
 
@@ -4757,9 +4757,9 @@ public class PLC3_Main extends JFrame {
 
         /**
          * Regola dello stato silos dal campo "Etat execution" di Production BY2 (Govoni, R1021):
-         * codice 2 (Descharge Vidage) e 5 (Descharge Attente Pe) = silos aperto (ON);
+         * solo il codice 2 (Descharge Vidage) = silos aperto (ON);
          * qualsiasi altro codice = silos chiuso (OFF). Lettura non valida = nessuna variazione.
-         * Accetta anche il testo ("Descharge Attente...", "Descharge Vidage") come ripiego.
+         * Accetta anche il testo ("Descharge Vidage") come ripiego.
          */
         private void updateSilosFromEtatExecution(String etatExecution) {
             if (etatExecution == null || etatExecution.trim().isEmpty()) {
@@ -4768,12 +4768,12 @@ public class PLC3_Main extends JFrame {
             String v = etatExecution.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
             try {
                 int code = (int) Math.round(Double.parseDouble(v.replace(",", ".")));
-                silosOpenState = (code == 2 || code == 5) ? Boolean.TRUE : Boolean.FALSE;
+                silosOpenState = (code == 2) ? Boolean.TRUE : Boolean.FALSE;
                 return;
             } catch (NumberFormatException ignored) {
                 // non numerico: prova con il testo
             }
-            boolean open = v.startsWith("descharge attente") || v.startsWith("descharge vidage");
+            boolean open = v.startsWith("descharge vidage");
             silosOpenState = open ? Boolean.TRUE : Boolean.FALSE;
         }
 
