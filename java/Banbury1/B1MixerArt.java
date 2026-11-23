@@ -161,28 +161,23 @@ final class B1MixerArt {
 
     /** Tubo dal serbatoio al mixer: stessa grafica (grigio con bordo scuro) del vecchio scivolo. */
     private void drawTube(Graphics2D g2) {
-        Path2D tube = new Path2D.Double();
-        tube.moveTo(754, 214);
-        tube.lineTo(754, 238);
-        tube.quadTo(754, 280, 708, 282);
-        tube.lineTo(676, 282);
-        Graphics2D g = (Graphics2D) g2.create();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setStroke(new BasicStroke(16f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
-        g.setColor(new Color(68, 68, 68));
-        g.draw(tube);
-        g.setStroke(new BasicStroke(13f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
-        g.setColor(new Color(143, 143, 143));
-        g.draw(tube);
-        g.setStroke(new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
-        g.setColor(new Color(255, 255, 255, 70));
-        Path2D hl = new Path2D.Double();
-        hl.moveTo(751, 216);
-        hl.lineTo(751, 238);
-        hl.quadTo(751, 277, 708, 279);
-        hl.lineTo(678, 279);
-        g.draw(hl);
-        g.dispose();
+        // tubo curvo come in PLC3_Main (B2): dalla valvola del serbatoio verso la parete destra del mixer
+        Path2D.Double pipe = new Path2D.Double();
+        pipe.moveTo(754, 217);
+        pipe.lineTo(754, 250);
+        pipe.curveTo(754, 265, 745, 270, 730, 270);
+        pipe.lineTo(675, 270);
+        java.awt.Stroke oldStroke = g2.getStroke();
+        g2.setStroke(new BasicStroke(16f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+        g2.setColor(new Color(79, 79, 79));
+        g2.draw(pipe);
+        g2.setStroke(new BasicStroke(12f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+        g2.setColor(new Color(150, 150, 150));
+        g2.draw(pipe);
+        g2.setStroke(new BasicStroke(4f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+        g2.setColor(new Color(195, 195, 195));
+        g2.draw(pipe);
+        g2.setStroke(oldStroke);
     }
 
     private void paintMixer(Graphics2D g2) {
