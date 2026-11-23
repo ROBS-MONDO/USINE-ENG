@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.24";
+    private static final String UI_VERSION = "V47.00";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -572,6 +572,8 @@ public class PLC3_Main extends JFrame {
         // Corpi dei cilindri idraulici: fissi in basso, gli steli salgono fino alla traversa
         private static final int RAM_CYL_TOP_Y = 136;
         private static final int RAM_CYL_H = 26;
+        /** Fondo del mixer (abbassato rispetto a 497); la porta di scarico resta con la cerniera a y=497. */
+        private static final int FLOOR_Y = 519;
 
         private static final double ROTOR_RIGHT_PHASE_OFFSET = 90.0;
 
@@ -4509,11 +4511,11 @@ public class PLC3_Main extends JFrame {
             // SINISTRA DIVISA IN DUE
             g2.setColor(new Color(141, 141, 141));
             g2.fillRect(548, 32, 10, 214);
-            g2.fillRect(548, 330, 10, 167);
+            g2.fillRect(548, 330, 10, FLOOR_Y - 330);
 
             g2.setColor(new Color(46, 46, 46));
             g2.drawRect(548, 32, 10, 214);
-            g2.drawRect(548, 330, 10, 167);
+            g2.drawRect(548, 330, 10, FLOOR_Y - 330);
 
             // DESTRA DIVISA IN DUE PER LASCIARE UNO SPAZIO LIBERO IN BASSO
             // DESTRA ALLINEATA AL BORDO SUPERIORE DEL PORTELLO DECHARGE
@@ -5328,9 +5330,15 @@ public class PLC3_Main extends JFrame {
         private void paintRightIndicators(Graphics2D g2) {
             g2.setColor(Color.BLACK);
             g2.setStroke(new BasicStroke(4f));
-            g2.drawLine(546, 497, 678, 497);
+            g2.drawLine(546, FLOOR_Y, 678, FLOOR_Y);
+            // parete destra sotto la porta di scarico (la porta resta dov'era: cerniera a y=497)
+            g2.setColor(new Color(141, 141, 141));
+            g2.fillRect(665, 497, 10, FLOOR_Y - 497);
+            g2.setColor(new Color(46, 46, 46));
+            g2.drawRect(665, 497, 10, FLOOR_Y - 497);
+            g2.setColor(Color.BLACK);
 
-            Rectangle rotorArea = new Rectangle(558, 396, 107, 101);
+            Rectangle rotorArea = new Rectangle(558, 396, 107, FLOOR_Y - 396);
             Rectangle glassArea = new Rectangle(558, 162, 107, 260);
 
             double leftCx = 594.0;
@@ -5383,16 +5391,13 @@ public class PLC3_Main extends JFrame {
 
             glassG.dispose();
 
-            int triangleCenterX = (int) Math.round((leftCx + rightCx) / 2.0);
-            Polygon cone = new Polygon(
-                    new int[]{triangleCenterX, triangleCenterX + 27, triangleCenterX - 27},
-                    new int[]{471, 497, 497},
-                    3
-            );
-            g2.setColor(new Color(211, 197, 34));
-            g2.fillPolygon(cone);
-            g2.setColor(new Color(130, 120, 20));
-            g2.drawPolygon(cone);
+            // niente triangolo giallo: al suo posto la temperatura del prodotto (rosso scuro)
+            g2.setFont(new Font("Arial", Font.BOLD, 15));
+            g2.setColor(new Color(139, 0, 0));
+            FontMetrics tfm = g2.getFontMetrics();
+            String tempShown = lblTempActuel == null ? "" : lblTempActuel.getText().trim();
+            String tt = "TEMP  " + (tempShown.isEmpty() ? "--" : tempShown) + "\u00b0 C";
+            g2.drawString(tt, (int) ((leftCx + rightCx) / 2.0 - tfm.stringWidth(tt) / 2.0), FLOOR_Y - 8);
 
             drawDischargeDoor(g2);
         }
