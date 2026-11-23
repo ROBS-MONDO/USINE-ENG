@@ -450,6 +450,11 @@ public class PLC3_Main extends JFrame {
         private static final NodeId NODE_DOSAGGIO_OLIO =
                 NodeId.parse("ns=2;s=Banbury 2.PLC3.M06012");
 
+        // "Etat execution" di Production BY2 (Govoni, bilancia W117): registro R1021.
+        // Codici: 2 = Descharge Vidage, 5 = Descharge Attente Pe -> silos aperto.
+        private static final NodeId NODE_ETAT_EXECUTION_BY2 =
+                NodeId.parse("ns=2;s=Govoni.SILOS.R1021");
+
 
         private static final NodeId NODE_LIQUID_RESET_MONITOR =
                 NodeId.parse("ns=2;s=Banbury 2.PLC3.R2018");
@@ -1402,7 +1407,8 @@ public class PLC3_Main extends JFrame {
                         NODE_MELANGE_EN_COURS,
                         NODE_DOSAGGIO_DOA,
                         NODE_DOSAGGIO_SILANO,
-                        NODE_DOSAGGIO_OLIO
+                        NODE_DOSAGGIO_OLIO,
+                        NODE_ETAT_EXECUTION_BY2
                 );
 
                 List<DataValue> values = OpcManager.readValues(APP_NAME, APP_URI, nodes);
@@ -1437,6 +1443,7 @@ public class PLC3_Main extends JFrame {
                 String dosaggioDoa = extractValue(values.get(15));
                 String dosaggioSilano = extractValue(values.get(16));
                 String dosaggioOlio = extractValue(values.get(17));
+                String etatExecutionBy2 = extractValue(values.get(18));
 
                 DoorSnapshot doorSnapshot = readDoorStatesIfDue();
                 DBBamburyReader.RecipePLCInfo recipeInfo = readLatestRecipePLCFromDb();
@@ -1459,6 +1466,7 @@ public class PLC3_Main extends JFrame {
                     }
 
                     rotorSpeed = finalParsedRotorSpeed;
+                    updateSilosFromEtatExecution(etatExecutionBy2);
 
                     updateSchedulerField(lblScheduler, schedulerValue);
                     updateField(lblTempActuel, tempActuel);
@@ -4397,15 +4405,23 @@ public class PLC3_Main extends JFrame {
         }
 
         /**
-         * Regola dello stato silos dal campo "Etat execution" di Production BY2 (Govoni):
-         * "Descharge Attente Pe..." e "Descharge Vidage" = silos aperto (ON),
-         * qualsiasi altro stato = silos chiuso (OFF). Testo vuoto/null = nessuna variazione.
+         * Regola dello stato silos dal campo "Etat execution" di Production BY2 (Govoni, R1021):
+         * codice 2 (Descharge Vidage) e 5 (Descharge Attente Pe) = silos aperto (ON);
+         * qualsiasi altro codice = silos chiuso (OFF). Lettura non valida = nessuna variazione.
+         * Accetta anche il testo ("Descharge Attente...", "Descharge Vidage") come ripiego.
          */
         private void updateSilosFromEtatExecution(String etatExecution) {
             if (etatExecution == null || etatExecution.trim().isEmpty()) {
                 return;
             }
             String v = etatExecution.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+            try {
+                int code = (int) Math.round(Double.parseDouble(v.replace(",", ".")));
+                silosOpenState = (code == 2 || code == 5) ? Boolean.TRUE : Boolean.FALSE;
+                return;
+            } catch (NumberFormatException ignored) {
+                // non numerico: prova con il testo
+            }
             boolean open = v.startsWith("descharge attente") || v.startsWith("descharge vidage");
             silosOpenState = open ? Boolean.TRUE : Boolean.FALSE;
         }
