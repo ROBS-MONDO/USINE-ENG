@@ -398,23 +398,19 @@ public class B1ScreensWindow extends JFrame {
             rows[0] = readPhase(act);
             rows[1] = readPhase(set);
             rows[2] = nextPhase(phase);
-            int[] y = {212, 266, 320};
+            int[] y = {225, 323, 421};
+            String[] titles = {"Phase actuelle - valeurs actuelles", "Phase actuelle - valeurs affich\u00e9es",
+                "Phase suivante - valeurs affich\u00e9es"};
             String[] labels = {phase > 0 ? String.valueOf(phase) : "--", phase > 0 ? String.valueOf(phase) : "--",
                 rows[2] == null ? "--" : String.valueOf(phase + 1)};
             for (int r = 0; r < 3; r++) {
-                drawPhaseRow(g, y[r], BANDS[r], labels[r], rows[r], r == 0);
+                drawPhaseRow(g, y[r], BANDS[r], labels[r], rows[r], r == 0, titles[r]);
             }
             // etichetta della spia "ciclo sospeso" (nel layout originale e' un campo senza testo)
             g.setColor(new Color(0xD4D0C8));
             g.fillRect(855, 565, 160, 25);
             bevel(g, 855, 565, 160, 25);
             fit(g, "Cycle suspendu", 855, 565, 160, 25, Color.BLACK, -1, false);
-            // legenda colori (le scritte sono nel layout)
-            int[] ly = {533, 563, 593};
-            for (int i = 0; i < 3; i++) {
-                g.setPaint(new GradientPaint(5, ly[i], BANDS[i][0], 5, ly[i] + 21, BANDS[i][1]));
-                g.fillRect(5, ly[i], 50, 21);
-            }
         }
 
         private void fitHeader(Graphics2D g, String text, int x, int y, int w) {
@@ -462,10 +458,16 @@ public class B1ScreensWindow extends JFrame {
             return v;
         }
 
-        private void drawPhaseRow(Graphics2D g, int y, Color[] band, String label, double[] v, boolean actual) {
-            int h = 46;
+        private void drawPhaseRow(Graphics2D g, int y, Color[] band, String label, double[] v, boolean actual, String title) {
+            int h = 84;
             g.setPaint(new GradientPaint(4, y, band[0], 4, y + h, band[1]));
             g.fillRoundRect(4, y, 984, h, 8, 8);
+            // titolo della fascia (prima era nella legenda in basso)
+            g.setColor(Color.WHITE);
+            g.fillRect(12, y + 9, 268, 26);
+            bevel(g, 12, y + 9, 268, 26);
+            fit(g, title, 12, y + 9, 268, 26, Color.BLACK, -1, false);
+            y += 38; // i campi stanno sotto il titolo
             fieldBox(g, 8, y + 8, 34, 28, label, true);
             int ops = v == null ? 0 : (int) v[0] & 0xFFFF;
             for (int i = 0; i < 10; i++) {
@@ -596,6 +598,11 @@ public class B1ScreensWindow extends JFrame {
 
         private boolean skipObject(B1Screen.Obj o) {
             if ("002_Process".equals(drawingScreen) && o.name.equals("IO_RecipeID")) {
+                return true;
+            }
+            // la legenda dei colori e' ora scritta dentro le tre fasce
+            if ("002_Process".equals(drawingScreen)
+                    && (o.name.equals("ST_title4") || o.name.equals("ST_title5") || o.name.equals("ST_title6"))) {
                 return true;
             }
             return "005_Display".equals(drawingScreen) && (o.name.equals("IO_value4") || o.name.equals("ST_unit4"));
