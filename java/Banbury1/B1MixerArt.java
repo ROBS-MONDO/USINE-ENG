@@ -395,6 +395,13 @@ final class B1MixerArt {
     private static final int MOTOR_SHIFT_X = 161;
     private static final int MOTOR_SHIFT_Y = -28;
     private String current = "--";
+    private String temp = "--";
+    /** Fondo del mixer (abbassato rispetto a PLC3_Main, dove e' 497); la porta di scarico resta con la cerniera a y=497. */
+    private static final int FLOOR_Y = 519;
+
+    void setTemp(String text) {
+        temp = text == null || text.isEmpty() ? "--" : text;
+    }
 
     /** Corrente mostrata sul motore (stesso valore dell'ultima riga del riquadro ROTORS). */
     void setCurrent(String text) {
@@ -526,11 +533,11 @@ final class B1MixerArt {
         // SINISTRA DIVISA IN DUE
         g2.setColor(new Color(141, 141, 141));
         g2.fillRect(548, 32, 10, 214);
-        g2.fillRect(548, 330, 10, 167);
+        g2.fillRect(548, 330, 10, FLOOR_Y - 330);
 
         g2.setColor(new Color(46, 46, 46));
         g2.drawRect(548, 32, 10, 214);
-        g2.drawRect(548, 330, 10, 167);
+        g2.drawRect(548, 330, 10, FLOOR_Y - 330);
 
         // DESTRA DIVISA IN DUE PER LASCIARE UNO SPAZIO LIBERO IN BASSO
         // DESTRA ALLINEATA AL BORDO SUPERIORE DEL PORTELLO DECHARGE
@@ -968,9 +975,15 @@ final class B1MixerArt {
     private void paintRightIndicators(Graphics2D g2) {
         g2.setColor(Color.BLACK);
         g2.setStroke(new BasicStroke(4f));
-        g2.drawLine(546, 497, 678, 497);
+        g2.drawLine(546, FLOOR_Y, 678, FLOOR_Y);
+        // parete destra sotto la porta di scarico (la porta resta dov'era: cerniera a y=497)
+        g2.setColor(new Color(141, 141, 141));
+        g2.fillRect(665, 497, 10, FLOOR_Y - 497);
+        g2.setColor(new Color(46, 46, 46));
+        g2.drawRect(665, 497, 10, FLOOR_Y - 497);
+        g2.setColor(Color.BLACK);
 
-        Rectangle rotorArea = new Rectangle(558, 396, 107, 101);
+        Rectangle rotorArea = new Rectangle(558, 396, 107, FLOOR_Y - 396);
         Rectangle glassArea = new Rectangle(558, 162, 107, 260);
 
         double leftCx = 594.0;
@@ -1023,16 +1036,12 @@ final class B1MixerArt {
 
         glassG.dispose();
 
-        int triangleCenterX = (int) Math.round((leftCx + rightCx) / 2.0);
-        Polygon cone = new Polygon(
-                new int[]{triangleCenterX, triangleCenterX + 27, triangleCenterX - 27},
-                new int[]{471, 497, 497},
-                3
-        );
-        g2.setColor(new Color(211, 197, 34));
-        g2.fillPolygon(cone);
-        g2.setColor(new Color(130, 120, 20));
-        g2.drawPolygon(cone);
+        // niente triangolo giallo: al suo posto la temperatura del prodotto (rosso scuro)
+        g2.setFont(new Font("Arial", Font.BOLD, 15));
+        g2.setColor(new Color(139, 0, 0));
+        java.awt.FontMetrics tfm = g2.getFontMetrics();
+        String tt = "TEMP  " + temp + "\u00b0 C";
+        g2.drawString(tt, (int) ((leftCx + rightCx) / 2.0 - tfm.stringWidth(tt) / 2.0), FLOOR_Y - 8);
 
         drawDischargeDoor(g2);
     }
