@@ -703,6 +703,7 @@ public class B1_Main extends JFrame {
             java.awt.geom.AffineTransform old = g.getTransform();
             g.translate(8.2, 71.9);
             g.scale(0.734, 0.8445);
+            art.setCurrent(num("current", 0));
             art.paint(g);
             g.setTransform(old);
             g.setStroke(new BasicStroke(1));

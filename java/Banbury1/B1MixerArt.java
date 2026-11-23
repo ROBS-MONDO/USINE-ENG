@@ -2,6 +2,8 @@ package Banbury1;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
@@ -362,8 +364,137 @@ final class B1MixerArt {
     }
 
 
+
+    private void drawMotorValue(Graphics2D g2, String text, int x, int y, int w, int h) {
+        g2.setColor(new Color(39, 255, 31));
+        g2.fillRect(x, y, w, h);
+        g2.setColor(new Color(20, 125, 22));
+        g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, new float[]{3f, 2f}, 0f));
+        g2.drawRect(x + 2, y + 2, w - 5, h - 5);
+        g2.setStroke(new BasicStroke(1));
+        g2.setColor(Color.BLACK);
+        g2.setFont(new Font("Arial", Font.PLAIN, 22));
+        java.awt.FontMetrics fm = g2.getFontMetrics();
+        g2.drawString(text, x + (w - fm.stringWidth(text)) / 2, y + (h + fm.getAscent()) / 2 - 3);
+    }
+
+    private void drawMotorUnit(Graphics2D g2, String text, int x, int y, int w, int h) {
+        g2.setColor(new Color(39, 255, 31));
+        g2.fillRect(x, y, w, h);
+        g2.setColor(Color.WHITE);
+        g2.drawRect(x, y, w - 1, h - 1);
+        g2.setColor(new Color(110, 110, 110));
+        g2.drawLine(x, y, x + w - 1, y);
+        g2.drawLine(x, y, x, y + h - 1);
+        g2.setColor(Color.BLACK);
+        g2.setFont(new Font("Arial", Font.BOLD, 18));
+        java.awt.FontMetrics fm = g2.getFontMetrics();
+        g2.drawString(text, x + (w - fm.stringWidth(text)) / 2, y + (h + fm.getAscent()) / 2 - 3);
+    }
+
+    private static final int MOTOR_SHIFT_X = 161;
+    private static final int MOTOR_SHIFT_Y = -28;
+    private String current = "--";
+
+    /** Corrente mostrata sul motore (stesso valore dell'ultima riga del riquadro ROTORS). */
+    void setCurrent(String text) {
+        current = text == null || text.isEmpty() ? "--" : text;
+    }
+
+    private void paintMotor(Graphics2D g2) {
+        int dx = MOTOR_SHIFT_X;
+        int dy = MOTOR_SHIFT_Y;
+
+        g2.setColor(new Color(48, 255, 31));
+        g2.fillRoundRect(96 + dx, 438 + dy, 130, 78, 8, 8);
+        g2.setColor(new Color(20, 125, 22));
+        g2.drawRoundRect(96 + dx, 438 + dy, 130, 78, 8, 8);
+        g2.drawLine(106 + dx, 448 + dy, 216 + dx, 448 + dy);
+        g2.drawLine(106 + dx, 462 + dy, 216 + dx, 462 + dy);
+        g2.drawLine(106 + dx, 476 + dy, 216 + dx, 476 + dy);
+        g2.drawLine(106 + dx, 490 + dy, 216 + dx, 490 + dy);
+        g2.drawLine(106 + dx, 504 + dy, 216 + dx, 504 + dy);
+
+        g2.setColor(new Color(53, 255, 40));
+        g2.fillRect(226 + dx, 458 + dy, 22, 38);
+        g2.setColor(new Color(20, 125, 22));
+        g2.drawRect(226 + dx, 458 + dy, 22, 38);
+
+        Polygon body = new Polygon(
+                new int[]{248 + dx, 295 + dx, 295 + dx, 272 + dx, 248 + dx},
+                new int[]{428 + dy, 428 + dy, 518 + dy, 518 + dy, 494 + dy},
+                5
+        );
+        g2.setColor(new Color(131, 169, 169));
+        g2.fillPolygon(body);
+        g2.setColor(new Color(75, 103, 103));
+        g2.drawPolygon(body);
+
+        // Cilindri dell'albero: ruotano alla stessa velocita' delle pale (rotorMasterAngle).
+        // Asse orizzontale: le righe sulla superficie scorrono in verticale (proiezione sin/cos).
+        for (int i = 0; i < 4; i++) {
+            drawRotatingCylinder(g2, 302 + dx + i * 20, 452 + dy, 18, 42, -rotorMasterAngle + i * 22.5);
+        }
+
+        // misuratore verde sul corpo del motore e valore della corrente (stesso dato del riquadro ROTORS)
+        g2.setColor(new Color(52, 255, 47));
+        g2.fillRect(253 + dx, 433 + dy, 36, 35);
+        g2.setColor(new Color(15, 138, 16));
+        g2.setStroke(new BasicStroke(2));
+        g2.drawRect(253 + dx, 433 + dy, 35, 34);
+        for (int i = 0; i < 3; i++) {
+            int yy = 433 + dy + 6 + i * 8;
+            g2.drawLine(253 + dx + 6, yy, 253 + dx + 30, yy);
+        }
+        g2.setStroke(new BasicStroke(1));
+        g2.setFont(new Font("Arial", Font.BOLD, 15));
+        g2.setColor(Color.BLACK);
+        g2.drawString("COURANT", 128 + dx, 444 + dy + 14);
+        drawMotorValue(g2, current, 120 + dx, 465 + dy, 68, 40);
+        drawMotorUnit(g2, "A", 120 + dx + 72, 465 + dy, 30, 40);
+    }
+
+    private void drawRotatingCylinder(Graphics2D g2, int x, int y, int w, int h, double angleDeg) {
+        Graphics2D g = (Graphics2D) g2.create();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // corpo con ombreggiatura cilindrica (chiaro al centro, scuro ai bordi)
+        g.setPaint(new LinearGradientPaint(
+                x, y, x, y + h,
+                new float[]{0f, 0.35f, 0.65f, 1f},
+                new Color[]{new Color(70, 100, 100), new Color(150, 182, 182),
+                        new Color(150, 182, 182), new Color(70, 100, 100)}
+        ));
+        g.fillRect(x, y, w, h);
+
+        // righe sulla superficie che ruotano attorno all'asse orizzontale
+        Shape oldClip = g.getClip();
+        g.clipRect(x + 1, y + 1, w - 1, h - 1);
+        double radius = h / 2.0;
+        double cy = y + radius;
+        int stripes = 4;
+        for (int k = 0; k < stripes; k++) {
+            double a = Math.toRadians(angleDeg + k * (360.0 / stripes));
+            double front = Math.cos(a);          // >0 = lato visibile
+            if (front <= 0) {
+                continue;
+            }
+            double yy = cy + radius * Math.sin(a);
+            double thick = 1.0 + 3.0 * front;    // piu' larga al centro, sottile ai bordi
+            g.setColor(new Color(40, 65, 65, (int) (90 + 120 * front)));
+            g.fill(new java.awt.geom.Rectangle2D.Double(x + 1, yy - thick / 2.0, w - 1, thick));
+        }
+        g.setClip(oldClip);
+
+        g.setColor(new Color(63, 93, 93));
+        g.drawRect(x, y, w, h);
+        g.dispose();
+    }
+
+
     /** Disegna tutto il mixer nelle coordinate di PLC3_Main. */
     void paint(Graphics2D g2) {
+        paintMotor(g2);
         paintMixer(g2);
         paintHopper(g2);
         paintSiloPowder(g2);
