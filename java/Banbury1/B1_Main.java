@@ -588,7 +588,7 @@ public class B1_Main extends JFrame {
             sunken(g, 140, 38, 130, 24, LABEL_BG);
             text(g, LocalDateTime.now().format(DT), 140, 38, 130, 24, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
             sunken(g, 140, 63, 130, 24, LABEL_BG);
-            text(g, "Synoptique Banb1", 140, 63, 130, 24, fLabel, Color.BLACK, 0);
+            text(g, "Synoptique Banb1 H", 140, 63, 130, 24, fLabel, Color.BLACK, 0);
 
             label(g, "Pression", 488, 40, 70, 22);
             field(g, 558, 40, 62, 22, "press_top", num("press_top", 1), false, fBig);
