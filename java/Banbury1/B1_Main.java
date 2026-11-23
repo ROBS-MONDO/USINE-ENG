@@ -657,44 +657,44 @@ public class B1_Main extends JFrame {
 
         private void drawPiston(Graphics2D g) {
             // pannello compatto sotto il mixer (come nel disegno B1 trasformato)
-            box(g, 214, 485, 143, 162, new Color(0xD0D0D0), new Color(0x909090));
-            box(g, 214, 485, 143, 20, Color.WHITE, new Color(0xA0A0A0));
-            text(g, "PISTON", 214, 485, 143, 20, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
-            arrowButton(g, 217, 511, 22, 22, false, "Consigne piston -");
-            field(g, 241, 511, 56, 22, "press_set", num("press_set", 1), true, fMed);
-            unit(g, "bar", 299, 511, 24, 22);
-            arrowButton(g, 325, 511, 22, 22, true, "Consigne piston +");
-            field(g, 241, 537, 56, 22, "press_act", num("press_act", 1), false, fMed);
-            unit(g, "bar", 299, 537, 24, 22);
-            field(g, 241, 566, 56, 22, "piston_pct1", num("piston_pct1", 0), false, fMed);
-            unit(g, "%", 299, 566, 24, 22);
-            field(g, 241, 591, 56, 22, "piston_pct2", num("piston_pct2", 0), true, fMed);
-            unit(g, "%", 299, 591, 24, 22);
-            field(g, 241, 616, 56, 22, "piston_pct3", num("piston_pct3", 0), true, fMed);
-            unit(g, "%", 299, 616, 24, 22);
+            box(g, 214, 513, 143, 162, new Color(0xD0D0D0), new Color(0x909090));
+            box(g, 214, 513, 143, 20, Color.WHITE, new Color(0xA0A0A0));
+            text(g, "PISTON", 214, 513, 143, 20, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
+            arrowButton(g, 217, 539, 22, 22, false, "Consigne piston -");
+            field(g, 241, 539, 56, 22, "press_set", num("press_set", 1), true, fMed);
+            unit(g, "bar", 299, 539, 24, 22);
+            arrowButton(g, 325, 539, 22, 22, true, "Consigne piston +");
+            field(g, 241, 565, 56, 22, "press_act", num("press_act", 1), false, fMed);
+            unit(g, "bar", 299, 565, 24, 22);
+            field(g, 241, 594, 56, 22, "piston_pct1", num("piston_pct1", 0), false, fMed);
+            unit(g, "%", 299, 594, 24, 22);
+            field(g, 241, 619, 56, 22, "piston_pct2", num("piston_pct2", 0), true, fMed);
+            unit(g, "%", 299, 619, 24, 22);
+            field(g, 241, 644, 56, 22, "piston_pct3", num("piston_pct3", 0), true, fMed);
+            unit(g, "%", 299, 644, 24, 22);
         }
 
         private void drawRotors(Graphics2D g) {
             // pannello compatto accanto al pistone, sotto il mixer (piu in basso: lascia libera la porta di scarico aperta)
-            box(g, 360, 540, 174, 128, new Color(0xD0D0D0), new Color(0x909090));
-            box(g, 360, 540, 174, 20, Color.WHITE, new Color(0xA0A0A0));
-            text(g, "ROTORS", 360, 540, 174, 20, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
-            arrowButton(g, 364, 565, 26, 22, false, "Consigne tours -");
-            field(g, 394, 565, 74, 22, "rpm_set", num("rpm_set", 0), true, fMed);
-            unit(g, "rpm", 470, 565, 32, 22);
-            arrowButton(g, 505, 565, 26, 22, true, "Consigne tours +");
-            field(g, 394, 591, 74, 22, "rpm_act", num("rpm_act", 0), false, fMed);
-            unit(g, "rpm", 470, 591, 32, 22);
-            field(g, 394, 616, 74, 22, "current", num("current", 0), false, fMed);
-            unit(g, "A", 470, 616, 32, 22);
-            lamp(g, 364, 641, "rotors_running", LampKind.GREEN);
-            label(g, "En marche", 390, 641, 140, 24);
+            box(g, 360, 547, 174, 128, new Color(0xD0D0D0), new Color(0x909090));
+            box(g, 360, 547, 174, 20, Color.WHITE, new Color(0xA0A0A0));
+            text(g, "ROTORS", 360, 547, 174, 20, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
+            arrowButton(g, 364, 572, 26, 22, false, "Consigne tours -");
+            field(g, 394, 572, 74, 22, "rpm_set", num("rpm_set", 0), true, fMed);
+            unit(g, "rpm", 470, 572, 32, 22);
+            arrowButton(g, 505, 572, 26, 22, true, "Consigne tours +");
+            field(g, 394, 598, 74, 22, "rpm_act", num("rpm_act", 0), false, fMed);
+            unit(g, "rpm", 470, 598, 32, 22);
+            field(g, 394, 623, 74, 22, "current", num("current", 0), false, fMed);
+            unit(g, "A", 470, 623, 32, 22);
+            lamp(g, 364, 648, "rotors_running", LampKind.GREEN);
+            label(g, "En marche", 390, 648, 140, 24);
         }
 
         private void drawLube(Graphics2D g) {
-            box(g, 7, 583, 200, 66, new Color(0xD0D0D0), new Color(0x909090));
-            title(g, "LUBRICATION", 7, 583, 200, 26);
-            lampRow(g, 13, 616, 42, 155, "lube_running", LampKind.GREEN, "En marche");
+            box(g, 7, 609, 200, 66, new Color(0xD0D0D0), new Color(0x909090));
+            title(g, "LUBRICATION", 7, 609, 200, 26);
+            lampRow(g, 13, 642, 42, 155, "lube_running", LampKind.GREEN, "En marche");
         }
 
         // ---------------- macchina ----------------
@@ -818,11 +818,11 @@ public class B1_Main extends JFrame {
 
         private void drawPositions(Graphics2D g) {
             // spostato nella colonna di sinistra (al posto dei rotori), sopra LUBRICATION
-            box(g, 7, 462, 202, 118, new Color(0xD0D0D0), new Color(0x909090));
-            lampRow(g, 11, 467, 41, 165, "pos_load", LampKind.GREEN, "Position chargement");
-            lampRow(g, 11, 496, 41, 165, "decel_load", LampKind.GREEN, "d\u00e9c\u00e9l\u00e9ration charg.");
-            lampRow(g, 11, 525, 41, 165, "decel_dis", LampKind.GREEN, "D\u00e9c\u00e9l\u00e9ration d\u00e9ch.");
-            lampRow(g, 11, 554, 41, 165, "pos_dis", LampKind.GREEN, "Position d\u00e9ch.");
+            box(g, 7, 488, 202, 118, new Color(0xD0D0D0), new Color(0x909090));
+            lampRow(g, 11, 493, 41, 165, "pos_load", LampKind.GREEN, "Position chargement");
+            lampRow(g, 11, 522, 41, 165, "decel_load", LampKind.GREEN, "d\u00e9c\u00e9l\u00e9ration charg.");
+            lampRow(g, 11, 551, 41, 165, "decel_dis", LampKind.GREEN, "D\u00e9c\u00e9l\u00e9ration d\u00e9ch.");
+            lampRow(g, 11, 580, 41, 165, "pos_dis", LampKind.GREEN, "Position d\u00e9ch.");
         }
 
         private void drawProduction(Graphics2D g) {
