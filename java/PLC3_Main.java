@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.21";
+    private static final String UI_VERSION = "V46.22";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -1468,6 +1468,7 @@ public class PLC3_Main extends JFrame {
                 animateRam();
                 updateOilLeakParticles();
                 updateChargePackets();
+                updateSiloPowder();
                 repaint();
             });
             flowTimer.setInitialDelay(0);
@@ -4260,6 +4261,7 @@ public class PLC3_Main extends JFrame {
             paintBackground(g2);
             paintMixer(g2);
             paintHopper(g2);
+            paintSiloPowder(g2);
             paintSilosIndicators(g2);
             paintMotor(g2);
             paintRightIndicators(g2);
@@ -4750,6 +4752,186 @@ public class PLC3_Main extends JFrame {
             g2.setColor(new Color(195, 195, 195));
             g2.draw(pipe);
             g2.setStroke(oldStroke);
+        }
+
+        // ---- Polvere in scarico dal silos (animazione nel tubo curvo) ----
+        private static final class PowderGrain {
+            double dist;      // distanza percorsa lungo il tubo
+            final double speed;
+            final double off; // scostamento laterale nel tubo
+            final float size;
+            final int shade;
+
+            PowderGrain(double dist, double speed, double off, float size, int shade) {
+                this.dist = dist;
+                this.speed = speed;
+                this.off = off;
+                this.size = size;
+                this.shade = shade;
+            }
+        }
+
+        private static final class DustPuff {
+            double x, y, vx, vy;
+            int life;
+            final int maxLife;
+            final float size;
+
+            DustPuff(double x, double y, double vx, double vy, int maxLife, float size) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.life = maxLife;
+                this.maxLife = maxLife;
+                this.size = size;
+            }
+        }
+
+        private final java.util.ArrayList<PowderGrain> powderGrains = new java.util.ArrayList<>();
+        private final java.util.ArrayList<DustPuff> dustPuffs = new java.util.ArrayList<>();
+        private final java.util.Random powderRng = new java.util.Random();
+        private double[] siloPipeX;
+        private double[] siloPipeY;
+        private double[] siloPipeCum;
+        private double siloPipeLen = 0.0;
+
+        private static final int SILO_PIPE_END_X = 676;
+        private static final int SILO_PIPE_END_Y = 270;
+
+        /** Stesso percorso del tubo disegnato in paintHopper(), ma con partenza dentro il cono del silos. */
+        private void ensureSiloPipePath() {
+            if (siloPipeX != null) {
+                return;
+            }
+            Path2D.Double path = new Path2D.Double();
+            path.moveTo(754, 196);
+            path.lineTo(754, 250);
+            path.curveTo(754, 265, 745, 270, 730, 270);
+            path.lineTo(SILO_PIPE_END_X, SILO_PIPE_END_Y);
+
+            java.util.ArrayList<double[]> pts = new java.util.ArrayList<>();
+            java.awt.geom.PathIterator it = path.getPathIterator(null, 0.5);
+            double[] c = new double[6];
+            while (!it.isDone()) {
+                int t = it.currentSegment(c);
+                if (t == java.awt.geom.PathIterator.SEG_MOVETO || t == java.awt.geom.PathIterator.SEG_LINETO) {
+                    pts.add(new double[]{c[0], c[1]});
+                }
+                it.next();
+            }
+            int n = pts.size();
+            siloPipeX = new double[n];
+            siloPipeY = new double[n];
+            siloPipeCum = new double[n];
+            for (int i = 0; i < n; i++) {
+                siloPipeX[i] = pts.get(i)[0];
+                siloPipeY[i] = pts.get(i)[1];
+                if (i > 0) {
+                    siloPipeCum[i] = siloPipeCum[i - 1]
+                            + Math.hypot(siloPipeX[i] - siloPipeX[i - 1], siloPipeY[i] - siloPipeY[i - 1]);
+                }
+            }
+            siloPipeLen = siloPipeCum[n - 1];
+        }
+
+        /** Punto e direzione del tubo alla distanza d; out = {x, y, nx, ny}. */
+        private void siloPipePoint(double d, double[] out) {
+            int n = siloPipeX.length;
+            int i = 1;
+            while (i < n - 1 && siloPipeCum[i] < d) {
+                i++;
+            }
+            double seg = Math.max(1e-6, siloPipeCum[i] - siloPipeCum[i - 1]);
+            double t = Math.max(0.0, Math.min(1.0, (d - siloPipeCum[i - 1]) / seg));
+            double dx = siloPipeX[i] - siloPipeX[i - 1];
+            double dy = siloPipeY[i] - siloPipeY[i - 1];
+            double len = Math.max(1e-6, Math.hypot(dx, dy));
+            out[0] = siloPipeX[i - 1] + dx * t;
+            out[1] = siloPipeY[i - 1] + dy * t;
+            out[2] = -dy / len;
+            out[3] = dx / len;
+        }
+
+        private void updateSiloPowder() {
+            ensureSiloPipePath();
+            Boolean open = silosOpenState;
+
+            if (open != null && open) {
+                // Flusso continuo: 1-2 granuli per frame
+                int count = 1 + (powderRng.nextInt(3) == 0 ? 1 : 0);
+                for (int i = 0; i < count; i++) {
+                    powderGrains.add(new PowderGrain(
+                            powderRng.nextDouble() * 3.0,
+                            2.6 + powderRng.nextDouble() * 1.0,
+                            (powderRng.nextDouble() - 0.5) * 8.0,
+                            1.6f + powderRng.nextFloat() * 1.6f,
+                            200 + powderRng.nextInt(50)));
+                }
+            }
+
+            java.util.Iterator<PowderGrain> it = powderGrains.iterator();
+            while (it.hasNext()) {
+                PowderGrain g = it.next();
+                g.dist += g.speed;
+                if (g.dist >= siloPipeLen) {
+                    it.remove();
+                    // Sbocco nel mixer: piccola nuvola di polvere che cade
+                    if (powderRng.nextInt(3) == 0) {
+                        dustPuffs.add(new DustPuff(
+                                SILO_PIPE_END_X - 14,
+                                SILO_PIPE_END_Y + (powderRng.nextDouble() - 0.5) * 6.0,
+                                -0.5 - powderRng.nextDouble() * 0.5,
+                                0.1 + powderRng.nextDouble() * 0.4,
+                                28 + powderRng.nextInt(18),
+                                2f + powderRng.nextFloat() * 2f));
+                    }
+                }
+            }
+
+            java.util.Iterator<DustPuff> dit = dustPuffs.iterator();
+            while (dit.hasNext()) {
+                DustPuff d = dit.next();
+                d.x += d.vx;
+                d.y += d.vy;
+                d.vy += 0.07;
+                d.vx *= 0.97;
+                if (--d.life <= 0) {
+                    dit.remove();
+                }
+            }
+        }
+
+        private void paintSiloPowder(Graphics2D g2) {
+            if (siloPipeX == null || (powderGrains.isEmpty() && dustPuffs.isEmpty())) {
+                return;
+            }
+            Graphics2D g = (Graphics2D) g2.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            double[] p = new double[4];
+            for (PowderGrain gr : powderGrains) {
+                siloPipePoint(gr.dist, p);
+                double x = p[0] + p[2] * gr.off * 0.5;
+                double y = p[1] + p[3] * gr.off * 0.5;
+                // Dissolvenza in ingresso (dentro il cono) e in uscita (sbocco nel mixer)
+                double fadeIn = Math.min(1.0, gr.dist / 14.0);
+                double fadeOut = Math.min(1.0, (siloPipeLen - gr.dist) / 12.0);
+                float alpha = (float) Math.max(0.0, Math.min(1.0, Math.min(fadeIn, fadeOut)));
+                g.setColor(new Color(gr.shade, gr.shade - 6, gr.shade - 30, (int) (alpha * 235)));
+                g.fill(new java.awt.geom.Ellipse2D.Double(x - gr.size / 2, y - gr.size / 2, gr.size, gr.size));
+            }
+
+            // Cascata di polvere dentro la camera del mixer (non oltre la colonna destra)
+            Shape oldClip = g.getClip();
+            g.setClip(558, 150, 107, 260);
+            for (DustPuff d : dustPuffs) {
+                float a = Math.max(0f, Math.min(1f, (float) d.life / d.maxLife));
+                g.setColor(new Color(235, 228, 205, (int) (a * 200)));
+                g.fill(new java.awt.geom.Ellipse2D.Double(d.x - d.size / 2, d.y - d.size / 2, d.size, d.size));
+            }
+            g.setClip(oldClip);
+            g.dispose();
         }
 
         // Stato del silos: TRUE = aperto, FALSE = chiuso, null = sconosciuto (spie entrambe spente)
