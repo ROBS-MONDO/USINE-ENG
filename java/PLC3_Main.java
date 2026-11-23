@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V47.00";
+    private static final String UI_VERSION = "V47.01";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -373,8 +373,9 @@ public class PLC3_Main extends JFrame {
         private static final int LEAK_OFFSET_X = 6;
         private static final int LEAK_STREAM_WIDTH = 12;
         private static final int LIQUID_Y_DOA = 96;
-        private static final int LIQUID_Y_SILANO = 166;
-        private static final int LIQUID_Y_OLIO = 239;
+        // Solo grafica: HUILE PLASTIFIANTE sulla riga centrale (quella della linea verso il mixer), SILANO in basso
+        private static final int LIQUID_Y_OLIO = 166;
+        private static final int LIQUID_Y_SILANO = 239;
 
         // Layout gruppo status nel riquadro blu
         private static final int STATUS_GROUP_X = 250;
@@ -952,20 +953,22 @@ public class PLC3_Main extends JFrame {
                     liquidButtonH
             );
 
-            btnSilano = addSilanoButton(
-                    "SILANO",
-                    liquidColumnX,
-                    liquidStartY + liquidButtonH + liquidGapY,
-                    liquidButtonW,
-                    liquidButtonH
-            );
-
+            // Solo grafica: HUILE PLASTIFIANTE al centro (allineata alla linea verso il mixer), SILANO sotto.
+            // La logica resta invariata: ogni pulsante comanda il proprio nodo.
             btnOlioProcesso = addHuileButton(
                     "<html><center><span style='color:black;'>HUILE<br>PLASTIFIANTE</span></center></html>",
                     liquidColumnX,
-                    liquidStartY + (liquidButtonH + liquidGapY) * 2,
+                    liquidStartY + liquidButtonH + liquidGapY - 2,
                     liquidButtonW,
                     62
+            );
+
+            btnSilano = addSilanoButton(
+                    "SILANO",
+                    liquidColumnX,
+                    liquidStartY + (liquidButtonH + liquidGapY) * 2 + 2,
+                    liquidButtonW,
+                    liquidButtonH
             );
 
             addText("CONSIGNE", liquidColumnX + 25, liquidStartY + 206, 15, true);
@@ -4288,24 +4291,25 @@ public class PLC3_Main extends JFrame {
             boolean silanoOn = btnSilano != null && btnSilano.isVisualOn();
             boolean olioOn = btnOlioProcesso != null && btnOlioProcesso.isVisualOn();
 
+            // Righe dall'alto in basso: DOA, HUILE PLASTIFIANTE (linea verso il mixer), SILANO
             int centerY1 = LIQUID_Y_DOA + LIQUID_VALVE_DIAMETER / 2;
-            int centerY2 = LIQUID_Y_SILANO + LIQUID_VALVE_DIAMETER / 2;
-            int centerY3 = LIQUID_Y_OLIO + LIQUID_VALVE_DIAMETER / 2;
+            int centerY2 = LIQUID_Y_OLIO + LIQUID_VALVE_DIAMETER / 2;
+            int centerY3 = LIQUID_Y_SILANO + LIQUID_VALVE_DIAMETER / 2;
 
             int valveRightX = LIQUID_VALVE_X + LIQUID_VALVE_DIAMETER;
             int mainLineY = centerY2;
 
             boolean upperCollectorActive = doaOn;
-            boolean lowerCollectorActive = olioOn;
+            boolean lowerCollectorActive = silanoOn;
             boolean mainLineActive = doaOn || silanoOn || olioOn;
 
             drawValveWithShortLeftPipe(g2, LIQUID_VALVE_X, LIQUID_Y_DOA, doaOn, doaOn);
-            drawValveWithShortLeftPipe(g2, LIQUID_VALVE_X, LIQUID_Y_SILANO, silanoOn, silanoOn);
             drawValveWithShortLeftPipe(g2, LIQUID_VALVE_X, LIQUID_Y_OLIO, olioOn, olioOn);
+            drawValveWithShortLeftPipe(g2, LIQUID_VALVE_X, LIQUID_Y_SILANO, silanoOn, silanoOn);
 
             drawPipeSegment(g2, valveRightX, centerY1, LIQUID_COLLECTOR_X, centerY1, doaOn);
-            drawPipeSegment(g2, valveRightX, centerY2, LIQUID_COLLECTOR_X, centerY2, silanoOn);
-            drawPipeSegment(g2, valveRightX, centerY3, LIQUID_COLLECTOR_X, centerY3, olioOn);
+            drawPipeSegment(g2, valveRightX, centerY2, LIQUID_COLLECTOR_X, centerY2, olioOn);
+            drawPipeSegment(g2, valveRightX, centerY3, LIQUID_COLLECTOR_X, centerY3, silanoOn);
 
             drawPipeSegment(g2, LIQUID_COLLECTOR_X, centerY1, LIQUID_COLLECTOR_X, centerY2, upperCollectorActive);
             drawPipeSegment(g2, LIQUID_COLLECTOR_X, centerY2, LIQUID_COLLECTOR_X, centerY3, lowerCollectorActive);
@@ -4338,7 +4342,7 @@ public class PLC3_Main extends JFrame {
 
         private void spawnOilLeakParticles() {
             int startX = LIQUID_MIXER_ENTRY_X + LEAK_OFFSET_X;
-            int startY = (LIQUID_Y_SILANO + LIQUID_VALVE_DIAMETER / 2) + LEAK_STREAM_ENTRY_Y_OFFSET;
+            int startY = (LIQUID_Y_OLIO + LIQUID_VALVE_DIAMETER / 2) + LEAK_STREAM_ENTRY_Y_OFFSET;
 
             int particleCount = 4;
             for (int i = 0; i < particleCount; i++) {
