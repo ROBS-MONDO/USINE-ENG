@@ -45,7 +45,7 @@ import javax.swing.table.TableCellRenderer;
  */
 public final class B1RecipeSteps extends JFrame {
 
-    static final String VERSION = "V1.00";
+    static final String VERSION = "V1.05";
     static final String TITLE = "Banbury 1 - Recipes - " + VERSION;
     private static B1RecipeSteps shared;
     /** Vrai quand le programme est lance seul (jar executable): fermer la fenetre termine le programme. */
