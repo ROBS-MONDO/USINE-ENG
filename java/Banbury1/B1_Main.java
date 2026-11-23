@@ -675,20 +675,17 @@ public class B1_Main extends JFrame {
         }
 
         private void drawRotors(Graphics2D g) {
-            // pannello compatto accanto al pistone, sotto il mixer (piu in basso: lascia libera la porta di scarico aperta)
-            box(g, 360, 547, 174, 128, new Color(0xD0D0D0), new Color(0x909090));
-            box(g, 360, 547, 174, 20, Color.WHITE, new Color(0xA0A0A0));
-            text(g, "ROTORS", 360, 547, 174, 20, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
-            arrowButton(g, 364, 572, 26, 22, false, "Consigne tours -");
-            field(g, 394, 572, 74, 22, "rpm_set", num("rpm_set", 0), true, fMed);
-            unit(g, "rpm", 470, 572, 32, 22);
-            arrowButton(g, 505, 572, 26, 22, true, "Consigne tours +");
-            field(g, 394, 598, 74, 22, "rpm_act", num("rpm_act", 0), false, fMed);
-            unit(g, "rpm", 470, 598, 32, 22);
-            field(g, 394, 623, 74, 22, "current", num("current", 0), false, fMed);
-            unit(g, "A", 470, 623, 32, 22);
-            lamp(g, 364, 648, "rotors_running", LampKind.GREEN);
-            label(g, "En marche", 390, 648, 140, 24);
+            // pannello compatto centrato sotto il mixer: consegna e giri attuali (la corrente e' sul motore)
+            final int x0 = 370, y0 = 595, w = 174;
+            box(g, x0, y0, w, 80, new Color(0xD0D0D0), new Color(0x909090));
+            box(g, x0, y0, w, 20, Color.WHITE, new Color(0xA0A0A0));
+            text(g, "ROTORS", x0, y0, w, 20, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
+            arrowButton(g, x0 + 4, y0 + 25, 26, 22, false, "Consigne tours -");
+            field(g, x0 + 34, y0 + 25, 74, 22, "rpm_set", num("rpm_set", 0), true, fMed);
+            unit(g, "rpm", x0 + 110, y0 + 25, 32, 22);
+            arrowButton(g, x0 + 145, y0 + 25, 26, 22, true, "Consigne tours +");
+            field(g, x0 + 34, y0 + 51, 74, 22, "rpm_act", num("rpm_act", 0), false, fMed);
+            unit(g, "rpm", x0 + 110, y0 + 51, 32, 22);
         }
 
         private void drawLube(Graphics2D g) {
