@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.22";
+    private static final String UI_VERSION = "V46.23";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -4858,15 +4858,15 @@ public class PLC3_Main extends JFrame {
             Boolean open = silosOpenState;
 
             if (open != null && open) {
-                // Flusso continuo: 1-2 granuli per frame
-                int count = 1 + (powderRng.nextInt(3) == 0 ? 1 : 0);
+                // Flusso continuo e piu' denso: 2-3 granuli per frame
+                int count = 2 + (powderRng.nextInt(2) == 0 ? 1 : 0);
                 for (int i = 0; i < count; i++) {
                     powderGrains.add(new PowderGrain(
                             powderRng.nextDouble() * 3.0,
                             2.6 + powderRng.nextDouble() * 1.0,
                             (powderRng.nextDouble() - 0.5) * 8.0,
-                            1.6f + powderRng.nextFloat() * 1.6f,
-                            200 + powderRng.nextInt(50)));
+                            2.8f + powderRng.nextFloat() * 2.0f,
+                            228 + powderRng.nextInt(28)));
                 }
             }
 
@@ -4884,7 +4884,7 @@ public class PLC3_Main extends JFrame {
                                 -0.5 - powderRng.nextDouble() * 0.5,
                                 0.1 + powderRng.nextDouble() * 0.4,
                                 28 + powderRng.nextInt(18),
-                                2f + powderRng.nextFloat() * 2f));
+                                2.6f + powderRng.nextFloat() * 2.6f));
                     }
                 }
             }
@@ -4910,6 +4910,24 @@ public class PLC3_Main extends JFrame {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             double[] p = new double[4];
+
+            // Canale scuro dentro il tubo (dalla valvola in giu'): fa risaltare la polvere chiara
+            if (!powderGrains.isEmpty()) {
+                final double valveEnd = 21.0;
+                siloPipePoint(valveEnd, p);
+                Path2D.Double channel = new Path2D.Double();
+                channel.moveTo(p[0], p[1]);
+                for (int i = 0; i < siloPipeX.length; i++) {
+                    if (siloPipeCum[i] > valveEnd) {
+                        channel.lineTo(siloPipeX[i], siloPipeY[i]);
+                    }
+                }
+                g.setStroke(new BasicStroke(8f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+                g.setColor(new Color(45, 40, 36, 185));
+                g.draw(channel);
+            }
+
+            g.setStroke(new BasicStroke(0.8f));
             for (PowderGrain gr : powderGrains) {
                 siloPipePoint(gr.dist, p);
                 double x = p[0] + p[2] * gr.off * 0.5;
@@ -4918,8 +4936,12 @@ public class PLC3_Main extends JFrame {
                 double fadeIn = Math.min(1.0, gr.dist / 14.0);
                 double fadeOut = Math.min(1.0, (siloPipeLen - gr.dist) / 12.0);
                 float alpha = (float) Math.max(0.0, Math.min(1.0, Math.min(fadeIn, fadeOut)));
-                g.setColor(new Color(gr.shade, gr.shade - 6, gr.shade - 30, (int) (alpha * 235)));
-                g.fill(new java.awt.geom.Ellipse2D.Double(x - gr.size / 2, y - gr.size / 2, gr.size, gr.size));
+                java.awt.geom.Ellipse2D.Double grain =
+                        new java.awt.geom.Ellipse2D.Double(x - gr.size / 2, y - gr.size / 2, gr.size, gr.size);
+                g.setColor(new Color(gr.shade, gr.shade - 4, gr.shade - 22, (int) (alpha * 255)));
+                g.fill(grain);
+                g.setColor(new Color(90, 75, 50, (int) (alpha * 170)));
+                g.draw(grain);
             }
 
             // Cascata di polvere dentro la camera del mixer (non oltre la colonna destra)
@@ -4927,8 +4949,12 @@ public class PLC3_Main extends JFrame {
             g.setClip(558, 150, 107, 260);
             for (DustPuff d : dustPuffs) {
                 float a = Math.max(0f, Math.min(1f, (float) d.life / d.maxLife));
-                g.setColor(new Color(235, 228, 205, (int) (a * 200)));
-                g.fill(new java.awt.geom.Ellipse2D.Double(d.x - d.size / 2, d.y - d.size / 2, d.size, d.size));
+                g.setColor(new Color(250, 244, 222, (int) (a * 235)));
+                java.awt.geom.Ellipse2D.Double puff =
+                        new java.awt.geom.Ellipse2D.Double(d.x - d.size / 2, d.y - d.size / 2, d.size, d.size);
+                g.fill(puff);
+                g.setColor(new Color(110, 95, 65, (int) (a * 140)));
+                g.draw(puff);
             }
             g.setClip(oldClip);
             g.dispose();
