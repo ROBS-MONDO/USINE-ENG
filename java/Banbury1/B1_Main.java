@@ -623,7 +623,7 @@ public class B1_Main extends JFrame {
             Boolean auto = src.connected() ? src.bool("mode_auto") : null;
             String name = rn == null || rn.isEmpty() ? "--" : B1RecipeBridge.displayName(rn);
             String txt = (no == null || no.intValue() <= 0 ? "" : no.intValue() + " - ") + name
-                    + (auto == null ? "" : auto ? " / AUTO" : " / MANUEL");
+                    + (Boolean.FALSE.equals(auto) ? " / MAN" : ""); // automatico: solo colore verde; manuale: MAN su rosso
             boolean manual = Boolean.FALSE.equals(auto);
             box(g, 194, 104, 184, 24, manual ? new Color(0xFF0000) : new Color(0xC8FFC8), new Color(0x606060));
             g.setFont(new Font("Arial", Font.BOLD, 12));
