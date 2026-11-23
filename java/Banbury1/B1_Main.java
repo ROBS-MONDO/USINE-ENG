@@ -118,6 +118,9 @@ public class B1_Main extends JFrame {
             alarmCfg = Paths.get("b1_alarms.properties");
         }
         ENGINE = B1AlarmEngine.load(alarmCfg, Paths.get("C:\\_tools\\Banbury1\\b1_alarm_log.csv"));
+        if (!demo && snap == null) {
+            B1GovoniSilos.start();
+        }
         SQL_CONFIG = Files.exists(labelCfg) ? labelCfg : Paths.get("b1_label_sql.properties");
         final B1Source src = demo ? new B1DemoSource()
                 : newPlcSource(tagsObj, ip, layout, period, ENGINE.dbs());
@@ -463,7 +466,10 @@ public class B1_Main extends JFrame {
         private enum LampKind { GREEN, RED, ORANGE }
 
         private void lamp(Graphics2D g, int x, int y, String key, LampKind kind) {
-            Boolean on = key == null ? null : src.bool(key);
+            lampState(g, x, y, key, kind, key == null ? null : src.bool(key));
+        }
+
+        private void lampState(Graphics2D g, int x, int y, String key, LampKind kind, Boolean on) {
             Color bright, dark;
             switch (kind) {
                 case RED: bright = new Color(0xFF3A3A); dark = new Color(0x6E1010); break;
@@ -713,8 +719,15 @@ public class B1_Main extends JFrame {
         private void drawSilosDoor(Graphics2D g) {
             title(g, "SILOS", 596, 98, 102, 24);
             box(g, 597, 124, 102, 70, new Color(0xD0D0D0), new Color(0x909090));
-            lampRow(g, 602, 130, 630, 66, "silos_open", LampKind.GREEN, "Ouvert");
-            lampRow(g, 602, 162, 630, 66, "silos_closed", LampKind.RED, "Ferm\u00e9");
+            // spie dal sistema Govoni (Etat execution BY1): "Descharge Vidage" = aperto, ogni altro stato = chiuso;
+            // se Govoni non e' configurato o non ancora letto restano le spie del PLC
+            Boolean govoni = B1GovoniSilos.configured() ? B1GovoniSilos.open() : null;
+            Boolean openOn = govoni != null ? govoni : (B1GovoniSilos.configured() ? Boolean.FALSE : src.bool("silos_open"));
+            Boolean closedOn = govoni != null ? Boolean.valueOf(!govoni) : (B1GovoniSilos.configured() ? Boolean.FALSE : src.bool("silos_closed"));
+            lampState(g, 602, 130, "silos_open", LampKind.GREEN, openOn);
+            label(g, "Ouvert", 630, 130, 66, 24);
+            lampState(g, 602, 162, "silos_closed", LampKind.RED, closedOn);
+            label(g, "Ferm\u00e9", 630, 162, 66, 24);
         }
 
         // caratteri del blocco lotto come in B2: etichette in grassetto piccolo e centrate, valori in grassetto piu' grande e centrati
