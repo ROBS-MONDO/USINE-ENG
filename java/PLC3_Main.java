@@ -4396,6 +4396,20 @@ public class PLC3_Main extends JFrame {
             }
         }
 
+        /**
+         * Regola dello stato silos dal campo "Etat execution" di Production BY2 (Govoni):
+         * "Descharge Attente Pe..." e "Descharge Vidage" = silos aperto (ON),
+         * qualsiasi altro stato = silos chiuso (OFF). Testo vuoto/null = nessuna variazione.
+         */
+        private void updateSilosFromEtatExecution(String etatExecution) {
+            if (etatExecution == null || etatExecution.trim().isEmpty()) {
+                return;
+            }
+            String v = etatExecution.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+            boolean open = v.startsWith("descharge attente") || v.startsWith("descharge vidage");
+            silosOpenState = open ? Boolean.TRUE : Boolean.FALSE;
+        }
+
         private void paintSilosIndicators(Graphics2D g2) {
             Graphics2D g = (Graphics2D) g2.create();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
