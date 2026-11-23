@@ -130,6 +130,10 @@ public final class B1Tags {
         {"rdy_mintime",  "Pronto: tempo min. tra cicli",     "DB110.W54.B9"},
         {"rdy_cycles",   "Pronto: n. cicli passi effettuati","DB110.W54.B10"},
         // --- cycle malaxeur ---
+        {"liq_doa",    "Liquido DOA attivo (da collegare)", "none"},
+        {"liq_silano", "Liquido SILANO attivo (da collegare)", "none"},
+        {"liq_huile",  "Liquido HUILE PLASTIFIANTE attivo (da collegare)", "none"},
+        {"liq_consigne", "Consigna liquidi (da collegare)", "none"},
         {"cyc_auto",   "Ciclo: auto (CONFERMATO in produzione 20/11: = modo automatico, W44.B3)", "DB110.W44.B3"},
         {"phase_no",   "Fase in corso (WinCC: DBW218, RunningPhaseActual)", "DB110.W218"},
         {"mode_auto",  "Modo automatico (spie AUTO/MANUAL e trend) (CONFERMATO in produzione 20/11: W44.B3)", "DB110.W44.B3"},

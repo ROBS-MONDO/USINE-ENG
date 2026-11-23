@@ -115,6 +115,7 @@ final class B1MixerArt {
             chargeActive = stepRunning && chargeDoorProgress >= 0.99 && autoMode;
             updateChargePackets();
             updateSiloPowder(silosOpen);
+            updateOilLeakParticles();
         }
     }
 
@@ -499,6 +500,315 @@ final class B1MixerArt {
     }
 
 
+
+    // ---- liquidi (DOA, SILANO, HUILE PLASTIFIANTE): grafica e animazione di PLC3_Main; i tag si collegano dopo ----
+    private static final float PIPE_FILL_STROKE = 14f;
+    private static final float PIPE_BORDER_STROKE = 2.4f;
+    private static final int FLOW_DOT_SIZE = 6;
+    private static final int FLOW_STEP = 20;
+    private static final Color LIQUID_FLOW_COLOR = new Color(185, 140, 48);
+    private static final Color LIQUID_FLOW_HIGHLIGHT = new Color(224, 195, 92);
+    private static final Color LIQUID_BUTTON_OFF = new Color(155, 155, 155);
+    private static final Color LIQUID_BUTTON_ON = new Color(39, 255, 31);
+    private static final Color LIQUID_BUTTON_BORDER = new Color(85, 85, 85);
+    private static final int LIQUID_VALVE_X = 152;
+    private static final int LIQUID_VALVE_DIAMETER = 34;
+    private static final int LIQUID_PIPE_SIDE_LEN = 18;
+    private static final int LIQUID_COLLECTOR_X = LIQUID_VALVE_X + LIQUID_VALVE_DIAMETER + LIQUID_PIPE_SIDE_LEN;
+    private static final int LIQUID_MIXER_ENTRY_X = 546;
+    private static final int LEAK_STREAM_START_X = 611;
+    private static final int LEAK_STREAM_ENTRY_Y_OFFSET = 2;
+    private static final int LEAK_STREAM_END_Y = 386;
+    private static final int LEAK_OFFSET_X = 6;
+    private static final int LIQUID_Y_DOA = 96;
+    private static final int LIQUID_Y_SILANO = 166;
+    private static final int LIQUID_Y_OLIO = 239;
+
+    private final ArrayList<OilParticle> oilParticles = new ArrayList<>();
+    private final java.util.Random oilRng = new java.util.Random();
+    private boolean liqDoa;
+    private boolean liqSilano;
+    private boolean liqHuile;
+    private String consigne = "--";
+
+    /** Stato dei tre liquidi e consigna (da collegare ai tag B1: liq_doa, liq_silano, liq_huile, liq_consigne). */
+    void setLiquids(boolean doa, boolean silano, boolean huile, String consigneText) {
+        liqDoa = doa;
+        liqSilano = silano;
+        liqHuile = huile;
+        consigne = consigneText == null || consigneText.isEmpty() ? "--" : consigneText;
+    }
+
+    private void updateOilLeakParticles() {
+        if (liqDoa || liqSilano || liqHuile) {
+            spawnOilLeakParticles();
+        }
+        java.util.Iterator<OilParticle> it = oilParticles.iterator();
+        while (it.hasNext()) {
+            OilParticle p = it.next();
+            p.update();
+            if (p.isDead()) {
+                it.remove();
+            }
+        }
+    }
+
+    private void paintLiquids(Graphics2D g2) {
+        Graphics2D g = (Graphics2D) g2.create();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        // pulsanti (solo visualizzazione: verdi quando il liquido e' attivo)
+        liquidButton(g, 22, 82, 118, 58, liqDoa, "DOA", null);
+        liquidButton(g, 22, 152, 118, 58, liqSilano, "SILANO", null);
+        liquidButton(g, 22, 222, 118, 62, liqHuile, "HUILE", "PLASTIFIANTE");
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Arial", Font.BOLD, 15));
+        g.drawString("CONSIGNE", 47, 288 + 17);
+        g.setColor(Color.WHITE);
+        g.fillRect(22, 310, 120, 42);
+        g.setColor(new Color(47, 99, 220));
+        g.setStroke(new BasicStroke(2f));
+        g.drawRect(23, 311, 118, 40);
+        g.setStroke(new BasicStroke(1f));
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Trebuchet MS", Font.PLAIN, 25));
+        FontMetrics cfm = g.getFontMetrics();
+        g.drawString(consigne, 22 + (120 - cfm.stringWidth(consigne)) / 2, 310 + (42 + cfm.getAscent()) / 2 - 3);
+
+        int centerY1 = LIQUID_Y_DOA + LIQUID_VALVE_DIAMETER / 2;
+        int centerY2 = LIQUID_Y_SILANO + LIQUID_VALVE_DIAMETER / 2;
+        int centerY3 = LIQUID_Y_OLIO + LIQUID_VALVE_DIAMETER / 2;
+        int valveRightX = LIQUID_VALVE_X + LIQUID_VALVE_DIAMETER;
+        int mainLineY = centerY2;
+        boolean mainLineActive = liqDoa || liqSilano || liqHuile;
+
+        drawValveWithShortLeftPipe(g, LIQUID_VALVE_X, LIQUID_Y_DOA, liqDoa, liqDoa);
+        drawValveWithShortLeftPipe(g, LIQUID_VALVE_X, LIQUID_Y_SILANO, liqSilano, liqSilano);
+        drawValveWithShortLeftPipe(g, LIQUID_VALVE_X, LIQUID_Y_OLIO, liqHuile, liqHuile);
+        drawPipeSegment(g, valveRightX, centerY1, LIQUID_COLLECTOR_X, centerY1, liqDoa);
+        drawPipeSegment(g, valveRightX, centerY2, LIQUID_COLLECTOR_X, centerY2, liqSilano);
+        drawPipeSegment(g, valveRightX, centerY3, LIQUID_COLLECTOR_X, centerY3, liqHuile);
+        drawPipeSegment(g, LIQUID_COLLECTOR_X, centerY1, LIQUID_COLLECTOR_X, centerY2, liqDoa);
+        drawPipeSegment(g, LIQUID_COLLECTOR_X, centerY2, LIQUID_COLLECTOR_X, centerY3, liqHuile);
+        drawPipeSegment(g, LIQUID_COLLECTOR_X, mainLineY, LIQUID_MIXER_ENTRY_X, mainLineY, mainLineActive);
+        if (mainLineActive) {
+            drawLeakingOilIntoMixer(g, mainLineY);
+        }
+        g.dispose();
+    }
+
+    private void liquidButton(Graphics2D g, int x, int y, int w, int h, boolean on, String line1, String line2) {
+        g.setColor(on ? LIQUID_BUTTON_ON : LIQUID_BUTTON_OFF);
+        g.fillRoundRect(x, y, w - 1, h - 1, 10, 10);
+        g.setColor(LIQUID_BUTTON_BORDER);
+        g.drawRoundRect(x, y, w - 1, h - 1, 10, 10);
+        g.setColor(new Color(255, 255, 255, 70));
+        g.drawRoundRect(x + 1, y + 1, w - 3, Math.max(8, h / 2), 9, 9);
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Arial", Font.BOLD, line2 == null ? 15 : 13));
+        FontMetrics fm = g.getFontMetrics();
+        if (line2 == null) {
+            g.drawString(line1, x + (w - fm.stringWidth(line1)) / 2, y + (h + fm.getAscent()) / 2 - 3);
+        } else {
+            g.drawString(line1, x + (w - fm.stringWidth(line1)) / 2, y + h / 2 - 3);
+            g.drawString(line2, x + (w - fm.stringWidth(line2)) / 2, y + h / 2 + fm.getAscent() - 2);
+        }
+    }
+
+    private void drawValveWithShortLeftPipe(Graphics2D g2, int x, int y, boolean active, boolean leftPipeActive) {
+        int centerY = y + LIQUID_VALVE_DIAMETER / 2;
+        int leftPipeX = x - LIQUID_PIPE_SIDE_LEN;
+
+        drawPipeSegment(g2, leftPipeX, centerY, x, centerY, leftPipeActive);
+
+        Color fillColor = active ? new Color(39, 255, 31) : new Color(170, 170, 170);
+        Color borderColor = active ? new Color(10, 120, 20) : new Color(90, 90, 90);
+
+        g2.setColor(fillColor);
+        g2.fillOval(x, y, LIQUID_VALVE_DIAMETER, LIQUID_VALVE_DIAMETER);
+
+        g2.setColor(borderColor);
+        g2.setStroke(new BasicStroke(2f));
+        g2.drawOval(x, y, LIQUID_VALVE_DIAMETER, LIQUID_VALVE_DIAMETER);
+
+        int cx = x + LIQUID_VALVE_DIAMETER / 2;
+        int cy = y + LIQUID_VALVE_DIAMETER / 2;
+        int r = 7;
+
+        Polygon tri;
+        if (active) {
+            tri = new Polygon(
+                    new int[]{cx + r, cx - r, cx - r},
+                    new int[]{cy, cy - r, cy + r},
+                    3
+            );
+        } else {
+            tri = new Polygon(
+                    new int[]{cx, cx - r, cx + r},
+                    new int[]{cy - r, cy + r, cy + r},
+                    3
+            );
+        }
+
+        g2.setColor(Color.BLACK);
+        g2.fillPolygon(tri);
+    }
+
+    private void drawPipeSegment(Graphics2D g2, int x1, int y1, int x2, int y2, boolean active) {
+        boolean horizontal = y1 == y2;
+        boolean vertical = x1 == x2;
+
+        if (!horizontal && !vertical) {
+            return;
+        }
+
+        g2.setStroke(new BasicStroke(PIPE_FILL_STROKE, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.setColor(new Color(225, 225, 225));
+        g2.drawLine(x1, y1, x2, y2);
+
+        g2.setStroke(new BasicStroke(PIPE_BORDER_STROKE, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.setColor(new Color(98, 98, 98));
+        g2.drawLine(x1, y1, x2, y2);
+
+        if (active) {
+            if (horizontal) {
+                drawFlowHorizontal(g2, x1, x2, y1);
+            } else {
+                drawFlowVertical(g2, x1, y1, y2);
+            }
+        }
+    }
+
+    private void drawFlowHorizontal(Graphics2D g2, int x1, int x2, int y) {
+        int left = Math.min(x1, x2);
+        int right = Math.max(x1, x2);
+        int length = right - left;
+
+        if (length <= 0) {
+            return;
+        }
+
+        for (int i = -80; i < length + 80; i += FLOW_STEP) {
+            int px = left + (((int) (i + flowOffset)) % (length + FLOW_STEP));
+            if (px >= left && px <= right) {
+                g2.setColor(LIQUID_FLOW_COLOR);
+                g2.fillOval(px - FLOW_DOT_SIZE / 2, y - FLOW_DOT_SIZE / 2, FLOW_DOT_SIZE, FLOW_DOT_SIZE);
+
+                int hi = Math.max(2, FLOW_DOT_SIZE / 2);
+                g2.setColor(LIQUID_FLOW_HIGHLIGHT);
+                g2.fillOval(px - hi / 2, y - hi / 2, hi, hi);
+            }
+        }
+    }
+
+    private void drawFlowVertical(Graphics2D g2, int x, int y1, int y2) {
+        int top = Math.min(y1, y2);
+        int bottom = Math.max(y1, y2);
+        int length = bottom - top;
+
+        if (length <= 0) {
+            return;
+        }
+
+        for (int i = -80; i < length + 80; i += FLOW_STEP) {
+            int py = bottom - ((((int) (i + flowOffset)) % (length + FLOW_STEP)));
+            if (py >= top && py <= bottom) {
+                g2.setColor(LIQUID_FLOW_COLOR);
+                g2.fillOval(x - FLOW_DOT_SIZE / 2, py - FLOW_DOT_SIZE / 2, FLOW_DOT_SIZE, FLOW_DOT_SIZE);
+
+                int hi = Math.max(2, FLOW_DOT_SIZE / 2);
+                g2.setColor(LIQUID_FLOW_HIGHLIGHT);
+                g2.fillOval(x - hi / 2, py - hi / 2, hi, hi);
+            }
+        }
+    }
+
+    private void spawnOilLeakParticles() {
+        int startX = LIQUID_MIXER_ENTRY_X + LEAK_OFFSET_X;
+        int startY = (LIQUID_Y_SILANO + LIQUID_VALVE_DIAMETER / 2) + LEAK_STREAM_ENTRY_Y_OFFSET;
+
+        int particleCount = 4;
+        for (int i = 0; i < particleCount; i++) {
+            double vx = 1.55 + oilRng.nextGaussian() * 0.18;
+            double vy = -0.18 + oilRng.nextGaussian() * 0.10;
+            int size = 4 + oilRng.nextInt(3);
+            oilParticles.add(new OilParticle(startX, startY, vx, vy, size));
+        }
+    }
+
+    private void drawLeakingOilIntoMixer(Graphics2D g2, int pipeY) {
+        Graphics2D oilG = (Graphics2D) g2.create();
+        oilG.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        int startX = LIQUID_MIXER_ENTRY_X + LEAK_OFFSET_X;
+        int startY = pipeY + LEAK_STREAM_ENTRY_Y_OFFSET;
+
+        for (OilParticle p : oilParticles) {
+            float a = Math.max(0f, Math.min(1f, p.alpha));
+            int s = Math.max(1, (int) Math.round(p.size * a));
+
+            oilG.setColor(new Color(215 / 255f, 182 / 255f, 76 / 255f, a * 0.95f));
+            oilG.fillOval((int) Math.round(p.x) - s / 2, (int) Math.round(p.y) - s / 2, s, s + 1);
+
+            oilG.setColor(new Color(1f, 0.96f, 0.78f, a * 0.35f));
+            oilG.fillOval((int) Math.round(p.x) - s / 3, (int) Math.round(p.y) - s / 3, Math.max(1, s / 2), Math.max(1, s / 2));
+        }
+
+        if (!oilParticles.isEmpty()) {
+            int arcW = 30;
+            int arcH = 10;
+            oilG.setColor(new Color(224, 195, 92, 120));
+            oilG.fillOval(startX - 7, startY - 4, arcW, arcH);
+        }
+
+        int puddleCenterX = LEAK_STREAM_START_X + LEAK_OFFSET_X;
+        int puddleY = LEAK_STREAM_END_Y + 10;
+        int puddleW = 40;
+        int puddleH = 12;
+        int puddleX = puddleCenterX - puddleW / 2 + (int) Math.round(Math.sin(flowOffset * 0.05f) * 2.0);
+
+        GradientPaint puddlePaint = new GradientPaint(
+                puddleX, puddleY, new Color(185, 140, 48, 160),
+                puddleX, puddleY + puddleH, new Color(105, 70, 18, 110)
+        );
+        oilG.setPaint(puddlePaint);
+        oilG.fillOval(puddleX, puddleY, puddleW, puddleH);
+
+        oilG.setColor(new Color(255, 232, 150, 95));
+        oilG.drawOval(puddleX, puddleY, puddleW, puddleH);
+
+        oilG.dispose();
+    }
+
+    private static final class OilParticle {
+        double x;
+        double y;
+        double vx;
+        double vy;
+        float alpha;
+        int size;
+
+        OilParticle(double x, double y, double vx, double vy, int size) {
+            this.x = x;
+            this.y = y;
+            this.vx = vx;
+            this.vy = vy;
+            this.size = size;
+            this.alpha = 1.0f;
+        }
+
+        void update() {
+            x += vx;
+            y += vy;
+            vy += 0.28;
+            vx *= 0.992;
+            alpha -= 0.014f;
+        }
+
+        boolean isDead() {
+            return alpha <= 0.0f || y > LEAK_STREAM_END_Y + 36;
+        }
+    }
+
     /** Disegna tutto il mixer nelle coordinate di PLC3_Main. */
     void paint(Graphics2D g2) {
         paintMotor(g2);
@@ -506,6 +816,7 @@ final class B1MixerArt {
         paintHopper(g2);
         paintSiloPowder(g2);
         paintRightIndicators(g2);
+        paintLiquids(g2);
     }
 
     /** Tubo dal serbatoio al mixer: stessa grafica (grigio con bordo scuro) del vecchio scivolo. */

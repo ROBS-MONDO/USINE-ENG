@@ -48,10 +48,10 @@ public final class B1DemoSource implements B1Source {
         String[] on = {"piston_float", "piston_low", "rotors_running", "lube_running", "silos_closed",
                 "door_load_closed", "weight_open", "door_dis_open", "rdy_discharge", "rdy_motor",
                 "rdy_mintime", "rdy_cycles", "cyc_auto", "mode_auto", "cyc_cont", "cyc_cycle", "prod_auto_on",
-                "prod_auto", "recipe_ok"};
+                "prod_auto", "recipe_ok", "liq_doa", "liq_silano"};
         String[] off = {"piston_high", "piston_blocked", "silos_open", "door_load_open", "weight_closed",
                 "door_dis_closed", "rdy_temp", "rdy_door", "cyc_susp", "pos_load", "decel_load",
-                "decel_dis", "pos_dis", "prod_ready", "new_load", "cycle_stopped"};
+                "decel_dis", "pos_dis", "prod_ready", "new_load", "cycle_stopped", "liq_huile"};
         for (String k : on) {
             bools.put(k, true);
         }
