@@ -130,7 +130,7 @@ public final class B1Tags {
         {"rdy_mintime",  "Pronto: tempo min. tra cicli",     "DB110.W54.B9"},
         {"rdy_cycles",   "Pronto: n. cicli passi effettuati","DB110.W54.B10"},
         // --- cycle malaxeur ---
-        {"liq_doa",    "Liquido DOA attivo (da collegare)", "none"},
+        {"liq_ceraclore",    "Liquido CERACLORE attivo (da collegare)", "none"},
         {"liq_silano", "Liquido SILANO attivo (da collegare)", "none"},
         {"liq_huile",  "Liquido HUILE PLASTIFIANTE attivo (da collegare)", "none"},
         {"liq_consigne", "Consigna liquidi (da collegare)", "none"},

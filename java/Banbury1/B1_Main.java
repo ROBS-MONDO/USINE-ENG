@@ -702,7 +702,7 @@ public class B1_Main extends JFrame {
             g.scale(0.734, 0.8445);
             art.setCurrent(num("current", 0));
             art.setTemp(num("temp", 0));
-            art.setLiquids(Boolean.TRUE.equals(src.bool("liq_doa")), Boolean.TRUE.equals(src.bool("liq_silano")),
+            art.setLiquids(Boolean.TRUE.equals(src.bool("liq_ceraclore")), Boolean.TRUE.equals(src.bool("liq_silano")),
                     Boolean.TRUE.equals(src.bool("liq_huile")), num("liq_consigne", 1));
             art.paint(g);
             g.setTransform(old);

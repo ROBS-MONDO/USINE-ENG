@@ -531,7 +531,7 @@ final class B1MixerArt {
     private boolean liqHuile;
     private String consigne = "--";
 
-    /** Stato dei tre liquidi e consigna (da collegare ai tag B1: liq_doa, liq_silano, liq_huile, liq_consigne). */
+    /** Stato dei tre liquidi e consigna (da collegare ai tag B1: liq_ceraclore, liq_silano, liq_huile, liq_consigne). */
     void setLiquids(boolean doa, boolean silano, boolean huile, String consigneText) {
         liqDoa = doa;
         liqSilano = silano;
@@ -557,7 +557,7 @@ final class B1MixerArt {
         Graphics2D g = (Graphics2D) g2.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         // pulsanti (solo visualizzazione: verdi quando il liquido e' attivo)
-        liquidButton(g, 22, 82, 118, 58, liqDoa, "DOA", null);
+        liquidButton(g, 22, 82, 118, 58, liqDoa, "CERACLORE", null);
         liquidButton(g, 22, 152, 118, 58, liqSilano, "SILANO", null);
         liquidButton(g, 22, 222, 118, 62, liqHuile, "HUILE", "PLASTIFIANTE");
         g.setColor(Color.BLACK);
