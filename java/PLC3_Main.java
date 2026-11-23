@@ -48,7 +48,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 
 public class PLC3_Main extends JFrame {
 
-    private static final String UI_VERSION = "V46.23";
+    private static final String UI_VERSION = "V46.24";
 
     private static final String BAG_ICON_RESOURCE = "/icons/Exit.png";
     private static final String BAG_ICON_WINDOWS_FALLBACK =
@@ -4877,14 +4877,15 @@ public class PLC3_Main extends JFrame {
                 if (g.dist >= siloPipeLen) {
                     it.remove();
                     // Sbocco nel mixer: piccola nuvola di polvere che cade
-                    if (powderRng.nextInt(3) == 0) {
+                    // (stessa animazione di B1MixerArt: 2 nuvolette per granulo, piu' grandi e piu' lente a dissolversi)
+                    for (int k = 0; k < 2; k++) {
                         dustPuffs.add(new DustPuff(
-                                SILO_PIPE_END_X - 14,
-                                SILO_PIPE_END_Y + (powderRng.nextDouble() - 0.5) * 6.0,
-                                -0.5 - powderRng.nextDouble() * 0.5,
-                                0.1 + powderRng.nextDouble() * 0.4,
-                                28 + powderRng.nextInt(18),
-                                2.6f + powderRng.nextFloat() * 2.6f));
+                                SILO_PIPE_END_X - 12 - powderRng.nextDouble() * 6.0,
+                                SILO_PIPE_END_Y + (powderRng.nextDouble() - 0.5) * 8.0,
+                                -0.35 - powderRng.nextDouble() * 0.9,
+                                0.2 + powderRng.nextDouble() * 0.5,
+                                55 + powderRng.nextInt(35),
+                                5.0f + powderRng.nextFloat() * 4.5f));
                     }
                 }
             }
@@ -4949,11 +4950,11 @@ public class PLC3_Main extends JFrame {
             g.setClip(558, 150, 107, 260);
             for (DustPuff d : dustPuffs) {
                 float a = Math.max(0f, Math.min(1f, (float) d.life / d.maxLife));
-                g.setColor(new Color(250, 244, 222, (int) (a * 235)));
+                g.setColor(new Color(252, 247, 228, (int) (a * 255)));
                 java.awt.geom.Ellipse2D.Double puff =
                         new java.awt.geom.Ellipse2D.Double(d.x - d.size / 2, d.y - d.size / 2, d.size, d.size);
                 g.fill(puff);
-                g.setColor(new Color(110, 95, 65, (int) (a * 140)));
+                g.setColor(new Color(95, 80, 50, (int) (a * 210)));
                 g.draw(puff);
             }
             g.setClip(oldClip);
