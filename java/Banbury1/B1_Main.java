@@ -675,20 +675,20 @@ public class B1_Main extends JFrame {
         }
 
         private void drawRotors(Graphics2D g) {
-            // pannello compatto accanto al pistone, sotto il mixer
-            box(g, 360, 505, 174, 128, new Color(0xD0D0D0), new Color(0x909090));
-            box(g, 360, 505, 174, 20, Color.WHITE, new Color(0xA0A0A0));
-            text(g, "ROTORS", 360, 505, 174, 20, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
-            arrowButton(g, 364, 530, 26, 22, false, "Consigne tours -");
-            field(g, 394, 530, 74, 22, "rpm_set", num("rpm_set", 0), true, fMed);
-            unit(g, "rpm", 470, 530, 32, 22);
-            arrowButton(g, 505, 530, 26, 22, true, "Consigne tours +");
-            field(g, 394, 556, 74, 22, "rpm_act", num("rpm_act", 0), false, fMed);
-            unit(g, "rpm", 470, 556, 32, 22);
-            field(g, 394, 581, 74, 22, "current", num("current", 0), false, fMed);
-            unit(g, "A", 470, 581, 32, 22);
-            lamp(g, 364, 606, "rotors_running", LampKind.GREEN);
-            label(g, "En marche", 390, 606, 140, 24);
+            // pannello compatto accanto al pistone, sotto il mixer (piu in basso: lascia libera la porta di scarico aperta)
+            box(g, 360, 540, 174, 128, new Color(0xD0D0D0), new Color(0x909090));
+            box(g, 360, 540, 174, 20, Color.WHITE, new Color(0xA0A0A0));
+            text(g, "ROTORS", 360, 540, 174, 20, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
+            arrowButton(g, 364, 565, 26, 22, false, "Consigne tours -");
+            field(g, 394, 565, 74, 22, "rpm_set", num("rpm_set", 0), true, fMed);
+            unit(g, "rpm", 470, 565, 32, 22);
+            arrowButton(g, 505, 565, 26, 22, true, "Consigne tours +");
+            field(g, 394, 591, 74, 22, "rpm_act", num("rpm_act", 0), false, fMed);
+            unit(g, "rpm", 470, 591, 32, 22);
+            field(g, 394, 616, 74, 22, "current", num("current", 0), false, fMed);
+            unit(g, "A", 470, 616, 32, 22);
+            lamp(g, 364, 641, "rotors_running", LampKind.GREEN);
+            label(g, "En marche", 390, 641, 140, 24);
         }
 
         private void drawLube(Graphics2D g) {
