@@ -3909,6 +3909,7 @@ public class PLC3_Main extends JFrame {
             paintFrame(g2);
             paintMixer(g2);
             paintHopper(g2);
+            paintSilosIndicators(g2);
             paintMotor(g2);
             paintRightIndicators(g2);
             paintLiquidValves(g2);
@@ -4374,6 +4375,86 @@ public class PLC3_Main extends JFrame {
             g2.setColor(new Color(68, 68, 68));
             g2.drawRect(698, 176, 46, 14);
             g2.setTransform(old);
+        }
+
+        // Stato del silos: TRUE = aperto, FALSE = chiuso, null = sconosciuto (spie entrambe spente)
+        private volatile Boolean silosOpenState = null;
+
+        /** Accetta true/false, 1/0, "Ouvert"/"Fermé"/"Ferme". Valore non riconosciuto = nessuna variazione. */
+        private void updateSilosState(String rawValue) {
+            if (rawValue == null) {
+                return;
+            }
+            String v = rawValue.trim().toLowerCase(Locale.ROOT);
+            if (v.isEmpty()) {
+                return;
+            }
+            if (v.equals("true") || v.equals("1") || v.startsWith("ouv")) {
+                silosOpenState = Boolean.TRUE;
+            } else if (v.equals("false") || v.equals("0") || v.startsWith("ferm")) {
+                silosOpenState = Boolean.FALSE;
+            }
+        }
+
+        private void paintSilosIndicators(Graphics2D g2) {
+            Graphics2D g = (Graphics2D) g2.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            final int x = 796;
+            final int w = 116;
+            Boolean open = silosOpenState;
+
+            // Titolo
+            g.setColor(Color.WHITE);
+            g.fillRect(x, 30, w, 20);
+            g.setColor(new Color(120, 120, 120));
+            g.drawRect(x, 30, w, 20);
+            g.setColor(Color.BLACK);
+            g.setFont(new Font("Arial", Font.BOLD, 15));
+            FontMetrics fm = g.getFontMetrics();
+            g.drawString("SILOS", x + (w - fm.stringWidth("SILOS")) / 2, 30 + (20 + fm.getAscent() - fm.getDescent()) / 2);
+
+            // Corpo pannello
+            g.setColor(new Color(196, 196, 196));
+            g.fillRect(x, 52, w, 66);
+            g.setColor(new Color(255, 255, 255, 160));
+            g.drawLine(x, 52, x + w, 52);
+            g.drawLine(x, 52, x, 118);
+            g.setColor(new Color(120, 120, 120));
+            g.drawRect(x, 52, w, 66);
+
+            drawSilosLamp(g, x + 6, 58, "Ouvert", open != null && open,
+                    new Color(0, 100, 0), new Color(40, 240, 30));
+            drawSilosLamp(g, x + 6, 88, "Ferm\u00e9", open != null && !open,
+                    new Color(120, 15, 15), new Color(255, 70, 70));
+
+            g.dispose();
+        }
+
+        private void drawSilosLamp(Graphics2D g, int x, int y, String text, boolean on, Color offColor, Color onColor) {
+            // Spia
+            g.setColor(new Color(70, 70, 70));
+            g.fillRect(x, y, 28, 24);
+            g.setColor(on ? onColor : offColor);
+            g.fillRect(x + 3, y + 3, 22, 18);
+            if (on) {
+                g.setColor(new Color(255, 255, 255, 150));
+                g.fillRect(x + 5, y + 5, 6, 14);
+            } else {
+                g.setColor(new Color(0, 0, 0, 70));
+                g.fillRect(x + 3, y + 3, 4, 18);
+            }
+
+            // Campo testo
+            int tx = x + 34;
+            g.setColor(new Color(214, 210, 200));
+            g.fillRect(tx, y, 70, 24);
+            g.setColor(new Color(120, 120, 120));
+            g.drawRect(tx, y, 70, 24);
+            g.setColor(Color.BLACK);
+            g.setFont(new Font("Arial", Font.BOLD, 15));
+            FontMetrics fm = g.getFontMetrics();
+            g.drawString(text, tx + 8, y + (24 + fm.getAscent() - fm.getDescent()) / 2);
         }
 
         private void paintMotor(Graphics2D g2) {
