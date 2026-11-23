@@ -360,6 +360,7 @@ public class B1_Main extends JFrame {
             g.setPaint(new GradientPaint(0, OY, BG1, 0, OY + BASE_H, BG2));
             g.fillRect(OX, OY, BASE_W, BASE_H);
             drawTopBar(g);
+            drawRecipeBar(g);
             drawPiston(g);
             drawRotors(g);
             drawLube(g);
@@ -589,35 +590,6 @@ public class B1_Main extends JFrame {
             sunken(g, 140, 63, 130, 24, LABEL_BG);
             text(g, "Synoptique Banb1", 140, 63, 130, 24, fLabel, Color.BLACK, 0);
 
-            // stato PLC + ricetta in macchina + confronto con archivio
-            Boolean conn = src.connected();
-            g.setColor(conn ? new Color(0x20B020) : new Color(0xD02020));
-            g.fillOval(276, 42, 12, 12);
-            text(g, conn ? "PLC connect\u00e9" : "PLC non connect\u00e9", 292, 38, 190, 20, fNormal, DARK, -1);
-            String rn = src.str("recipe_name");
-            text(g, "Recette : " + (rn == null || rn.isEmpty() ? "--" : B1RecipeBridge.displayName(rn)), 276, 55, 205, 18, fBold, DARK, -1);
-            keyTag(g, "recipe_name", 276, 55);
-            if (bridge != null) {
-                B1RecipeBridge.Status st = bridge.status();
-                Color dot;
-                switch (st.state) {
-                    case SAME: dot = new Color(0x20B020); break;
-                    case DIFFERENT: dot = new Color(0xE08000); break;
-                    case NOT_ARCHIVED: dot = new Color(0x2060C0); break;
-                    default: dot = new Color(0x909090);
-                }
-                String line = conn ? st.text : src.status();
-                g.setColor(dot);
-                g.fillOval(276, 74, 10, 10);
-                text(g, line.length() > 34 ? line.substring(0, 34) + "\u2026" : line, 290, 70, 190, 18,
-                        new Font("Arial", Font.PLAIN, 12), DARK, -1);
-                final String openName = B1RecipeBridge.archiveName(rn);
-                hits.add(new Hit(276, 55, 205, 33, "Recette", () -> bridge.openEditor(openName)));
-            } else {
-                String st = src.status();
-                text(g, st.length() > 38 ? st.substring(0, 38) + "\u2026" : st, 276, 72, 205, 14, fSmall, DARK, -1);
-            }
-
             label(g, "Pression", 488, 40, 70, 22);
             field(g, 558, 40, 62, 22, "press_top", num("press_top", 1), false, fBig);
             unit(g, "bar", 622, 40, 38, 22);
@@ -644,38 +616,79 @@ public class B1_Main extends JFrame {
             field(g, 966, 62, 44, 26, "mix_todo", todo, false, fBig);
         }
 
+        /** Ricetta in macchina (numero - nome / modo), riga scheduler e numero fase, in alto a sinistra come in B2. */
+        private void drawRecipeBar(Graphics2D g) {
+            String rn = src.str("recipe_name");
+            Double no = src.connected() ? src.raw("DB201DBW2") : null;
+            Boolean auto = src.connected() ? src.bool("mode_auto") : null;
+            String name = rn == null || rn.isEmpty() ? "--" : B1RecipeBridge.displayName(rn);
+            String txt = (no == null || no.intValue() <= 0 ? "" : no.intValue() + " - ") + name
+                    + (auto == null ? "" : auto ? " / AUTO" : " / MANUEL");
+            boolean manual = Boolean.FALSE.equals(auto);
+            box(g, 194, 104, 184, 24, manual ? new Color(0xFF0000) : new Color(0xC8FFC8), new Color(0x606060));
+            g.setFont(new Font("Arial", Font.BOLD, 12));
+            FontMetrics fm = g.getFontMetrics();
+            String shown = txt;
+            while (shown.length() > 3 && fm.stringWidth(shown) > 176) {
+                shown = shown.substring(0, shown.length() - 1);
+            }
+            if (!shown.equals(txt)) {
+                shown = shown.substring(0, shown.length() - 1) + "\u2026";
+            }
+            text(g, shown, 194, 104, 184, 24, new Font("Arial", Font.BOLD, 12), manual ? Color.WHITE : Color.BLACK, -1);
+            keyTag(g, "recipe_name", 194, 104);
+            if (bridge != null) {
+                final String openName = B1RecipeBridge.archiveName(rn);
+                hits.add(new Hit(194, 104, 184, 24, "Recette", () -> bridge.openEditor(openName)));
+            }
+            // scheduler: B1 non ha uno scheduler di ricette (riga fissa come nel disegno)
+            box(g, 194, 138, 184, 22, new Color(0xE8E8E8), new Color(0x606060));
+            text(g, "SCHEDULER INACTIF", 194, 138, 184, 22, new Font("Arial", Font.BOLD, 12), new Color(0x404040), 0);
+            // fase in corso
+            box(g, 194, 166, 92, 34, new Color(0xE8E8E8), new Color(0x303030));
+            text(g, "STEP N", 194, 166, 92, 34, new Font("Arial", Font.BOLD, 14), Color.BLACK, 0);
+            box(g, 288, 166, 90, 34, Color.WHITE, new Color(0x2050D0));
+            Double ph = src.num("phase_no");
+            text(g, ph == null ? "--" : String.valueOf(ph.intValue()), 288, 166, 90, 34, new Font("Arial", Font.PLAIN, 16), Color.BLACK, 0);
+            keyTag(g, "phase_no", 288, 166);
+        }
+
+        private final Font fMed = new Font("Arial", Font.BOLD, 14);
+
         private void drawPiston(Graphics2D g) {
-            // senza le lampade Position haute / Flottant / Basse / Bloque e le frecce grandi (il pistone e' nel disegno del mixer)
-            box(g, 7, 262, 250, 190, new Color(0xD0D0D0), new Color(0x909090));
-            title(g, "PISTON", 7, 262, 250, 26);
-            arrowButton(g, 12, 294, 38, 26, false, "Consigne piston -");
-            field(g, 57, 294, 98, 26, "press_set", num("press_set", 1), true, fBig);
-            unit(g, "bar", 157, 294, 38, 26);
-            arrowButton(g, 196, 294, 38, 26, true, "Consigne piston +");
-            field(g, 57, 324, 98, 26, "press_act", num("press_act", 1), false, fBig);
-            unit(g, "bar", 157, 324, 38, 26);
-            field(g, 57, 359, 98, 26, "piston_pct1", num("piston_pct1", 0), false, fBig);
-            unit(g, "%", 157, 359, 38, 26);
-            field(g, 57, 389, 98, 26, "piston_pct2", num("piston_pct2", 0), true, fBig);
-            unit(g, "%", 157, 389, 38, 26);
-            field(g, 57, 419, 98, 26, "piston_pct3", num("piston_pct3", 0), true, fBig);
-            unit(g, "%", 157, 419, 38, 26);
+            // pannello compatto sotto il mixer (come nel disegno B1 trasformato)
+            box(g, 214, 485, 143, 162, new Color(0xD0D0D0), new Color(0x909090));
+            box(g, 214, 485, 143, 20, Color.WHITE, new Color(0xA0A0A0));
+            text(g, "PISTON", 214, 485, 143, 20, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
+            arrowButton(g, 217, 511, 22, 22, false, "Consigne piston -");
+            field(g, 241, 511, 56, 22, "press_set", num("press_set", 1), true, fMed);
+            unit(g, "bar", 299, 511, 24, 22);
+            arrowButton(g, 325, 511, 22, 22, true, "Consigne piston +");
+            field(g, 241, 537, 56, 22, "press_act", num("press_act", 1), false, fMed);
+            unit(g, "bar", 299, 537, 24, 22);
+            field(g, 241, 566, 56, 22, "piston_pct1", num("piston_pct1", 0), false, fMed);
+            unit(g, "%", 299, 566, 24, 22);
+            field(g, 241, 591, 56, 22, "piston_pct2", num("piston_pct2", 0), true, fMed);
+            unit(g, "%", 299, 591, 24, 22);
+            field(g, 241, 616, 56, 22, "piston_pct3", num("piston_pct3", 0), true, fMed);
+            unit(g, "%", 299, 616, 24, 22);
         }
 
         private void drawRotors(Graphics2D g) {
-            // pannello sotto il mixer (spostato dalla colonna di sinistra)
-            final int x0 = 341, y0 = 508, w = 214;
-            box(g, x0, y0, w, 150, new Color(0xD0D0D0), new Color(0x909090));
-            title(g, "ROTORS", x0, y0, w, 26);
-            arrowButton(g, x0 + 4, y0 + 33, 34, 26, false, "Consigne tours -");
-            field(g, x0 + 40, y0 + 33, 90, 26, "rpm_set", num("rpm_set", 0), true, fBig);
-            unit(g, "rpm", x0 + 132, y0 + 33, 38, 26);
-            arrowButton(g, x0 + 174, y0 + 33, 34, 26, true, "Consigne tours +");
-            field(g, x0 + 40, y0 + 63, 90, 26, "rpm_act", num("rpm_act", 0), false, fBig);
-            unit(g, "rpm", x0 + 132, y0 + 63, 38, 26);
-            field(g, x0 + 40, y0 + 93, 90, 26, "current", num("current", 0), false, fBig);
-            unit(g, "A", x0 + 132, y0 + 93, 38, 26);
-            lampRow(g, x0 + 6, y0 + 124, x0 + 36, 172, "rotors_running", LampKind.GREEN, "En marche");
+            // pannello compatto accanto al pistone, sotto il mixer
+            box(g, 360, 505, 174, 128, new Color(0xD0D0D0), new Color(0x909090));
+            box(g, 360, 505, 174, 20, Color.WHITE, new Color(0xA0A0A0));
+            text(g, "ROTORS", 360, 505, 174, 20, new Font("Arial", Font.BOLD, 12), Color.BLACK, 0);
+            arrowButton(g, 364, 530, 26, 22, false, "Consigne tours -");
+            field(g, 394, 530, 74, 22, "rpm_set", num("rpm_set", 0), true, fMed);
+            unit(g, "rpm", 470, 530, 32, 22);
+            arrowButton(g, 505, 530, 26, 22, true, "Consigne tours +");
+            field(g, 394, 556, 74, 22, "rpm_act", num("rpm_act", 0), false, fMed);
+            unit(g, "rpm", 470, 556, 32, 22);
+            field(g, 394, 581, 74, 22, "current", num("current", 0), false, fMed);
+            unit(g, "A", 470, 581, 32, 22);
+            lamp(g, 364, 606, "rotors_running", LampKind.GREEN);
+            label(g, "En marche", 390, 606, 140, 24);
         }
 
         private void drawLube(Graphics2D g) {
@@ -688,8 +701,8 @@ public class B1_Main extends JFrame {
         private void drawMachine(Graphics2D g) {
             // mixer animato preso da PLC3_Main, scalato nell'area centrale del sinottico
             java.awt.geom.AffineTransform old = g.getTransform();
-            g.translate(522 - 721 * 0.67, 90 - 26 * 0.80);
-            g.scale(0.67, 0.80);
+            g.translate(8.2, 71.9);
+            g.scale(0.734, 0.8445);
             art.paint(g);
             g.setTransform(old);
             g.setStroke(new BasicStroke(1));
@@ -697,10 +710,10 @@ public class B1_Main extends JFrame {
 
         // ---------------- colonna destra e centro ----------------
         private void drawSilosDoor(Graphics2D g) {
-            title(g, "SILOS", 572, 98, 102, 24);
-            box(g, 573, 124, 102, 70, new Color(0xD0D0D0), new Color(0x909090));
-            lampRow(g, 578, 130, 606, 66, "silos_open", LampKind.GREEN, "Ouvert");
-            lampRow(g, 578, 162, 606, 66, "silos_closed", LampKind.RED, "Ferm\u00e9");
+            title(g, "SILOS", 596, 98, 102, 24);
+            box(g, 597, 124, 102, 70, new Color(0xD0D0D0), new Color(0x909090));
+            lampRow(g, 602, 130, 630, 66, "silos_open", LampKind.GREEN, "Ouvert");
+            lampRow(g, 602, 162, 630, 66, "silos_closed", LampKind.RED, "Ferm\u00e9");
         }
 
         // caratteri del blocco lotto come in B2: etichette in grassetto piccolo e centrate, valori in grassetto piu' grande e centrati
@@ -724,6 +737,7 @@ public class B1_Main extends JFrame {
         }
 
         private void drawLotInfo(Graphics2D g) {
+            g.translate(-4, 219); // blocco spostato in basso, a sinistra di CYCLE MALAXEUR
             // stessa sequenza e stesse parole del blocco di B2: LOT, SEQ x SUR y, COUCHE / PASS, COULEUR, SUFFIXE
             lotLabel(g, "LOT :", 594, 212, 72, 22);
             lotField(g, 668, 212, 34, 22, "lot_year", src.str("lot_year"), false);
@@ -736,7 +750,7 @@ public class B1_Main extends JFrame {
             g.setPaint(new GradientPaint(780, 239, new Color(0x6A7486), 780, 259, new Color(0x3A4252)));
             g.fillRect(780, 239, 42, 20);
             text(g, "RST SEQ", 780, 239, 42, 20, new Font("Arial", Font.BOLD, 9), Color.WHITE, 0);
-            hits.add(new Hit(780, 239, 42, 20, "RESET SEQ"));
+            hits.add(new Hit(776, 458, 42, 20, "RESET SEQ"));
             lotLabel(g, "COUCHE :", 594, 264, 72, 22);
             lotField(g, 668, 264, 56, 22, "type", src.str("type"), true);
             lotLabel(g, "PASS :", 728, 264, 44, 22);
@@ -745,6 +759,7 @@ public class B1_Main extends JFrame {
             lotField(g, 668, 290, 76, 22, "color", src.str("color"), true);
             lotLabel(g, "SUFFIXE :", 594, 316, 72, 22);
             lotField(g, 668, 316, 38, 22, "suffix", num("suffix", 0), false);
+            g.translate(4, -219);
         }
 
         private void combo(Graphics2D g, int x, int y, int w, int h, String key, String v) {
@@ -758,11 +773,13 @@ public class B1_Main extends JFrame {
         }
 
         private void drawWeightAndDischarge(Graphics2D g) {
-            title(g, "POIDS PRESSEUR", 567, 384, 250, 26);
-            lampRow(g, 572, 418, 600, 162, "weight_open", LampKind.GREEN, "Ouvert");
-            valveIcon(g, 768, 424, Boolean.TRUE.equals(src.bool("weight_open")));
-            lampRow(g, 572, 448, 600, 162, "weight_closed", LampKind.RED, "Ferm\u00e9");
-            valveIcon(g, 768, 454, Boolean.TRUE.equals(src.bool("weight_closed")));
+            // in alto a destra, compatto
+            box(g, 827, 89, 194, 75, new Color(0xD0D0D0), new Color(0x909090));
+            title(g, "POIDS PRESSEUR", 827, 89, 194, 18);
+            lampRow(g, 831, 109, 857, 112, "weight_open", LampKind.GREEN, "Ouvert");
+            valveIcon(g, 975, 113, Boolean.TRUE.equals(src.bool("weight_open")));
+            lampRow(g, 831, 134, 857, 112, "weight_closed", LampKind.RED, "Ferm\u00e9");
+            valveIcon(g, 975, 138, Boolean.TRUE.equals(src.bool("weight_closed")));
         }
 
         private void valveIcon(Graphics2D g, int x, int y, boolean on) {
@@ -918,7 +935,28 @@ public class B1_Main extends JFrame {
             g.fillRect(776, 752, 18, 32);
             g.setColor(new Color(0xC02020));
             g.fillRect(778, 768, 14, 14);
-            sunken(g, 820, 776, 200, 28, new Color(0xC8C8C8));
+            // stato PLC e confronto con l'archivio (spostati qui dalla barra in alto)
+            Boolean conn = src.connected();
+            sunken(g, 820, 746, 196, 26, new Color(0xD8D4CC));
+            g.setColor(conn ? new Color(0x20B020) : new Color(0xD02020));
+            g.fillOval(830, 754, 12, 12);
+            text(g, conn ? "PLC connect\u00e9" : "PLC non connect\u00e9", 846, 746, 168, 26, new Font("Arial", Font.BOLD, 14), DARK, -1);
+            sunken(g, 826, 775, 184, 22, new Color(0xD8D4CC));
+            if (bridge != null) {
+                B1RecipeBridge.Status st = bridge.status();
+                Color dot;
+                switch (st.state) {
+                    case SAME: dot = new Color(0x20B020); break;
+                    case DIFFERENT: dot = new Color(0xE08000); break;
+                    case NOT_ARCHIVED: dot = new Color(0x2060C0); break;
+                    default: dot = new Color(0x909090);
+                }
+                String line = conn ? st.text : src.status();
+                g.setColor(dot);
+                g.fillOval(832, 780, 10, 10);
+                text(g, line.length() > 24 ? line.substring(0, 24) + "\u2026" : line, 846, 775, 162, 22,
+                        new Font("Arial", Font.PLAIN, 12), DARK, -1);
+            }
             long now = System.currentTimeMillis();
             if (!message.isEmpty() && now < messageUntil) {
                 g.setColor(new Color(0xFFF2B0));
