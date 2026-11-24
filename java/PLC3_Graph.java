@@ -187,7 +187,7 @@ public class PLC3_Graph extends JFrame {
         private JCheckBox chkAuto;
         private static final Color AMP_COLOR = new Color(0x1F, 0x5F, 0xD0);
         private static final Color RPM_COLOR = new Color(0x1E, 0x8C, 0x1E);
-        private static final Color PISTON_COLOR = new Color(0x80, 0x30, 0xB0);
+        private static final Color PISTON_COLOR = new Color(0x20, 0x20, 0x20);
         private final List<ModePoint> modeHistory = new ArrayList<>();
         private final List<RecipePoint> recipeTimeline = new ArrayList<>();
         private volatile boolean recipeMonitorAlive = false;
