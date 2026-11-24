@@ -710,6 +710,7 @@ public class B1_Main extends JFrame {
             g.translate(8.2, 71.9);
             g.scale(0.734, 0.8445);
             art.setCurrent(num("current", 0));
+            art.setCurrentValue(src.num("current"));
             art.setTemp(num("temp", 0));
             art.setLiquids(Boolean.TRUE.equals(src.bool("liq_doa")), Boolean.TRUE.equals(src.bool("liq_silano")),
                     Boolean.TRUE.equals(src.bool("liq_huile")), num("liq_consigne", 1));
