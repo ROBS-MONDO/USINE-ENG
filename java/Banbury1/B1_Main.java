@@ -291,7 +291,7 @@ public class B1_Main extends JFrame {
                         Boolean.TRUE.equals(src.bool("piston_low")), Boolean.TRUE.equals(src.bool("piston_float")),
                         Boolean.TRUE.equals(src.bool("piston_move")), Boolean.TRUE.equals(src.bool("door_load_open")),
                         Boolean.TRUE.equals(src.bool("door_dis_open")), stepsNow != null && stepsNow > 0,
-                        Boolean.TRUE.equals(src.bool("mode_auto")), Boolean.TRUE.equals(src.bool("silos_open")));
+                        Boolean.TRUE.equals(src.bool("mode_auto")), Boolean.TRUE.equals(silosOpenState()));
                 repaint();
             }).start();
             getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), "label");
@@ -720,14 +720,32 @@ public class B1_Main extends JFrame {
         }
 
         // ---------------- colonna destra e centro ----------------
+        /**
+         * Stato del silos (spie SILOS e polvere nel mixer, sempre la stessa fonte): se Govoni e' attivo vale solo Govoni
+         * (Descharge Vidage = aperto, altrimenti chiuso; non ancora letto = sconosciuto); altrimenti i bit del PLC.
+         */
+        private Boolean silosOpenState() {
+            if (B1GovoniSilos.configured()) {
+                return B1GovoniSilos.open();
+            }
+            return src.bool("silos_open");
+        }
+
+        private Boolean silosClosedState() {
+            if (B1GovoniSilos.configured()) {
+                Boolean o = B1GovoniSilos.open();
+                return o == null ? null : Boolean.valueOf(!o);
+            }
+            return src.bool("silos_closed");
+        }
+
         private void drawSilosDoor(Graphics2D g) {
             title(g, "SILOS", 596, 98, 102, 24);
             box(g, 597, 124, 102, 70, new Color(0xD0D0D0), new Color(0x909090));
             // spie dal sistema Govoni (Etat execution BY1): "Descharge Vidage" = aperto, ogni altro stato = chiuso;
             // se Govoni non e' configurato o non ancora letto restano le spie del PLC
-            Boolean govoni = B1GovoniSilos.configured() ? B1GovoniSilos.open() : null;
-            Boolean openOn = govoni != null ? govoni : (B1GovoniSilos.configured() ? Boolean.FALSE : src.bool("silos_open"));
-            Boolean closedOn = govoni != null ? Boolean.valueOf(!govoni) : (B1GovoniSilos.configured() ? Boolean.FALSE : src.bool("silos_closed"));
+            Boolean openOn = silosOpenState();
+            Boolean closedOn = silosClosedState();
             lampState(g, 602, 130, "silos_open", LampKind.GREEN, openOn);
             label(g, "Ouvert", 630, 130, 66, 24);
             lampState(g, 602, 162, "silos_closed", LampKind.RED, closedOn);
