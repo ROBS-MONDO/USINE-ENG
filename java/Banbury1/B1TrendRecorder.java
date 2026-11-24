@@ -14,6 +14,21 @@ public final class B1TrendRecorder {
     /** Esito della lettura dello storico SQL, mostrato nella finestra del trend. */
     public static volatile String sqlStatus = "Historique SQL : non demand\u00e9";
 
+    /** Ultima posizione stabile del pistone (100 alto, 50 flottante, 0 basso): resta tale durante il movimento. */
+    private static volatile Double lastPiston;
+
+    /** Posizione del pistone per il trend, dai tre fine corsa (nessuno acceso = in movimento: ultimo valore). */
+    static Double pistonPosition(B1Source src) {
+        if (Boolean.TRUE.equals(src.bool("piston_high"))) {
+            lastPiston = 100.0;
+        } else if (Boolean.TRUE.equals(src.bool("piston_low"))) {
+            lastPiston = 0.0;
+        } else if (Boolean.TRUE.equals(src.bool("piston_float"))) {
+            lastPiston = 50.0;
+        }
+        return lastPiston;
+    }
+
     private final Thread thread;
     private volatile boolean stop;
 
@@ -25,7 +40,7 @@ public final class B1TrendRecorder {
                 if (src.connected()) {
                     double[] v = new double[series.size()];
                     for (int i = 0; i < v.length; i++) {
-                        Double d = src.num(series.get(i).liveKey);
+                        Double d = "piston_pos".equals(series.get(i).liveKey) ? pistonPosition(src) : src.num(series.get(i).liveKey);
                         v[i] = d == null ? Double.NaN : d;
                     }
                     store.add(now, v);

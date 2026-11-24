@@ -873,7 +873,7 @@ public final class B1TrendPanel extends JPanel {
             double cyc = (x % 6.0) / 6.0;                 // cicli da 6 minuti
             double temp = 45 + 70 * cyc + 3 * Math.sin(x);
             double amp = cyc < 0.85 ? 120 + 60 * Math.sin(x * 3) : 20;
-            st.add(t, new double[]{temp, amp, cyc < 0.9 ? 36 : 0, 4 + 5 * Math.abs(Math.sin(x))});
+            st.add(t, new double[]{temp, amp, cyc < 0.9 ? 36 : 0, 4 + 5 * Math.abs(Math.sin(x)), cyc < 0.1 ? 0 : cyc < 0.5 ? 100 : cyc < 0.9 ? 50 : 0});
         }
         st.addEvent("recipe", t0, "gomma2");
         st.addEvent("mode", t0, "Auto");
@@ -892,6 +892,11 @@ public final class B1TrendPanel extends JPanel {
         String hov = System.getProperty("b1.snapshot.hover"); // prova: cursore a una certa x (pixel) per vedere il righello
         if (hov != null) {
             p.hoverX = Integer.parseInt(hov);
+        }
+        if (System.getProperty("b1.snapshot.extras") != null) { // prova: attiva tutte le curve
+            for (javax.swing.JCheckBox c : p.chkExtra) {
+                c.setSelected(true);
+            }
         }
         p.updateValue();
         p.updateRange();

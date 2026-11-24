@@ -48,6 +48,8 @@ public final class B1TrendChart {
         l.add(new Series("amp", "Courant", "A", new Color(0x20, 0x60, 0xD0), 0, 400, "current", "Amperage"));
         l.add(new Series("rpm", "Vitesse rotors", "rpm", new Color(0x20, 0x9A, 0x20), 0, 100, "rpm_act", "Vitesse"));
         l.add(new Series("press", "Pression", "bar", new Color(0xE0, 0x80, 0x00), 0, 250, "press_act", null));
+        // posizione del pistone dai tre fine corsa: 100 = alto, 50 = flottante, 0 = basso (mantiene l'ultimo valore durante il movimento)
+        l.add(new Series("piston", "Position piston", "%", Color.BLACK, 0, 100, "piston_pos", null));
         return l;
     }
 
