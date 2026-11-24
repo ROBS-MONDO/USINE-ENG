@@ -1046,6 +1046,13 @@ public class PLC3_Graph extends JFrame {
                         " WHERE " + COL_DATE + " >= ?" +
                         " ORDER BY TS";
 
+                final String initialMode = lastMode;
+                Exception lastError = null;
+                // Fino a 3 tentativi silenziosi: un "Connection reset" isolato non deve aprire subito la finestra d'errore.
+                for (int attempt = 1; attempt <= 3 && !ok; attempt++) {
+                    newData.clear();
+                    newModes.clear();
+                    lastMode = initialMode;
                 try (
                         Connection conn = DBBamburyReader.openDataConnection();
                         PreparedStatement ps = conn.prepareStatement(sql)
@@ -1077,15 +1084,27 @@ public class PLC3_Graph extends JFrame {
                     ok = true;
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    if (!historyErrorShown && history.isEmpty()) {
-                        historyErrorShown = true; // una sola finestra, non una ogni 5 secondi
-                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
-                                parentFrame,
-                                "Errore lettura database:\n" + ex.getMessage(),
-                                "Errore DB",
-                                JOptionPane.ERROR_MESSAGE
-                        ));
+                    lastError = ex;
+                    if (attempt < 3) {
+                        try {
+                            Thread.sleep(2000L);
+                        } catch (InterruptedException ie) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
                     }
+                }
+                }
+
+                if (!ok && lastError != null && !historyErrorShown && history.isEmpty()) {
+                    historyErrorShown = true; // una sola finestra, non una ogni 5 secondi
+                    final String msg = lastError.getMessage();
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            parentFrame,
+                            "Errore lettura database:\n" + msg,
+                            "Errore DB",
+                            JOptionPane.ERROR_MESSAGE
+                    ));
                 }
 
                 final boolean loaded = ok;
