@@ -380,7 +380,7 @@ final class B1MixerArt {
     }
 
     private void drawMotorUnit(Graphics2D g2, String text, int x, int y, int w, int h) {
-        g2.setColor(currentHigh ? new Color(255, 40, 40) : new Color(39, 255, 31));
+        g2.setColor(new Color(39, 255, 31));
         g2.fillRect(x, y, w, h);
         g2.setColor(Color.WHITE);
         g2.drawRect(x, y, w - 1, h - 1);
@@ -413,7 +413,7 @@ final class B1MixerArt {
     static final double CURRENT_LIMIT = 1000.0;
     private boolean currentHigh;
 
-    /** Corrente numerica: >= 1000 A = riquadro rosso. */
+    /** Corrente numerica: >= 1000 A = campo del valore rosso (solo quello). */
     void setCurrentValue(Double amps) {
         currentHigh = amps != null && amps >= CURRENT_LIMIT;
     }
@@ -422,9 +422,9 @@ final class B1MixerArt {
         int dx = MOTOR_SHIFT_X;
         int dy = MOTOR_SHIFT_Y;
 
-        // corrente >= 1000 A: il riquadro del motore diventa rosso
-        final Color motorFill = currentHigh ? new Color(255, 40, 40) : new Color(48, 255, 31);
-        final Color motorEdge = currentHigh ? new Color(125, 15, 15) : new Color(20, 125, 22);
+        // (corrente >= 1000 A: diventa rosso solo il campo del valore, vedi drawMotorValue)
+        final Color motorFill = new Color(48, 255, 31);
+        final Color motorEdge = new Color(20, 125, 22);
         g2.setColor(motorFill);
         g2.fillRoundRect(96 + dx, 438 + dy, 130, 78, 8, 8);
         g2.setColor(motorEdge);
@@ -435,7 +435,7 @@ final class B1MixerArt {
         g2.drawLine(106 + dx, 490 + dy, 216 + dx, 490 + dy);
         g2.drawLine(106 + dx, 504 + dy, 216 + dx, 504 + dy);
 
-        g2.setColor(currentHigh ? new Color(255, 55, 55) : new Color(53, 255, 40));
+        g2.setColor(new Color(53, 255, 40));
         g2.fillRect(226 + dx, 458 + dy, 22, 38);
         g2.setColor(motorEdge);
         g2.drawRect(226 + dx, 458 + dy, 22, 38);
