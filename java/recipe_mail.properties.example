@@ -1,0 +1,8 @@
+# Copiare come: \\neo\x-service\banbury\recette\recipe_mail.properties
+mail.enabled=true
+mail.from=banbury-recette@mondo.lu
+# Destinatari separati da virgola o punto e virgola
+mail.recipients=nome.cognome@mondo.lu,altro.nome@mondo.lu
+# Opzionali (default sotto)
+#mail.smtp.host=mondo-lu.mail.protection.outlook.com
+#mail.smtp.port=25

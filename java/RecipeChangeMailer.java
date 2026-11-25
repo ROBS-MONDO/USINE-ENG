@@ -1,11 +1,14 @@
-package Banbury;
-
 import jakarta.mail.Message;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
@@ -25,16 +28,20 @@ import java.util.concurrent.Executors;
  */
 public final class RecipeChangeMailer {
 
-    private static final String SMTP_HOST = "mondo-lu.mail.protection.outlook.com";
-    private static final int SMTP_PORT = 25;
+    /**
+     * File di configurazione (UTF-8). Riletto a ogni invio: le modifiche ai destinatari
+     * sono attive subito, senza riavviare l'applicazione. Chiavi:
+     *   mail.enabled=true
+     *   mail.from=banbury-recette@mondo.lu
+     *   mail.recipients=nome1@mondo.lu,nome2@mondo.lu
+     *   mail.smtp.host=mondo-lu.mail.protection.outlook.com   (opzionale)
+     *   mail.smtp.port=25                                    (opzionale)
+     */
+    private static final String CONFIG_FILE =
+            "\\\\neo\\x-service\\banbury\\recette\\recipe_mail.properties";
 
-    /** Il mittente deve appartenere a un dominio accettato dal connettore Exchange (da verificare). */
-    private static final String FROM_ADDRESS = "banbury-recette@mondo.lu"; // TODO: confermare mittente
-
-    /** Destinatari: TODO spostare in file di configurazione (.properties) o tabella SQL. */
-    private static final String[] RECIPIENTS = {
-            // "nome.cognome@mondo.lu",
-    };
+    private static final String DEFAULT_SMTP_HOST = "mondo-lu.mail.protection.outlook.com";
+    private static final String DEFAULT_SMTP_PORT = "25";
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
@@ -74,14 +81,24 @@ public final class RecipeChangeMailer {
     }
 
     private static void sendAsync(String subject, String html) {
-        if (RECIPIENTS.length == 0) {
-            return;
-        }
         EXECUTOR.submit(() -> {
             try {
+                Properties cfg = new Properties();
+                try (Reader r = new InputStreamReader(new FileInputStream(new File(CONFIG_FILE)), StandardCharsets.UTF_8)) {
+                    cfg.load(r);
+                }
+                if (!"true".equalsIgnoreCase(cfg.getProperty("mail.enabled", "true").trim())) {
+                    return;
+                }
+                String from = cfg.getProperty("mail.from", "").trim();
+                String recipientsRaw = cfg.getProperty("mail.recipients", "").trim();
+                if (from.isEmpty() || recipientsRaw.isEmpty()) {
+                    return;
+                }
+
                 Properties props = new Properties();
-                props.put("mail.smtp.host", SMTP_HOST);
-                props.put("mail.smtp.port", String.valueOf(SMTP_PORT));
+                props.put("mail.smtp.host", cfg.getProperty("mail.smtp.host", DEFAULT_SMTP_HOST).trim());
+                props.put("mail.smtp.port", cfg.getProperty("mail.smtp.port", DEFAULT_SMTP_PORT).trim());
                 props.put("mail.smtp.auth", "false");
                 props.put("mail.smtp.starttls.enable", "false");
                 props.put("mail.smtp.connectiontimeout", "5000");
@@ -90,9 +107,11 @@ public final class RecipeChangeMailer {
 
                 Session session = Session.getInstance(props);
                 MimeMessage msg = new MimeMessage(session);
-                msg.setFrom(new InternetAddress(FROM_ADDRESS));
-                for (String r : RECIPIENTS) {
-                    msg.addRecipient(Message.RecipientType.TO, new InternetAddress(r));
+                msg.setFrom(new InternetAddress(from));
+                for (String addr : recipientsRaw.split("[,;]")) {
+                    if (!addr.trim().isEmpty()) {
+                        msg.addRecipient(Message.RecipientType.TO, new InternetAddress(addr.trim()));
+                    }
                 }
                 msg.setSubject(subject, "UTF-8");
                 msg.setContent(html, "text/html; charset=UTF-8");
