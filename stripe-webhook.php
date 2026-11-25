@@ -28,11 +28,11 @@ foreach (explode(',', $sigHeader) as $part) {
     if ($kv[0] === 't') { $ts = $kv[1]; }
     if ($kv[0] === 'v1') { $sigs[] = $kv[1]; }
 }
-if ($ts === null || !$sigs || abs(time() - (int)$ts) > 300) { out(400, 'bad signature'); }
+if ($ts === null || !$sigs || abs(time() - (int)$ts) > 300) { log_line('firma assente o scaduta'); out(400, 'bad signature'); }
 $expected = hash_hmac('sha256', $ts . '.' . $payload, $secret);
 $ok = false;
 foreach ($sigs as $s) { if (hash_equals($expected, $s)) { $ok = true; } }
-if (!$ok) { out(400, 'bad signature'); }
+if (!$ok) { log_line('firma non valida: il webhook_secret in config.php non corrisponde a quello di Stripe'); out(400, 'bad signature'); }
 
 $event = json_decode($payload, true);
 if (!is_array($event) || empty($event['type'])) { out(400); }
@@ -48,7 +48,7 @@ try {
             $links = [$cfg['stripe']['payment_link_id'] => ['tickets' => 1, 'price_cents' => (int)($cfg['stripe']['ticket_price_cents'] ?? 3000)]];
         }
         $linkId = (string)($obj['payment_link'] ?? '');
-        if ($linkId === '' || !isset($links[$linkId])) { out(200, 'other product'); }
+        if ($linkId === '' || !isset($links[$linkId])) { log_line('session ' . ($obj['id'] ?? '?') . ': payment link non in config.php (' . ($linkId !== '' ? $linkId : 'vuoto') . '), nessun biglietto creato'); out(200, 'other product'); }
         $perUnit = max(1, (int)($links[$linkId]['tickets'] ?? 1));
 
         $sessionId = (string)$obj['id'];
