@@ -754,6 +754,9 @@ public final class B1TrendPanel extends JPanel {
                 manual.add(new long[]{modes.get(i).time, i + 1 < modes.size() ? modes.get(i + 1).time : to});
             }
         }
+        for (long[] m : manual) { // in manuale: rosso, come la barra ricette (senza lotto)
+            segment(g2, barX, barY, barW, barH, from, to, total, m[0], m[1], new Color(190, 25, 25), new Color(255, 95, 95));
+        }
         for (int i = 0; i < lots.size(); i++) {
             long s = lots.get(i).time;
             long e = i + 1 < lots.size() ? lots.get(i + 1).time : to;
