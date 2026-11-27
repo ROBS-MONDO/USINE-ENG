@@ -2,8 +2,6 @@ import SVC.ActiveDirectorySetup;
 import SVC.DBBamburyReader;
 import SVC.DBMifuneReader;
 import SVC.OpcManager;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -113,18 +111,12 @@ public class PLC3_Graph extends JFrame {
         private static final String COL_MODE = "Mode";
         private static final String COL_AMP = "Amperage";
         private static final String COL_RPM = "Vitesse";
+        private static final String COL_LOT = "Num_lot"; // es. "26/T0039"
         // Testo in DATAS_B2: "Haut", "Bas" o "Mouvement" (come in PLC3_Main)
         private static final String COL_PISTON = "Position_piston";
 
         private static final String MARKER_DIR_PATH = "\\\\neo\\x-service\\Banbury\\Graphique";
         private static final String MARKER_FILE_PATH = MARKER_DIR_PATH + "\\plc3_markers.csv";
-        // Storico dei lotti (anno/numero) letti dal PLC: un cambio per riga "data;lotto"
-        private static final String LOT_FILE_PATH = MARKER_DIR_PATH + "\\plc3_lots.csv";
-        private static final NodeId NODE_LOT_YEAR = NodeId.parse("ns=2;s=Banbury 2.PLC3.R104_R104_M_L");
-        private static final NodeId NODE_LOT_NUM = NodeId.parse("ns=2;s=Banbury 2.PLC3.R106_R110_M_L");
-        private static final String OPC_APP_NAME = "PLC3 Graph";
-        private static final String OPC_APP_URI = "urn:plc3:graph";
-
 
         private static final int MAX_TEMP = 200;
         private static final Duration TOTAL_HISTORY = Duration.ofDays(2);
@@ -199,8 +191,7 @@ public class PLC3_Graph extends JFrame {
         private final List<ModePoint> modeHistory = new ArrayList<>();
         private final List<RecipePoint> recipeTimeline = new ArrayList<>();
         private final List<LotPoint> lotTimeline = new ArrayList<>();
-        private volatile String lastLotText = "";
-        private final AtomicBoolean lotPollInProgress = new AtomicBoolean(false);
+        private volatile String lastLotSeen = null;
         private volatile boolean recipeMonitorAlive = false;
         private final List<TempMarker> r2008Markers = new ArrayList<>();
 
@@ -228,7 +219,6 @@ public class PLC3_Graph extends JFrame {
             loadHistoryFromDatabase();
             loadRecipeTimelineFromDatabase();
             loadMarkersFromFile();
-            loadLotsFromFile();
             startDatabaseRefresh();
             startStepDisplayRefresh();
         }
@@ -845,7 +835,6 @@ public class PLC3_Graph extends JFrame {
             dbRefreshTimer = new Timer(5000, e -> {
                 loadHistoryFromDatabase();
                 loadRecipeTimelineFromDatabase();
-                pollLotFromOpc();
                 if (liveMode) {
                     visibleEnd = LocalDateTime.now();
                     updateRangeLabel();
@@ -1077,24 +1066,29 @@ public class PLC3_Graph extends JFrame {
             new Thread(() -> {
                 List<TempPoint> newData = new ArrayList<>();
                 List<ModePoint> newModes = new ArrayList<>();
+                List<LotPoint> newLots = new ArrayList<>();
                 boolean ok = false;
                 String lastMode = since == null ? null : lastModeSeen;
+                String lastLot = since == null ? null : lastLotSeen;
 
                 String sql =
                         "SELECT " +
                         "DATEADD(SECOND, DATEDIFF(SECOND, 0, " + COL_TIME + "), CAST(" + COL_DATE + " AS DATETIME)) AS TS, " +
-                        COL_TEMP + ", " + COL_AMP + ", " + COL_RPM + ", " + COL_PISTON + ", " + COL_MODE +
+                        COL_TEMP + ", " + COL_AMP + ", " + COL_RPM + ", " + COL_PISTON + ", " + COL_LOT + ", " + COL_MODE +
                         " FROM " + DB_TABLE +
                         " WHERE " + COL_DATE + " >= ?" +
                         " ORDER BY TS";
 
                 final String initialMode = lastMode;
+                final String initialLot = lastLot;
                 Exception lastError = null;
                 // Fino a 3 tentativi silenziosi: un "Connection reset" isolato non deve aprire subito la finestra d'errore.
                 for (int attempt = 1; attempt <= 3 && !ok; attempt++) {
                     newData.clear();
                     newModes.clear();
+                    newLots.clear();
                     lastMode = initialMode;
+                    lastLot = initialLot;
                 try (
                         Connection conn = DBBamburyReader.openDataConnection();
                         PreparedStatement ps = conn.prepareStatement(sql)
@@ -1115,6 +1109,13 @@ public class PLC3_Graph extends JFrame {
                             }
                             newData.add(new TempPoint(time, clampTemperature(rs.getDouble(COL_TEMP)),
                                     rs.getDouble(COL_AMP), rs.getDouble(COL_RPM), pistonValue(rs.getString(COL_PISTON))));
+
+                            String lot = rs.getString(COL_LOT);
+                            lot = lot == null ? "" : lot.trim();
+                            if (!lot.isEmpty() && !lot.equals(lastLot)) {
+                                newLots.add(new LotPoint(time, lot));
+                                lastLot = lot;
+                            }
 
                             String mode = normalizeMode(rs.getString(COL_MODE));
                             if (!mode.isEmpty() && !mode.equals(lastMode)) {
@@ -1151,21 +1152,25 @@ public class PLC3_Graph extends JFrame {
 
                 final boolean loaded = ok;
                 final String modeNow = lastMode;
+                final String lotNow = lastLot;
                 SwingUtilities.invokeLater(() -> {
                     try {
                         if (loaded) {
                             if (since == null) {
                                 history.clear();
                                 modeHistory.clear();
+                                lotTimeline.clear();
                             }
                             history.addAll(newData);
                             modeHistory.addAll(newModes);
+                            lotTimeline.addAll(newLots);
                             if (!newData.isEmpty()) {
                                 lastHistoryTs = newData.get(newData.size() - 1).time;
                             } else if (since == null) {
                                 lastHistoryTs = LocalDateTime.now().minusDays(2);
                             }
                             lastModeSeen = modeNow;
+                            lastLotSeen = lotNow;
                             // si tengono solo gli ultimi 2 giorni
                             LocalDateTime limit = LocalDateTime.now().minus(TOTAL_HISTORY);
                             int cut = 0;
@@ -1701,135 +1706,6 @@ public class PLC3_Graph extends JFrame {
                     from, to,
                     odd ? new Color(30, 90, 160) : new Color(20, 60, 120), new Color(110, 160, 230),
                     "LOT " + text, text, true);
-        }
-
-        /** Testo del valore OPC come in PLC3_Main (interi senza decimali, spazi tolti). */
-        private static String opcText(DataValue dv) {
-            if (dv == null || dv.getValue() == null || dv.getValue().getValue() == null) {
-                return "";
-            }
-            Object raw = dv.getValue().getValue();
-            if (raw instanceof Number) {
-                double d = ((Number) raw).doubleValue();
-                if (Math.floor(d) == d) {
-                    return String.valueOf((long) d);
-                }
-                return String.valueOf(d).replace(",", ".");
-            }
-            return String.valueOf(raw).trim();
-        }
-
-        /** Legge anno e numero lotto dal PLC; a ogni cambio aggiunge un tratto alla barra e lo salva su file. */
-        private void pollLotFromOpc() {
-            if (!lotPollInProgress.compareAndSet(false, true)) {
-                return;
-            }
-            new Thread(() -> {
-                try {
-                    List<DataValue> values = OpcManager.readValues(OPC_APP_NAME, OPC_APP_URI,
-                            java.util.Arrays.asList(NODE_LOT_YEAR, NODE_LOT_NUM));
-                    if (values == null || values.size() < 2) {
-                        return;
-                    }
-                    String year = opcText(values.get(0));
-                    String num = opcText(values.get(1));
-                    boolean empty = year.isEmpty() || num.isEmpty() || "0".equals(year) && "0".equals(num);
-                    if (empty) {
-                        return;
-                    }
-                    final String text = year + "/" + num;
-                    if (text.equals(lastLotText)) {
-                        return;
-                    }
-                    final LocalDateTime now = LocalDateTime.now();
-                    lastLotText = text;
-                    appendLotToFile(now, text);
-                    SwingUtilities.invokeLater(() -> {
-                        lotTimeline.add(new LotPoint(now, text));
-                        repaint();
-                    });
-                } catch (Exception ex) {
-                    // PLC non raggiungibile: la barra resta com'e', si riprova al prossimo ciclo
-                } finally {
-                    lotPollInProgress.set(false);
-                }
-            }, "plc3-graph-lot-poll").start();
-        }
-
-        private void appendLotToFile(LocalDateTime time, String text) {
-            try {
-                File file = new File(LOT_FILE_PATH);
-                Files.write(file.toPath(), (time + ";" + text + System.lineSeparator()).getBytes(StandardCharsets.UTF_8),
-                        java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
-            } catch (Exception ignored) {
-            }
-        }
-
-        /** All'avvio ricarica lo storico dei lotti (ultimi 2 giorni) salvato in precedenza. */
-        private void loadLotsFromFile() {
-            new Thread(() -> {
-                List<LotPoint> loaded = new ArrayList<>();
-                try {
-                    File file = new File(LOT_FILE_PATH);
-                    if (!file.exists()) {
-                        return;
-                    }
-                    LocalDateTime threshold = LocalDateTime.now().minus(TOTAL_HISTORY);
-                    LocalDateTime lastTime = null;
-                    String lastText = null;
-                    for (String line : Files.readAllLines(file.toPath(), StandardCharsets.UTF_8)) {
-                        String[] parts = line.split(";", 2);
-                        if (parts.length != 2) {
-                            continue;
-                        }
-                        try {
-                            LocalDateTime t = LocalDateTime.parse(parts[0].trim());
-                            String text = parts[1].trim();
-                            if (text.isEmpty()) {
-                                continue;
-                            }
-                            // l'ultimo lotto prima della finestra serve da base per il primo tratto
-                            if (t.isBefore(threshold)) {
-                                lastTime = threshold;
-                                lastText = text;
-                                continue;
-                            }
-                            if (lastText != null) {
-                                loaded.add(new LotPoint(lastTime, lastText));
-                                lastText = null;
-                            }
-                            if (loaded.isEmpty() || !loaded.get(loaded.size() - 1).text.equals(text)) {
-                                loaded.add(new LotPoint(t, text));
-                            }
-                        } catch (Exception ignored) {
-                        }
-                    }
-                    if (lastText != null) {
-                        loaded.add(new LotPoint(lastTime, lastText));
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    final List<LotPoint> result = loaded;
-                    SwingUtilities.invokeLater(() -> {
-                        // i cambi gia' letti dal PLC in questa sessione restano dopo quelli salvati
-                        LocalDateTime firstNew = lotTimeline.isEmpty() ? null : lotTimeline.get(0).time;
-                        List<LotPoint> merged = new ArrayList<>();
-                        for (LotPoint lp : result) {
-                            if (firstNew == null || lp.time.isBefore(firstNew)) {
-                                merged.add(lp);
-                            }
-                        }
-                        merged.addAll(lotTimeline);
-                        lotTimeline.clear();
-                        lotTimeline.addAll(merged);
-                        if (!lotTimeline.isEmpty() && lastLotText.isEmpty()) {
-                            lastLotText = lotTimeline.get(lotTimeline.size() - 1).text;
-                        }
-                        repaint();
-                    });
-                }
-            }, "plc3-graph-lot-load").start();
         }
 
         private boolean isManualMode(String mode) {
