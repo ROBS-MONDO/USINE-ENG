@@ -747,13 +747,30 @@ public final class B1TrendPanel extends JPanel {
         g2.setColor(new Color(0xDD, 0xE3, 0xEE));
         g2.fillRect(barX, barY, barW, barH);
         List<B1TrendStore.Event> lots = store.events("lot");
+        List<B1TrendStore.Event> modes = store.events("mode");
+        List<long[]> manual = new ArrayList<>();
+        for (int i = 0; i < modes.size(); i++) {
+            if ("manu".equalsIgnoreCase(modes.get(i).text)) {
+                manual.add(new long[]{modes.get(i).time, i + 1 < modes.size() ? modes.get(i + 1).time : to});
+            }
+        }
         for (int i = 0; i < lots.size(); i++) {
             long s = lots.get(i).time;
             long e = i + 1 < lots.size() ? lots.get(i + 1).time : to;
             boolean odd = (i & 1) == 1;
-            segment(g2, barX, barY, barW, barH, from, to, total, s, e,
-                    odd ? new Color(30, 90, 160) : new Color(20, 60, 120), new Color(110, 160, 230));
-            label(g2, barX, barY, barW, barH, from, to, total, s, e, "LOT " + lots.get(i).text, lots.get(i).text, false, new Color(225, 238, 255));
+            long cur = s;
+            for (long[] m : manual) { // in manuale il lotto non si indica
+                if (m[1] <= cur || m[0] >= e) {
+                    continue;
+                }
+                if (m[0] > cur) {
+                    lotPiece(g2, barX, barY, barW, barH, from, to, total, cur, m[0], lots.get(i).text, odd);
+                }
+                cur = Math.max(cur, m[1]);
+            }
+            if (cur < e) {
+                lotPiece(g2, barX, barY, barW, barH, from, to, total, cur, e, lots.get(i).text, odd);
+            }
         }
         g2.setColor(new Color(20, 60, 120));
         g2.drawRect(barX, barY, barW, barH);
@@ -762,6 +779,13 @@ public final class B1TrendPanel extends JPanel {
             g2.setColor(new Color(0x70, 0x78, 0x90));
             g2.drawString("LOT : aucun historique", barX + 6, barY + 14);
         }
+    }
+
+    private static void lotPiece(Graphics2D g2, int barX, int barY, int barW, int barH, long from, long to, long total,
+                                 long s, long e, String text, boolean odd) {
+        segment(g2, barX, barY, barW, barH, from, to, total, s, e,
+                odd ? new Color(30, 90, 160) : new Color(20, 60, 120), new Color(110, 160, 230));
+        label(g2, barX, barY, barW, barH, from, to, total, s, e, "LOT " + text, text, false, new Color(225, 238, 255));
     }
 
     private static void segment(Graphics2D g2, int barX, int barY, int barW, int barH, long from, long to, long total,
