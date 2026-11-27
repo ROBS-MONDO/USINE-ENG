@@ -780,7 +780,7 @@ public final class B1TrendPanel extends JPanel {
         g2.setFont(new Font("Consolas", Font.BOLD, 11));
         if (lots.isEmpty()) {
             g2.setColor(new Color(0x70, 0x78, 0x90));
-            g2.drawString("LOT : aucun historique", barX + 6, barY + 14);
+            g2.drawString("aucun historique", barX + 6, barY + 14);
         }
     }
 
@@ -788,7 +788,7 @@ public final class B1TrendPanel extends JPanel {
                                  long s, long e, String text, boolean odd) {
         segment(g2, barX, barY, barW, barH, from, to, total, s, e,
                 odd ? new Color(30, 90, 160) : new Color(20, 60, 120), new Color(110, 160, 230));
-        label(g2, barX, barY, barW, barH, from, to, total, s, e, "LOT " + text, text, false, new Color(225, 238, 255));
+        label(g2, barX, barY, barW, barH, from, to, total, s, e, text, text, false, new Color(225, 238, 255));
     }
 
     private static void segment(Graphics2D g2, int barX, int barY, int barW, int barH, long from, long to, long total,
