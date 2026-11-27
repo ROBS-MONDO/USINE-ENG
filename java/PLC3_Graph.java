@@ -1705,7 +1705,7 @@ public class PLC3_Graph extends JFrame {
             paintTimelineSegment(g2, barX, barY, barW, barH, visibleStart, visibleEnd, totalMillis,
                     from, to,
                     odd ? new Color(30, 90, 160) : new Color(20, 60, 120), new Color(110, 160, 230),
-                    "LOT " + text, text, true);
+                    text, text, true);
         }
 
         private boolean isManualMode(String mode) {
