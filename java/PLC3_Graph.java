@@ -2,6 +2,8 @@ import SVC.ActiveDirectorySetup;
 import SVC.DBBamburyReader;
 import SVC.DBMifuneReader;
 import SVC.OpcManager;
+import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
+import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -116,6 +118,12 @@ public class PLC3_Graph extends JFrame {
 
         private static final String MARKER_DIR_PATH = "\\\\neo\\x-service\\Banbury\\Graphique";
         private static final String MARKER_FILE_PATH = MARKER_DIR_PATH + "\\plc3_markers.csv";
+        // Storico dei lotti (anno/numero) letti dal PLC: un cambio per riga "data;lotto"
+        private static final String LOT_FILE_PATH = MARKER_DIR_PATH + "\\plc3_lots.csv";
+        private static final NodeId NODE_LOT_YEAR = NodeId.parse("ns=2;s=Banbury 2.PLC3.R104_R104_M_L");
+        private static final NodeId NODE_LOT_NUM = NodeId.parse("ns=2;s=Banbury 2.PLC3.R106_R110_M_L");
+        private static final String OPC_APP_NAME = "PLC3 Graph";
+        private static final String OPC_APP_URI = "urn:plc3:graph";
 
 
         private static final int MAX_TEMP = 200;
@@ -190,6 +198,9 @@ public class PLC3_Graph extends JFrame {
         private static final Color PISTON_COLOR = new Color(0x20, 0x20, 0x20);
         private final List<ModePoint> modeHistory = new ArrayList<>();
         private final List<RecipePoint> recipeTimeline = new ArrayList<>();
+        private final List<LotPoint> lotTimeline = new ArrayList<>();
+        private volatile String lastLotText = "";
+        private final AtomicBoolean lotPollInProgress = new AtomicBoolean(false);
         private volatile boolean recipeMonitorAlive = false;
         private final List<TempMarker> r2008Markers = new ArrayList<>();
 
@@ -217,6 +228,7 @@ public class PLC3_Graph extends JFrame {
             loadHistoryFromDatabase();
             loadRecipeTimelineFromDatabase();
             loadMarkersFromFile();
+            loadLotsFromFile();
             startDatabaseRefresh();
             startStepDisplayRefresh();
         }
@@ -331,16 +343,24 @@ public class PLC3_Graph extends JFrame {
             int w = getWidth();
             int h = getHeight();
 
-            lblTitle.setBounds(22, 15, 430, 35);
-            lblDate.setBounds(w - 290, 15, 260, 35);
-            lblValue.setBounds(22, 58, 220, 32);
-            lblRange.setBounds(255, 58, 500, 32);
-            lblMeasure.setBounds(Math.max(1350, w - 230), 58, 200, 32);
-            chkShowSteps.setBounds(770, 58, 90, 32);
-            chkAmp.setBounds(865, 58, 130, 32);
-            chkRpm.setBounds(1000, 58, 80, 32);
-            chkPiston.setBounds(1090, 58, 100, 32);
-            chkAuto.setBounds(1195, 58, 150, 32);
+            // Layout come B1: una riga con titolo, TEMP, intervallo e data/ora; sotto le caselle;
+            // la barra lotti e' attaccata al bordo alto del grafico, la barra ricette sotto l'asse dei tempi.
+            lblTitle.setBounds(22, 15, 270, 35);
+            lblValue.setBounds(300, 16, 200, 32);
+            lblRange.setBounds(510, 16, 400, 32);
+            lblDate.setBounds(Math.max(920, w - 290), 15, 260, 35);
+            lblMeasure.setBounds(Math.max(1075, w - 190), 52, 160, 30);
+
+            int cy = 56;
+            int cx = 22;
+            chkAmp.setBounds(cx, cy, 150, 24);
+            cx += 160;
+            chkRpm.setBounds(cx, cy, 150, 24);
+            cx += 160;
+            chkPiston.setBounds(cx, cy, 150, 24);
+            cx += 160;
+            chkAuto.setBounds(cx, cy, 140, 24);
+            chkShowSteps.setBounds(cx + 150, cy, 90, 24);
 
             int yButtons = h - 60;
             btnBackFast.setBounds(24, yButtons, 100, 42);
@@ -610,6 +630,16 @@ public class PLC3_Graph extends JFrame {
             if (chkPiston.isSelected()) {
                 rows.add("Pistone: " + pistonText(p.piston));
             }
+            String lot = null;
+            for (LotPoint lp : lotTimeline) {
+                if (lp.time.isAfter(p.time)) {
+                    break;
+                }
+                lot = lp.text;
+            }
+            if (lot != null) {
+                rows.add("Lotto: " + lot);
+            }
             String mode = null;
             for (ModePoint m : modeHistory) {
                 if (m.time.isAfter(p.time)) {
@@ -655,11 +685,22 @@ public class PLC3_Graph extends JFrame {
             }
         }
 
+        private static final int AXIS_W = 46;
+
+        /** Una colonna di scala a destra per ogni serie extra visibile. */
+        private int visibleAxisCount() {
+            int n = 0;
+            if (chkAmp.isSelected()) n++;
+            if (chkRpm.isSelected()) n++;
+            if (chkPiston.isSelected()) n++;
+            return n;
+        }
+
         private Rectangle getChartBounds() {
             int left = 95;
-            int right = 115;
-            int top = 110;
-            int bottom = 120;
+            int right = 28 + AXIS_W * Math.max(1, visibleAxisCount());
+            int top = 108;
+            int bottom = 144;
 
             int chartX = left;
             int chartY = top;
@@ -803,7 +844,8 @@ public class PLC3_Graph extends JFrame {
         private void startDatabaseRefresh() {
             dbRefreshTimer = new Timer(5000, e -> {
                 loadHistoryFromDatabase();
-                    loadRecipeTimelineFromDatabase();
+                loadRecipeTimelineFromDatabase();
+                pollLotFromOpc();
                 if (liveMode) {
                     visibleEnd = LocalDateTime.now();
                     updateRangeLabel();
@@ -1296,15 +1338,11 @@ public class PLC3_Graph extends JFrame {
         }
 
         private void paintChart(Graphics2D g2) {
-            int left = 95;
-            int right = 115;
-            int top = 110;
-            int bottom = 120;
-
-            int chartX = left;
-            int chartY = top;
-            int chartW = Math.max(200, getWidth() - left - right);
-            int chartH = Math.max(200, getHeight() - top - bottom);
+            Rectangle chart = getChartBounds();
+            int chartX = chart.x;
+            int chartY = chart.y;
+            int chartW = chart.width;
+            int chartH = chart.height;
 
             GradientPaint gp = new GradientPaint(
                     chartX, chartY, Color.WHITE,
@@ -1319,6 +1357,7 @@ public class PLC3_Graph extends JFrame {
 
             paintGrid(g2, chartX, chartY, chartW, chartH);
             paintModeTimeline(g2, chartX, chartY, chartW, chartH);
+            paintLotBar(g2, chartX, chartY, chartW);
             paintAxesLabels(g2, chartX, chartY, chartW, chartH);
             paintExtraLine(g2, chartX, chartY, chartW, chartH, 0);
             paintExtraLine(g2, chartX, chartY, chartW, chartH, 1);
@@ -1384,13 +1423,13 @@ public class PLC3_Graph extends JFrame {
             g2.setColor(POINT_COLOR);
             String windowLabel = "TEMPS FENETRE (" + formatDurationCompact(getVisibleWindow()) + ")";
             int windowSw = g2.getFontMetrics().stringWidth(windowLabel);
-            g2.drawString(windowLabel, x + (w - windowSw) / 2, y + h + 48);
+            g2.drawString(windowLabel, x + (w - windowSw) / 2, y + h + 76);
         }
 
         private void paintModeTimeline(Graphics2D g2, int x, int y, int w, int h) {
             int barMarginX = 2;
             int barH = 22;
-            int barY = y + h - barH - 6;
+            int barY = y + h + 32; // sotto l'asse dei tempi, come in B1
             int barX = x + barMarginX;
             int barW = Math.max(50, w - (barMarginX * 2));
 
@@ -1599,6 +1638,200 @@ public class PLC3_Graph extends JFrame {
             g2.drawString(label, tx, ty);
         }
 
+        /** Barra dei lotti (anno/numero) sopra il grafico; in manuale e' rossa e senza lotto, come in B1. */
+        private void paintLotBar(Graphics2D g2, int x, int y, int w) {
+            int barH = 22;
+            int barY = y - barH;
+            int barX = x + 2;
+            int barW = Math.max(50, w - 4);
+
+            LocalDateTime start = visibleEnd.minus(getVisibleWindow());
+            long totalMillis = Math.max(1L, getVisibleWindow().toMillis());
+
+            g2.setColor(new Color(0xDD, 0xE3, 0xEE));
+            g2.fillRect(barX, barY, barW, barH);
+
+            List<LocalDateTime[]> manual = new ArrayList<>();
+            for (int i = 0; i < modeHistory.size(); i++) {
+                if (isManualMode(modeHistory.get(i).mode)) {
+                    LocalDateTime e = (i + 1 < modeHistory.size()) ? modeHistory.get(i + 1).time : visibleEnd;
+                    manual.add(new LocalDateTime[]{modeHistory.get(i).time, e});
+                }
+            }
+            for (LocalDateTime[] m : manual) {
+                paintTimelineSegment(g2, barX, barY, barW, barH, start, visibleEnd, totalMillis,
+                        m[0], m[1], new Color(190, 25, 25), new Color(255, 95, 95), "", "", false);
+            }
+
+            for (int i = 0; i < lotTimeline.size(); i++) {
+                LocalDateTime s = lotTimeline.get(i).time;
+                LocalDateTime e = (i + 1 < lotTimeline.size()) ? lotTimeline.get(i + 1).time : visibleEnd;
+                String text = lotTimeline.get(i).text;
+                boolean odd = (i & 1) == 1;
+                LocalDateTime cur = s;
+                for (LocalDateTime[] m : manual) {
+                    if (!m[1].isAfter(cur) || !m[0].isBefore(e)) {
+                        continue;
+                    }
+                    if (m[0].isAfter(cur)) {
+                        paintLotPiece(g2, barX, barY, barW, barH, start, totalMillis, cur, m[0], text, odd);
+                    }
+                    if (m[1].isAfter(cur)) {
+                        cur = m[1];
+                    }
+                }
+                if (cur.isBefore(e)) {
+                    paintLotPiece(g2, barX, barY, barW, barH, start, totalMillis, cur, e, text, odd);
+                }
+            }
+
+            g2.setColor(new Color(20, 60, 120));
+            g2.drawRect(barX, barY, barW, barH);
+            if (lotTimeline.isEmpty()) {
+                g2.setFont(new Font("Consolas", Font.BOLD, 11));
+                g2.setColor(new Color(0x70, 0x78, 0x90));
+                g2.drawString("LOT : aucun historique", barX + 6, barY + 14);
+            }
+        }
+
+        private void paintLotPiece(Graphics2D g2, int barX, int barY, int barW, int barH,
+                                   LocalDateTime visibleStart, long totalMillis,
+                                   LocalDateTime from, LocalDateTime to, String text, boolean odd) {
+            paintTimelineSegment(g2, barX, barY, barW, barH, visibleStart, visibleEnd, totalMillis,
+                    from, to,
+                    odd ? new Color(30, 90, 160) : new Color(20, 60, 120), new Color(110, 160, 230),
+                    "LOT " + text, text, true);
+        }
+
+        /** Testo del valore OPC come in PLC3_Main (interi senza decimali, spazi tolti). */
+        private static String opcText(DataValue dv) {
+            if (dv == null || dv.getValue() == null || dv.getValue().getValue() == null) {
+                return "";
+            }
+            Object raw = dv.getValue().getValue();
+            if (raw instanceof Number) {
+                double d = ((Number) raw).doubleValue();
+                if (Math.floor(d) == d) {
+                    return String.valueOf((long) d);
+                }
+                return String.valueOf(d).replace(",", ".");
+            }
+            return String.valueOf(raw).trim();
+        }
+
+        /** Legge anno e numero lotto dal PLC; a ogni cambio aggiunge un tratto alla barra e lo salva su file. */
+        private void pollLotFromOpc() {
+            if (!lotPollInProgress.compareAndSet(false, true)) {
+                return;
+            }
+            new Thread(() -> {
+                try {
+                    List<DataValue> values = OpcManager.readValues(OPC_APP_NAME, OPC_APP_URI,
+                            java.util.Arrays.asList(NODE_LOT_YEAR, NODE_LOT_NUM));
+                    if (values == null || values.size() < 2) {
+                        return;
+                    }
+                    String year = opcText(values.get(0));
+                    String num = opcText(values.get(1));
+                    boolean empty = year.isEmpty() || num.isEmpty() || "0".equals(year) && "0".equals(num);
+                    if (empty) {
+                        return;
+                    }
+                    final String text = year + "/" + num;
+                    if (text.equals(lastLotText)) {
+                        return;
+                    }
+                    final LocalDateTime now = LocalDateTime.now();
+                    lastLotText = text;
+                    appendLotToFile(now, text);
+                    SwingUtilities.invokeLater(() -> {
+                        lotTimeline.add(new LotPoint(now, text));
+                        repaint();
+                    });
+                } catch (Exception ex) {
+                    // PLC non raggiungibile: la barra resta com'e', si riprova al prossimo ciclo
+                } finally {
+                    lotPollInProgress.set(false);
+                }
+            }, "plc3-graph-lot-poll").start();
+        }
+
+        private void appendLotToFile(LocalDateTime time, String text) {
+            try {
+                File file = new File(LOT_FILE_PATH);
+                Files.write(file.toPath(), (time + ";" + text + System.lineSeparator()).getBytes(StandardCharsets.UTF_8),
+                        java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+            } catch (Exception ignored) {
+            }
+        }
+
+        /** All'avvio ricarica lo storico dei lotti (ultimi 2 giorni) salvato in precedenza. */
+        private void loadLotsFromFile() {
+            new Thread(() -> {
+                List<LotPoint> loaded = new ArrayList<>();
+                try {
+                    File file = new File(LOT_FILE_PATH);
+                    if (!file.exists()) {
+                        return;
+                    }
+                    LocalDateTime threshold = LocalDateTime.now().minus(TOTAL_HISTORY);
+                    LocalDateTime lastTime = null;
+                    String lastText = null;
+                    for (String line : Files.readAllLines(file.toPath(), StandardCharsets.UTF_8)) {
+                        String[] parts = line.split(";", 2);
+                        if (parts.length != 2) {
+                            continue;
+                        }
+                        try {
+                            LocalDateTime t = LocalDateTime.parse(parts[0].trim());
+                            String text = parts[1].trim();
+                            if (text.isEmpty()) {
+                                continue;
+                            }
+                            // l'ultimo lotto prima della finestra serve da base per il primo tratto
+                            if (t.isBefore(threshold)) {
+                                lastTime = threshold;
+                                lastText = text;
+                                continue;
+                            }
+                            if (lastText != null) {
+                                loaded.add(new LotPoint(lastTime, lastText));
+                                lastText = null;
+                            }
+                            if (loaded.isEmpty() || !loaded.get(loaded.size() - 1).text.equals(text)) {
+                                loaded.add(new LotPoint(t, text));
+                            }
+                        } catch (Exception ignored) {
+                        }
+                    }
+                    if (lastText != null) {
+                        loaded.add(new LotPoint(lastTime, lastText));
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                } finally {
+                    final List<LotPoint> result = loaded;
+                    SwingUtilities.invokeLater(() -> {
+                        // i cambi gia' letti dal PLC in questa sessione restano dopo quelli salvati
+                        LocalDateTime firstNew = lotTimeline.isEmpty() ? null : lotTimeline.get(0).time;
+                        List<LotPoint> merged = new ArrayList<>();
+                        for (LotPoint lp : result) {
+                            if (firstNew == null || lp.time.isBefore(firstNew)) {
+                                merged.add(lp);
+                            }
+                        }
+                        merged.addAll(lotTimeline);
+                        lotTimeline.clear();
+                        lotTimeline.addAll(merged);
+                        if (!lotTimeline.isEmpty() && lastLotText.isEmpty()) {
+                            lastLotText = lotTimeline.get(lotTimeline.size() - 1).text;
+                        }
+                        repaint();
+                    });
+                }
+            }, "plc3-graph-lot-load").start();
+        }
+
         private boolean isManualMode(String mode) {
             if (mode == null) {
                 return false;
@@ -1711,7 +1944,10 @@ public class PLC3_Graph extends JFrame {
             }
             // asse destro: corrente subito a destra del grafico, giri piu' a destra
             g2.setFont(new Font("Consolas", Font.BOLD, 12));
-            int ax = x + w + (series == 0 ? 6 : series == 1 ? 40 : 78);
+            int axisIdx = 0;
+            if (series >= 1 && chkAmp.isSelected()) axisIdx++;
+            if (series >= 2 && chkRpm.isSelected()) axisIdx++;
+            int ax = x + w + 6 + axisIdx * AXIS_W;
             g2.drawString(series == 0 ? "A" : series == 1 ? "rpm" : "pist", ax, y - 6);
             if (series == 2) {
                 g2.drawString("HAUT", ax, y + 4);
@@ -1940,6 +2176,16 @@ public class PLC3_Graph extends JFrame {
                     return String.valueOf(recipeNumber);
                 }
                 return recipeNumber + " - " + description;
+            }
+        }
+
+        private static class LotPoint {
+            final LocalDateTime time;
+            final String text;
+
+            LotPoint(LocalDateTime time, String text) {
+                this.time = time;
+                this.text = text;
             }
         }
 
