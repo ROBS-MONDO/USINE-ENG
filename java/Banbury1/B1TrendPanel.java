@@ -251,8 +251,8 @@ public final class B1TrendPanel extends JPanel {
             lblTitle.setBounds(22, 15, 270, 35);
             lblValue.setBounds(300, 16, 200, 32);
             lblRange.setBounds(510, 16, 400, 32);
-            lblDate.setBounds(w - 290, 15, 260, 35);
-            lblMeasure.setBounds(w - 190, 52, 160, 30);
+            lblDate.setBounds(Math.max(920, w - 290), 15, 260, 35);
+            lblMeasure.setBounds(Math.max(1075, w - 190), 52, 160, 30);
             cy = 56;
         } else {
             lblTitle.setBounds(22, 15, 520, 35);
@@ -280,12 +280,12 @@ public final class B1TrendPanel extends JPanel {
         btnZoomOut.setBounds(576, y, 100, 42);
         btnLive.setBounds(684, y, 110, 42);
         btnMeasure.setBounds(806, y, 130, 42);
-        btnExit.setBounds(w - 25 - 110, h - 20 - 60, 110, 60);
+        btnExit.setBounds(Math.max(950, w - 25 - 110), h - 20 - 60, 110, 60);
     }
 
     /** Finestra larga (schermo pieno): intestazione su una riga e barra lotti sopra il grafico. */
     private boolean isWide() {
-        return getWidth() >= 1280;
+        return true; // stesso layout a qualsiasi larghezza: se la finestra si riduce si accorcia solo il grafico
     }
 
     /** Riga di testo sotto il grafico (finestra e stato SQL): piu' in basso a schermo largo, dove la barra ricette sta sotto l'asse. */
