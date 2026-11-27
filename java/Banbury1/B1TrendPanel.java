@@ -252,7 +252,7 @@ public final class B1TrendPanel extends JPanel {
             lblValue.setBounds(300, 16, 200, 32);
             lblRange.setBounds(510, 16, 400, 32);
             lblDate.setBounds(w - 290, 15, 260, 35);
-            lblMeasure.setBounds(Math.max(920, w - 290 - 290), 16, 280, 32);
+            lblMeasure.setBounds(w - 190, 52, 160, 30);
             cy = 56;
         } else {
             lblTitle.setBounds(22, 15, 520, 35);
@@ -286,6 +286,11 @@ public final class B1TrendPanel extends JPanel {
     /** Finestra larga (schermo pieno): intestazione su una riga e barra lotti sopra il grafico. */
     private boolean isWide() {
         return getWidth() >= 1280;
+    }
+
+    /** Riga di testo sotto il grafico (finestra e stato SQL): piu' in basso a schermo largo, dove la barra ricette sta sotto l'asse. */
+    private int belowY() {
+        return isWide() ? 76 : 48;
     }
 
     private Duration window() {
@@ -410,8 +415,8 @@ public final class B1TrendPanel extends JPanel {
             }
         }
         int right = 28 + AXIS_W * Math.max(1, axes); // una colonna di scala per ogni serie extra visibile
-        int top = 128;
-        int bottom = 120;
+        int top = isWide() ? 108 : 128;  // a schermo largo la barra lotti e' attaccata al bordo alto del grafico
+        int bottom = isWide() ? 144 : 120; // e la barra ricette sta sotto l'asse dei tempi
         return new Rectangle(left, top, Math.max(200, getWidth() - left - right), Math.max(200, getHeight() - top - bottom));
     }
 
@@ -661,7 +666,7 @@ public final class B1TrendPanel extends JPanel {
         g2.setFont(new Font("Consolas", Font.BOLD, 13));
         g2.setColor(POINT_COLOR);
         String label = "TEMPS FENETRE (" + compact(window()) + ")";
-        g2.drawString(label, c.x + (c.width - g2.getFontMetrics().stringWidth(label)) / 2, c.y + c.height + 48);
+        g2.drawString(label, c.x + (c.width - g2.getFontMetrics().stringWidth(label)) / 2, c.y + c.height + belowY());
         // esito della lettura dello storico SQL (serve a capire perche' ci sono buchi)
         String st = B1TrendRecorder.sqlStatus;
         g2.setFont(new Font("Consolas", Font.PLAIN, 11));
@@ -669,13 +674,13 @@ public final class B1TrendPanel extends JPanel {
         if (g2.getFontMetrics().stringWidth(st) > c.width / 2 - 10) {
             st = st.substring(0, Math.min(st.length(), 70)) + "...";
         }
-        g2.drawString(st, c.x, c.y + c.height + 48); // a sinistra: a destra c'e' il pulsante EXIT
+        g2.drawString(st, c.x, c.y + c.height + belowY()); // a sinistra: a destra c'e' il pulsante EXIT
     }
 
     /** Fascia in basso: ricetta (verde, con il nome) e modo manuale (rosso), come in PLC3_Graph. */
     private void paintTimeline(Graphics2D g2, Rectangle c) {
         int barH = 22;
-        int barY = c.y + c.height - barH - 6;
+        int barY = isWide() ? c.y + c.height + 32 : c.y + c.height - barH - 6;
         int barX = c.x + 2;
         int barW = Math.max(50, c.width - 4);
         long to = visibleEnd;
@@ -732,8 +737,8 @@ public final class B1TrendPanel extends JPanel {
 
     /** Fascia dei lotti (anno/numero), sopra il grafico a schermo pieno, altrimenti sopra la fascia ricetta. */
     private void paintLotBar(Graphics2D g2, Rectangle c) {
-        int barH = isWide() ? 20 : 22;
-        int barY = isWide() ? 86 : c.y + c.height - 22 - 6 - barH - 2;
+        int barH = 22;
+        int barY = isWide() ? c.y - barH : c.y + c.height - 22 - 6 - barH - 2;
         int barX = c.x + 2;
         int barW = Math.max(50, c.width - 4);
         long to = visibleEnd;
