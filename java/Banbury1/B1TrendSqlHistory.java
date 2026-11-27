@@ -100,11 +100,34 @@ public final class B1TrendSqlHistory {
                 }
             }
         }
+        addLots(cfg, table, events);
         long[] t = new long[times.size()];
         for (int i = 0; i < t.length; i++) {
             t[i] = times.get(i)[0];
         }
         return new Data(t, vals.toArray(new double[0][]), events);
+    }
+
+    /** Storico dei lotti dalla colonna Num_lot (facoltativa: se non esiste si prosegue senza). Solo SELECT. */
+    private static void addLots(Properties cfg, String table, List<String[]> events) {
+        String sql = "SELECT DATEADD(SECOND, DATEDIFF(SECOND, 0, Time_record), CAST(Date_record AS DATETIME)) AS TS, Num_lot FROM "
+                + table + " WHERE Date_record >= DATEADD(DAY, -2, GETDATE()) ORDER BY TS";
+        try (Connection c = B1Jdbc.open(cfg, "B1_SQL_PASSWORD");
+             PreparedStatement ps = c.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            String last = "";
+            while (rs.next()) {
+                Timestamp ts = rs.getTimestamp("TS");
+                String lot = rs.getString("Num_lot");
+                lot = lot == null ? "" : lot.trim();
+                if (ts != null && !lot.isEmpty() && !lot.equals(last)) {
+                    events.add(new String[]{"lot", String.valueOf(ts.getTime()), lot});
+                    last = lot;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Trend: storico lotti da SQL non disponibile (" + e.getMessage() + ")");
+        }
     }
 
     /** Carica la configurazione (stesso file dell'etichetta); proprieta' vuote se il file non c'e'. */

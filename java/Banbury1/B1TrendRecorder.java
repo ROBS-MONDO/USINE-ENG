@@ -48,6 +48,11 @@ public final class B1TrendRecorder {
                     if (recipe != null && !recipe.isEmpty()) {
                         store.addEvent("recipe", now, recipe);
                     }
+                    String lotNum = src.str("lot_num");
+                    if (lotNum != null && !lotNum.trim().isEmpty()) {
+                        String lotYear = src.str("lot_year");
+                        store.addEvent("lot", now, lotYear == null || lotYear.trim().isEmpty() ? lotNum.trim() : lotYear.trim() + "/" + lotNum.trim());
+                    }
                     Double phase = src.num("phase_no");
                     if (phase != null) {
                         store.addEvent("step", now, String.valueOf(phase.intValue()));

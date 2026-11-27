@@ -245,20 +245,32 @@ public final class B1TrendPanel extends JPanel {
     private void layoutComponents() {
         int w = getWidth();
         int h = getHeight();
-        lblTitle.setBounds(22, 15, 520, 35);
-        lblDate.setBounds(w - 290, 15, 260, 35);
-        lblValue.setBounds(22, 58, 220, 32);
-        lblRange.setBounds(255, 58, 440, 32);
-        lblMeasure.setBounds(Math.max(710, w - 330), 58, 300, 32);
+        int cy;
+        if (isWide()) {
+            // una sola riga: titolo, TEMP, intervallo, misura e data/ora; sotto le caselle e la barra lotti
+            lblTitle.setBounds(22, 15, 270, 35);
+            lblValue.setBounds(300, 16, 200, 32);
+            lblRange.setBounds(510, 16, 400, 32);
+            lblDate.setBounds(w - 290, 15, 260, 35);
+            lblMeasure.setBounds(Math.max(920, w - 290 - 290), 16, 280, 32);
+            cy = 56;
+        } else {
+            lblTitle.setBounds(22, 15, 520, 35);
+            lblDate.setBounds(w - 290, 15, 260, 35);
+            lblValue.setBounds(22, 58, 220, 32);
+            lblRange.setBounds(255, 58, 440, 32);
+            lblMeasure.setBounds(Math.max(710, w - 330), 58, 300, 32);
+            cy = 92;
+        }
         int cx = 22;
-        chkTemp.setBounds(cx, 92, 150, 24);
+        chkTemp.setBounds(cx, cy, 150, 24);
         cx += 160;
         for (JCheckBox c : chkExtra) {
-            c.setBounds(cx, 92, 150, 24);
+            c.setBounds(cx, cy, 150, 24);
             cx += 160;
         }
-        chkAuto.setBounds(cx, 92, 140, 24);
-        chkStep.setBounds(cx + 150, 92, 90, 24);
+        chkAuto.setBounds(cx, cy, 140, 24);
+        chkStep.setBounds(cx + 150, cy, 90, 24);
         int y = h - 60;
         btnBackFast.setBounds(24, y, 100, 42);
         btnBack.setBounds(132, y, 100, 42);
@@ -269,6 +281,11 @@ public final class B1TrendPanel extends JPanel {
         btnLive.setBounds(684, y, 110, 42);
         btnMeasure.setBounds(806, y, 130, 42);
         btnExit.setBounds(w - 25 - 110, h - 20 - 60, 110, 60);
+    }
+
+    /** Finestra larga (schermo pieno): intestazione su una riga e barra lotti sopra il grafico. */
+    private boolean isWide() {
+        return getWidth() >= 1280;
     }
 
     private Duration window() {
@@ -493,6 +510,7 @@ public final class B1TrendPanel extends JPanel {
         g2.setStroke(new BasicStroke(1.2f));
         g2.drawRect(c.x, c.y, c.width, c.height);
         paintTimeline(g2, c);
+        paintLotBar(g2, c);
         paintAxes(g2, c);
         long to = visibleEnd;
         long from = to - window().toMillis();
@@ -712,6 +730,35 @@ public final class B1TrendPanel extends JPanel {
         g2.drawRect(barX, barY, barW, barH);
     }
 
+    /** Fascia dei lotti (anno/numero), sopra il grafico a schermo pieno, altrimenti sopra la fascia ricetta. */
+    private void paintLotBar(Graphics2D g2, Rectangle c) {
+        int barH = isWide() ? 20 : 22;
+        int barY = isWide() ? 86 : c.y + c.height - 22 - 6 - barH - 2;
+        int barX = c.x + 2;
+        int barW = Math.max(50, c.width - 4);
+        long to = visibleEnd;
+        long from = to - window().toMillis();
+        long total = window().toMillis();
+        g2.setColor(new Color(0xDD, 0xE3, 0xEE));
+        g2.fillRect(barX, barY, barW, barH);
+        List<B1TrendStore.Event> lots = store.events("lot");
+        for (int i = 0; i < lots.size(); i++) {
+            long s = lots.get(i).time;
+            long e = i + 1 < lots.size() ? lots.get(i + 1).time : to;
+            boolean odd = (i & 1) == 1;
+            segment(g2, barX, barY, barW, barH, from, to, total, s, e,
+                    odd ? new Color(30, 90, 160) : new Color(20, 60, 120), new Color(110, 160, 230));
+            label(g2, barX, barY, barW, barH, from, to, total, s, e, "LOT " + lots.get(i).text, lots.get(i).text, false, new Color(225, 238, 255));
+        }
+        g2.setColor(new Color(20, 60, 120));
+        g2.drawRect(barX, barY, barW, barH);
+        g2.setFont(new Font("Consolas", Font.BOLD, 11));
+        if (lots.isEmpty()) {
+            g2.setColor(new Color(0x70, 0x78, 0x90));
+            g2.drawString("LOT : aucun historique", barX + 6, barY + 14);
+        }
+    }
+
     private static void segment(Graphics2D g2, int barX, int barY, int barW, int barH, long from, long to, long total,
                                 long s, long e, Color fill, Color border) {
         if (e <= from || s >= to) {
@@ -728,6 +775,12 @@ public final class B1TrendPanel extends JPanel {
 
     private static void label(Graphics2D g2, int barX, int barY, int barW, int barH, long from, long to, long total,
                               long s, long e, String full, String shortLabel, boolean light) {
+        label(g2, barX, barY, barW, barH, from, to, total, s, e, full, shortLabel, light,
+                light ? new Color(255, 245, 245) : new Color(215, 255, 215));
+    }
+
+    private static void label(Graphics2D g2, int barX, int barY, int barW, int barH, long from, long to, long total,
+                              long s, long e, String full, String shortLabel, boolean light, Color textColor) {
         if (e <= from || s >= to) {
             return;
         }
@@ -746,7 +799,7 @@ public final class B1TrendPanel extends JPanel {
         if (t.isEmpty() || fm.stringWidth(t) + 8 > w) {
             return;
         }
-        g2.setColor(light ? new Color(255, 245, 245) : new Color(215, 255, 215));
+        g2.setColor(textColor);
         g2.drawString(t, x1 + (w - fm.stringWidth(t)) / 2, barY + (barH - fm.getHeight()) / 2 + fm.getAscent());
     }
 
@@ -880,8 +933,12 @@ public final class B1TrendPanel extends JPanel {
         st.addEvent("mode", now - 90 * 60_000L, "Manu");
         st.addEvent("mode", now - 40 * 60_000L, "Auto");
         st.addEvent("recipe", now - 150 * 60_000L, "RFL8 V05 1er");
+        st.addEvent("lot", t0, "26/0702");
+        st.addEvent("lot", now - 160 * 60_000L, "26/0703");
+        st.addEvent("lot", now - 60 * 60_000L, "26/0704");
+        int sw = Integer.getInteger("b1.snapshot.w", 1280);
         B1TrendPanel p = new B1TrendPanel(st, null);
-        p.setSize(1280, 720);
+        p.setSize(sw, 720);
         p.layoutComponents();
         if (withMeasure) {
             p.toggleMeasure();
@@ -901,7 +958,7 @@ public final class B1TrendPanel extends JPanel {
         p.updateValue();
         p.updateRange();
         p.lblDate.setText(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
-        BufferedImage img = new BufferedImage(1280, 720, BufferedImage.TYPE_INT_RGB);
+        BufferedImage img = new BufferedImage(sw, 720, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = img.createGraphics();
         p.paint(g);
         for (Component comp : p.getComponents()) {
